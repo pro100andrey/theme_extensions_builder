@@ -1,0 +1,6 @@
+dependency_overrides:
+  theme_extensions_builder_annotation:
+    path: ../../theme_extensions_builder_annotation
+
+  theme_extensions_builder:
+    path: ../

@@ -1,0 +1,13 @@
+name: theme_extensions_builder_annotation
+description: A new Flutter package project.
+version: 1.0.0
+homepage:
+
+environment:
+  sdk: '>=2.18.2 <3.0.0'
+
+dependencies:
+  meta: ^1.8.0
+
+dev_dependencies:
+  flutter_lints: ^2.0.0

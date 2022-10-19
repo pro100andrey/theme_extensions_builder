@@ -1,1 +1,1 @@
-packages/theme_extensions_builder/README.md
+./packages/theme_extensions_builder/README.md

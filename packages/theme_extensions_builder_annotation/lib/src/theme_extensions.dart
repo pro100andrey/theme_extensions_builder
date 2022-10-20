@@ -7,7 +7,7 @@ const themeExtensions = ThemeExtensions();
 @Target({TargetKind.classType})
 class ThemeExtensions {
   const ThemeExtensions({this.buildContextExtension = true});
-  
+
   /// Create getters for the easy access of the theme properties
   final bool buildContextExtension;
 }

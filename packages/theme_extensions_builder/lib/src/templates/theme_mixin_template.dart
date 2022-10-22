@@ -43,9 +43,15 @@ class ThemeMixinTemplate {
     final classParams = StringBuffer();
 
     config.fields.forEach((key, value) {
-      classParams.write(
-        '$key: ${value.typeName.asType()}.lerp(value.$key, otherValue.$key, t,)${value.isNullable ? '' : '!'},',
-      );
+      if (value.hasLerp) {
+        classParams.write(
+          '$key: ${value.typeName.asType()}.lerp(value.$key, otherValue.$key, t,)${value.isNullable ? '' : '!'},',
+        );
+      } else {
+        classParams.write(
+          '$key: otherValue.$key,',
+        );
+      }
     });
 
     return '''

@@ -12,11 +12,13 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
   @override
   ThemeExtension<BackgroundThemeExtension> copyWith({
     Color? color,
+    double? radius,
   }) {
     final object = this as BackgroundThemeExtension;
 
     return BackgroundThemeExtension(
       color: color ?? object.color,
+      radius: radius ?? object.radius,
     );
   }
 
@@ -39,6 +41,7 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
         otherValue.color,
         t,
       )!,
+      radius: otherValue.radius,
     );
   }
 
@@ -49,7 +52,8 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is BackgroundThemeExtension &&
-            identical(value.color, other.color));
+            identical(value.color, other.color) &&
+            identical(value.radius, other.radius));
   }
 
   @override
@@ -59,6 +63,7 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
     return Object.hash(
       runtimeType,
       value.color,
+      value.radius,
     );
   }
 }

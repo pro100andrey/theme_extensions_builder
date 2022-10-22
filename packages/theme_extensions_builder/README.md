@@ -1,5 +1,5 @@
 
-Welcome to `theme_extensions_builder`, the code generator for supercharging Flutter ThemeExtension classes introduced in Flutter 3.0! The generator helps to minimize the required boilerplate code.
+Welcome to `theme_extensions_builder`, the code generator for Flutter ThemeExtension classes introduced in Flutter 3.0. The generator helps to minimize the required boilerplate code.
 
 # How to use
 ## Install

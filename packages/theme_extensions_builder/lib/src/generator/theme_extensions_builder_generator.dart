@@ -60,7 +60,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
   }
 }
 
-class _ClassVisitor extends SimpleElementVisitor {
+class _ClassVisitor extends SimpleElementVisitor<void> {
   final Map<String, Field> fields = {};
   final Map<String, List<bool>> hasInternalAnnotations = {};
 
@@ -68,16 +68,40 @@ class _ClassVisitor extends SimpleElementVisitor {
       TypeChecker.fromRuntime(ignore.runtimeType);
 
   @override
-  void visitFieldElement(FieldElement element) {
+  void visitFieldElement(FieldElement element) async {
     if (ignoreAnnotationTypeChecker.hasAnnotationOf(element)) {
       return;
     }
 
     if (element.isFinal) {
       fields[element.name] = Field(
+        hasLerp: _hasLerp(element),
         name: element.name,
         typeName: element.type.getDisplayString(withNullability: true),
       );
     }
+  }
+
+  bool _hasLerp(FieldElement field) {
+    final element = field.type.element2;
+
+    if (element is! ClassElement) {
+      return false;
+    }
+
+    for (final type in [
+      element,
+      ...element.allSupertypes
+          .where((e) => !e.isDartCoreObject)
+          .map((e) => e.element2)
+    ]) {
+      for (final method in type.methods) {
+        if (method.name == 'lerp') {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }

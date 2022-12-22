@@ -1,5 +1,5 @@
-import 'package:example/theme/background_theme.dart';
-import 'package:example/theme/elevated_button_theme.dart';
+import 'package:example/theme/background.dart';
+import 'package:example/theme/elevated_button.dart';
 import 'package:flutter/material.dart';
 
 void main() {

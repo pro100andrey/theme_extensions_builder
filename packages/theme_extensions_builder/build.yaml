@@ -2,7 +2,7 @@ builders:
   theme_extensions_builder:
     import: "package:theme_extensions_builder/theme_extensions_builder.dart"
     builder_factories: ["themeExtensionsBuilder"]
-    build_extensions: { ".dart": [".g.dart"] }
+    build_extensions: { ".dart": [".g.theme.dart"] }
     auto_apply: dependents
     build_to: source
     runs_before: ["json_serializable|json_serializable"]

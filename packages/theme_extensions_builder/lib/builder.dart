@@ -8,7 +8,7 @@ Builder themeExtensionsBuilder(BuilderOptions options) {
     [
       ThemeExtensionsGenerator(builderOptions: options),
     ],
-    '.g.dart',
+    '.g.theme.dart',
     header: '''
     // coverage:ignore-file
     // GENERATED CODE - DO NOT MODIFY BY HAND

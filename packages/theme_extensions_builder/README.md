@@ -58,18 +58,6 @@ class ElevatedButtonThemeExtension
     this.borderRadius,
   });
 
-  factory ElevatedButtonThemeExtension.primary() =>
-      const ElevatedButtonThemeExtension(
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.red,
-      );
-
-  factory ElevatedButtonThemeExtension.secondary() =>
-      const ElevatedButtonThemeExtension(
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.green,
-      );
-
   final BorderRadius? borderRadius;
   final Color backgroundColor;
   final Color foregroundColor;

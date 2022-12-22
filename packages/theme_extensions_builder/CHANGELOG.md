@@ -1,3 +1,7 @@
+## 2.0.0
+* Breaking changes: rename build_extensions from .g.dart to .g.theme.dart ([issue](https://github.com/pro100andrey/theme_extensions_builder/issues/2))
+* analyzer: ">=4.6.0 <6.0.0"
+
 ## 1.0.1
 * Support for types that do not implement method lerp
 

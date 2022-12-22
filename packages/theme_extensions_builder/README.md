@@ -41,7 +41,7 @@ flutter run build_runner build --delete-conflicting-outputs
 ## Create Theme Extension
 
 ```dart
-//file: elevated_button_theme.dart
+//file: elevated_button.dart
 
 import 'package:flutter/material.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';

@@ -28,7 +28,7 @@ Make sure to specify the correct file name in a part directive. In the example b
 import 'package:flutter/material.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-part 'name.generated.dart';
+part 'name.g.theme.dart';
 ```
 
 ## Run the code generator
@@ -76,7 +76,7 @@ class ElevatedButtonThemeExtension
 }
 ```
 
-Generated Code
+Generated code
 
 ```dart
 
@@ -170,4 +170,12 @@ extension ElevatedButtonThemeExtensionBuildContext on BuildContext {
       Theme.of(this).extension<ElevatedButtonThemeExtension>()!;
 }
 
+```
+
+## VSCode controls nesting of files in the Explorer.
+
+```json
+"explorer.fileNesting.patterns": {
+    "*.dart": "${capture}.g.theme.dart"
+}
 ```

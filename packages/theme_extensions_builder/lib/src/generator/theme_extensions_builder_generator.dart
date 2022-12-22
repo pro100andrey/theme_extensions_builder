@@ -12,7 +12,6 @@ import '../model/theme_mixin_config.dart';
 import '../templates/build_context_template.dart';
 import '../templates/theme_mixin_template.dart';
 
-
 /// It's a Dart code generator that generates code for the `@ThemeExtensions`
 /// annotation
 class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {

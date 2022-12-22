@@ -1,3 +1,4 @@
+/// It's a class that represents a field
 class Field {
   const Field({
     required this.name,

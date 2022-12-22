@@ -14,9 +14,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        extensions: [
-          ElevatedButtonThemeExtension.primary(),
-          const BackgroundThemeExtension(),
+        extensions: const [
+          ElevatedButtonThemeExtension(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.red,
+          ),
+          BackgroundThemeExtension(
+            color: Colors.grey,
+            radius: 6,
+          ),
         ],
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),

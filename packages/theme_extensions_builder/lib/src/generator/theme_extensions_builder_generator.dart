@@ -12,6 +12,9 @@ import '../model/theme_mixin_config.dart';
 import '../templates/build_context_template.dart';
 import '../templates/theme_mixin_template.dart';
 
+
+/// It's a Dart code generator that generates code for the `@ThemeExtensions`
+/// annotation
 class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
   ThemeExtensionsGenerator({required this.builderOptions});
 
@@ -60,6 +63,8 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
   }
 }
 
+/// It's a class that extends the SimpleElementVisitor class, and it overrides the
+/// visitClassElement method
 class _ClassVisitor extends SimpleElementVisitor<void> {
   final Map<String, Field> fields = {};
   final Map<String, List<bool>> hasInternalAnnotations = {};
@@ -83,6 +88,7 @@ class _ClassVisitor extends SimpleElementVisitor<void> {
   }
 
   bool _hasLerp(FieldElement field) {
+    // ignore: deprecated_member_use
     final element = field.type.element2;
 
     if (element is! ClassElement) {
@@ -93,6 +99,7 @@ class _ClassVisitor extends SimpleElementVisitor<void> {
       element,
       ...element.allSupertypes
           .where((e) => !e.isDartCoreObject)
+          // ignore: deprecated_member_use
           .map((e) => e.element2)
     ]) {
       for (final method in type.methods) {

@@ -1,6 +1,7 @@
 import '../model/field.dart';
 import '../model/theme_mixin_config.dart';
 
+/// A template for generate _$ThemeExtensionMixin.
 class ThemeMixinTemplate {
   const ThemeMixinTemplate(this.config);
 

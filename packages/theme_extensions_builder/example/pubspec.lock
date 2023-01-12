@@ -367,14 +367,14 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.0.1"
+    version: "2.0.2"
   theme_extensions_builder_annotation:
     dependency: "direct main"
     description:
       path: "../../theme_extensions_builder_annotation"
       relative: true
     source: path
-    version: "1.1.0"
+    version: "2.0.0"
   timing:
     dependency: transitive
     description:

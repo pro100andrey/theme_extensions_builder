@@ -65,7 +65,7 @@ class ThemeMixinTemplate {
         return this;
       }
 
-      ${_castThisAsClassName()}
+      ${!config.fields.values.any((e) => e.hasLerp) ? '' : _castThisAsClassName()}
 
       return $returnType(
         ${classParams.toString()}

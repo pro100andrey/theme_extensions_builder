@@ -11,7 +11,8 @@
             "program": "packages/theme_extensions_builder/example/.dart_tool/build/entrypoint/build.dart",
             "type": "dart",
             "args": [
-                "build"
+                "build",
+                "--delete-conflicting-outputs"
             ]
         },
         {

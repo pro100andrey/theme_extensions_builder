@@ -14,12 +14,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        extensions: const [
+        extensions: [
           ElevatedButtonThemeExtension(
             foregroundColor: Colors.white,
             backgroundColor: Colors.red,
+            test: MaterialStateProperty.resolveWith((states) => Colors.red),
           ),
-          BackgroundThemeExtension(
+          const BackgroundThemeExtension(
             color: Colors.grey,
             radius: 6,
           ),
@@ -67,9 +68,6 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headline4,
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.elevatedButtonTheme.backgroundColor,
-              ),
               onPressed: _incrementCounter,
               child: const Text('Increment'),
             )

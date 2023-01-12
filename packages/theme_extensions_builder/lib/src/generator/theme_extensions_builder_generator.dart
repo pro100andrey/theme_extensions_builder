@@ -102,7 +102,11 @@ class _ClassVisitor extends SimpleElementVisitor<void> {
           .map((e) => e.element2)
     ]) {
       for (final method in type.methods) {
-        if (method.name == 'lerp') {
+        if (method.name == 'lerp' &&
+            method.isStatic &&
+            method.isPublic &&
+            method.parameters.length == 3 &&
+            method.parameters.last.type.isDartCoreDouble) {
           return true;
         }
       }

@@ -10,10 +10,14 @@ class ElevatedButtonThemeExtension
   const ElevatedButtonThemeExtension({
     required this.backgroundColor,
     required this.foregroundColor,
+    required this.test,
     this.borderRadius,
+    this.radius = 5,
   });
 
   final BorderRadius? borderRadius;
+  final MaterialStateProperty<Color> test;
+  final double radius;
   final Color backgroundColor;
   final Color foregroundColor;
 }

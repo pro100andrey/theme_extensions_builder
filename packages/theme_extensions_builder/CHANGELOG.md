@@ -1,3 +1,6 @@
+## 2.0.2
+* Fix generate `lerp` method [issue](https://github.com/pro100andrey/theme_extensions_builder/issues/8) for `MaterialStateProperty`
+
 ## 2.0.1+3
 * Update for scores
 

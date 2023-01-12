@@ -12,6 +12,8 @@ mixin _$ThemeExtensionMixin on ThemeExtension<ElevatedButtonThemeExtension> {
   @override
   ThemeExtension<ElevatedButtonThemeExtension> copyWith({
     BorderRadius? borderRadius,
+    MaterialStateProperty<Color>? test,
+    double? radius,
     Color? backgroundColor,
     Color? foregroundColor,
   }) {
@@ -19,6 +21,8 @@ mixin _$ThemeExtensionMixin on ThemeExtension<ElevatedButtonThemeExtension> {
 
     return ElevatedButtonThemeExtension(
       borderRadius: borderRadius ?? object.borderRadius,
+      test: test ?? object.test,
+      radius: radius ?? object.radius,
       backgroundColor: backgroundColor ?? object.backgroundColor,
       foregroundColor: foregroundColor ?? object.foregroundColor,
     );
@@ -43,6 +47,8 @@ mixin _$ThemeExtensionMixin on ThemeExtension<ElevatedButtonThemeExtension> {
         otherValue.borderRadius,
         t,
       ),
+      test: otherValue.test,
+      radius: otherValue.radius,
       backgroundColor: Color.lerp(
         value.backgroundColor,
         otherValue.backgroundColor,
@@ -64,6 +70,8 @@ mixin _$ThemeExtensionMixin on ThemeExtension<ElevatedButtonThemeExtension> {
         (other.runtimeType == runtimeType &&
             other is ElevatedButtonThemeExtension &&
             identical(value.borderRadius, other.borderRadius) &&
+            identical(value.test, other.test) &&
+            identical(value.radius, other.radius) &&
             identical(value.backgroundColor, other.backgroundColor) &&
             identical(value.foregroundColor, other.foregroundColor));
   }
@@ -75,6 +83,8 @@ mixin _$ThemeExtensionMixin on ThemeExtension<ElevatedButtonThemeExtension> {
     return Object.hash(
       runtimeType,
       value.borderRadius,
+      value.test,
+      value.radius,
       value.backgroundColor,
       value.foregroundColor,
     );

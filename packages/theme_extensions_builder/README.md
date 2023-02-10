@@ -35,7 +35,7 @@ part 'name.g.theme.dart';
 To run the code generator, run the following commands:
 
 ```console
-flutter run build_runner build --delete-conflicting-outputs
+flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 ## Create Theme Extension

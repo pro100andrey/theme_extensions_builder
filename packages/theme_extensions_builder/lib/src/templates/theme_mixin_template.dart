@@ -27,13 +27,13 @@ class ThemeMixinTemplate {
     return '''
     @override
     ThemeExtension<$returnType> copyWith({
-      ${methodParams.toString()}
+      $methodParams
     }) {
 
       final object = this as $returnType;
 
       return $returnType(
-        ${classParams.toString()}
+        $classParams
       );
     }
     ''';
@@ -46,7 +46,9 @@ class ThemeMixinTemplate {
     config.fields.forEach((key, value) {
       if (value.hasLerp) {
         classParams.write(
-          '$key: ${value.typeName.asType()}.lerp(value.$key, otherValue.$key, t,)${value.isNullable ? '' : '!'},',
+          '$key: ${value.typeName.asType()}'
+          '.lerp(value.$key, otherValue.$key, t,)'
+          '${value.isNullable ? '' : '!'},',
         );
       } else {
         classParams.write(
@@ -68,7 +70,7 @@ class ThemeMixinTemplate {
       ${!config.fields.values.any((e) => e.hasLerp) ? '' : _castThisAsClassName()}
 
       return $returnType(
-        ${classParams.toString()}
+        $classParams
       );
     }
     ''';
@@ -83,15 +85,16 @@ class ThemeMixinTemplate {
     final comparisons = [
       'other.runtimeType == runtimeType',
       'other is ${config.className}',
-      for (final field in config.fields.values) equality(field)
+      for (final field in config.fields.values) equality(field),
     ];
 
-    return '''@override bool operator ==(Object other) {
-      ${_castThisAsClassName()}
+    return '''
+@override bool operator ==(Object other) {
+  ${_castThisAsClassName()}
 
-      return identical(this, other) || (${comparisons.join('&&')});
-    }
-    ''';
+  return identical(this, other) || (${comparisons.join('&&')});
+}
+''';
   }
 
   String _castThisAsClassName() {
@@ -103,22 +106,22 @@ class ThemeMixinTemplate {
   }
 
   String _hashCodeMethod() {
-    String hashMethod(String result, [bool convert = true]) => '''
+    String hashMethod(String result, {bool convert = true}) => '''
 
       @override int get hashCode {
         ${_castThisAsClassName()}
-        
+
         return $result;
       }
     ''';
 
     final hashedProps = [
       'runtimeType',
-      for (final field in config.fields.values) 'value.${field.name}'
+      for (final field in config.fields.values) 'value.${field.name}',
     ];
 
     if (hashedProps.length == 1) {
-      return hashMethod('${hashedProps.first}.hashCode', false);
+      return hashMethod('${hashedProps.first}.hashCode', convert: false);
     }
 
     if (hashedProps.length <= 20) {
@@ -145,14 +148,22 @@ class ThemeMixinTemplate {
 
 extension _StringExt on String {
   String asNullableType() {
-    if (this == 'dynamic') return this;
-    if (endsWith('?')) return this;
+    if (this == 'dynamic') {
+      return this;
+    }
+
+    if (endsWith('?')) {
+      return this;
+    }
 
     return '$this?';
   }
 
   String asType() {
-    if (this == 'dynamic') return this;
+    if (this == 'dynamic') {
+      return this;
+    }
+
     if (endsWith('?')) {
       return replaceAll('?', '');
     }

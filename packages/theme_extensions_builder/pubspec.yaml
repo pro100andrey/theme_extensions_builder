@@ -1,6 +1,6 @@
 name: theme_extensions_builder
-description: > 
-  Code generator for Flutter's 3.0  ThemeExtension classes. 
+description: >
+  Code generator for Flutter's 3.0  ThemeExtension classes.
   theme_extensions_builder generator helps to minimize the required boilerplate code.
 
 repository: https://github.com/pro100andrey/theme_extensions_builder
@@ -8,7 +8,7 @@ issue_tracker: https://github.com/pro100andrey/theme_extensions_builder/issues
 homepage: https://github.com/pro100andrey/theme_extensions_builder
 documentation: https://github.com/pro100andrey/theme_extensions_builder/blob/main/packages/theme_extensions_builder/README.md
 
-version: 2.0.2
+version: 3.0.0
 
 platforms:
   android:
@@ -19,17 +19,18 @@ platforms:
   windows:
 
 environment:
-  sdk: '>=2.18.2 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  analyzer: ">=4.6.0 <6.0.0"
+  analyzer: ">=5.14.0 <6.3.0"
+  build: ^2.4.1
   build_config: ^1.1.1
-  build: ^2.3.1
   flutter:
     sdk: flutter
-  meta: ^1.8.0
+  meta: ^1.10.0
+  source_gen: ^1.4.0
   theme_extensions_builder_annotation: ^2.0.0
-  source_gen: ^1.2.6
+
 
 dev_dependencies:
-  flutter_lints: ^2.0.1
+  pro_lints: ^2.0.2

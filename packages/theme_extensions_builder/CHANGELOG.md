@@ -1,3 +1,6 @@
+## 3.0.1
+* Fix dependencies. Thanks [felix-barz-brickmakers](https://github.com/felix-barz-brickmakers)!
+
 ## 3.0.0
 * Update dependencies. Min sdk: 3.0.0
 

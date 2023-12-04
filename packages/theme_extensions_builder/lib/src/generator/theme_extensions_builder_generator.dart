@@ -4,9 +4,9 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:theme_extensions_builder/src/model/build_context_config.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
+import '../model/build_context_config.dart';
 import '../model/field.dart';
 import '../model/theme_mixin_config.dart';
 import '../templates/build_context_template.dart';
@@ -62,8 +62,8 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
   }
 }
 
-/// It's a class that extends the SimpleElementVisitor class, and it overrides the
-/// visitClassElement method
+/// It's a class that extends the SimpleElementVisitor class, and it overrides
+/// the visitClassElement method
 class _ClassVisitor extends SimpleElementVisitor<void> {
   final Map<String, Field> fields = {};
   final Map<String, List<bool>> hasInternalAnnotations = {};
@@ -72,7 +72,7 @@ class _ClassVisitor extends SimpleElementVisitor<void> {
       TypeChecker.fromRuntime(ignore.runtimeType);
 
   @override
-  void visitFieldElement(FieldElement element) async {
+  Future<void> visitFieldElement(FieldElement element) async {
     if (ignoreAnnotationTypeChecker.hasAnnotationOf(element)) {
       return;
     }
@@ -98,8 +98,7 @@ class _ClassVisitor extends SimpleElementVisitor<void> {
       element,
       ...element.allSupertypes
           .where((e) => !e.isDartCoreObject)
-          // ignore: deprecated_member_use
-          .map((e) => e.element2)
+          .map((e) => e.element),
     ]) {
       for (final method in type.methods) {
         if (method.name == 'lerp' &&

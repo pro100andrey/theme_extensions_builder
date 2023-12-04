@@ -4,6 +4,10 @@
 			"path": "."
 		}
 	],
-	"settings": {},
-	
+	"settings": {
+		"cSpell.words": [
+			"lerp",
+			"Supertypes"
+		]
+	},
 }

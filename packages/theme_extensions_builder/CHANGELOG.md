@@ -1,3 +1,6 @@
+## 3.0.0
+* Update dependencies. Min sdk: 3.0.0
+
 ## 2.0.2
 * Fix generate `lerp` method [issue](https://github.com/pro100andrey/theme_extensions_builder/issues/8) for `MaterialStateProperty`
 

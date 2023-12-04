@@ -16,11 +16,10 @@ class Field {
     String? name,
     String? typeName,
     bool? hasLerp,
-  }) {
-    return Field(
-      name: name ?? this.name,
-      typeName: typeName ?? this.typeName,
-      hasLerp: hasLerp ?? this.hasLerp,
-    );
-  }
+  }) =>
+      Field(
+        name: name ?? this.name,
+        typeName: typeName ?? this.typeName,
+        hasLerp: hasLerp ?? this.hasLerp,
+      );
 }

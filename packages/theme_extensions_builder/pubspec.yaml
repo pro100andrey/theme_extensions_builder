@@ -8,7 +8,7 @@ issue_tracker: https://github.com/pro100andrey/theme_extensions_builder/issues
 homepage: https://github.com/pro100andrey/theme_extensions_builder
 documentation: https://github.com/pro100andrey/theme_extensions_builder/blob/main/packages/theme_extensions_builder/README.md
 
-version: 3.0.1
+version: 3.1.0
 
 platforms:
   android:
@@ -19,16 +19,16 @@ platforms:
   windows:
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.3.0 <4.0.0'
 
 dependencies:
-  analyzer: ">=5.14.0 <6.3.0"
+  analyzer: ">=5.14.0 <7.0.0"
   build: ^2.4.1
   build_config: ^1.1.1
   flutter:
     sdk: flutter
-  meta: ^1.10.0
-  source_gen: ^1.4.0
+  meta: ^1.11.0
+  source_gen: ^1.5.0
   theme_extensions_builder_annotation: ^3.0.0
 
 

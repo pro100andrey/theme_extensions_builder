@@ -9,7 +9,7 @@ issue_tracker: https://github.com/pro100andrey/theme_extensions_builder/issues
 homepage: https://github.com/pro100andrey/theme_extensions_builder
 documentation: https://github.com/pro100andrey/theme_extensions_builder/blob/main/packages/theme_extensions_builder/README.md
 
-version: 3.1.0
+version: 4.0.0
 
 platforms:
   android:
@@ -20,10 +20,10 @@ platforms:
   windows:
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
-  meta: ^1.11.0
+  meta: ^1.15.0
 
 dev_dependencies:
-  pro_lints: ^2.0.2
+  pro_lints: ^3.0.0

@@ -16,7 +16,7 @@ class ElevatedButtonThemeExtension
   });
 
   final BorderRadius? borderRadius;
-  final MaterialStateProperty<Color> test;
+  final WidgetStateProperty<Color> test;
   final double radius;
   final Color backgroundColor;
   final Color foregroundColor;

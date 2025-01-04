@@ -1,4 +1,4 @@
 /// A builder for generating theme extensions.
-library theme_extensions_builder;
+library;
 
 export 'builder.dart';

@@ -81,7 +81,7 @@ class _ClassVisitor extends SimpleElementVisitor<void> {
       fields[element.name] = Field(
         hasLerp: _hasLerp(element),
         name: element.name,
-        typeName: element.type.getDisplayString(withNullability: true),
+        typeName: element.type.getDisplayString(),
       );
     }
   }

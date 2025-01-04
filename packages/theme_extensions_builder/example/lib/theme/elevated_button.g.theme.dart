@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, unused_element
@@ -12,7 +13,7 @@ mixin _$ThemeExtensionMixin on ThemeExtension<ElevatedButtonThemeExtension> {
   @override
   ThemeExtension<ElevatedButtonThemeExtension> copyWith({
     BorderRadius? borderRadius,
-    MaterialStateProperty<Color>? test,
+    WidgetStateProperty<Color>? test,
     double? radius,
     Color? backgroundColor,
     Color? foregroundColor,

@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
             ElevatedButtonThemeExtension(
               foregroundColor: Colors.white,
               backgroundColor: Colors.red,
-              test: MaterialStateProperty.resolveWith((states) => Colors.red),
+              test: WidgetStateProperty.resolveWith((states) => Colors.red),
             ),
             const BackgroundThemeExtension(
               color: Colors.grey,

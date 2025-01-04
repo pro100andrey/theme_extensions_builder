@@ -1,3 +1,7 @@
+## 4.0.0
+
+* Update dependencies. Min sdk: 3.6.0
+
 ## 3.1.0
 
 * Update dependencies. Min sdk: 3.3.0

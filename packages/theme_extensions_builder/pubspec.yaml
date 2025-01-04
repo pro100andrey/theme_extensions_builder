@@ -18,6 +18,11 @@ platforms:
   web:
   windows:
 
+topics:
+ - theme
+ - extension
+ - codegen
+
 environment:
   sdk: '>=3.6.0 <4.0.0'
 

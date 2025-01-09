@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 import 'package:build/build.dart';
+import 'package:dart_style/dart_style.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
@@ -58,7 +59,13 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
       );
     }
 
-    return generatorBuffer.toString();
+    final formatter = DartFormatter(
+      languageVersion: DartFormatter.latestShortStyleLanguageVersion,
+    );
+
+    final code = generatorBuffer.toString();
+
+    return formatter.format(code);
   }
 }
 
@@ -87,8 +94,7 @@ class _ClassVisitor extends SimpleElementVisitor<void> {
   }
 
   bool _hasLerp(FieldElement field) {
-    // ignore: deprecated_member_use
-    final element = field.type.element2;
+    final element = field.type.element;
 
     if (element is! ClassElement) {
       return false;

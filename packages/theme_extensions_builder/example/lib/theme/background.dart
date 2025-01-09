@@ -6,6 +6,7 @@ part 'background.g.theme.dart';
 @ThemeExtensions()
 class BackgroundThemeExtension extends ThemeExtension<BackgroundThemeExtension>
     with _$ThemeExtensionMixin {
+
   const BackgroundThemeExtension({
     required this.color,
     required this.radius,

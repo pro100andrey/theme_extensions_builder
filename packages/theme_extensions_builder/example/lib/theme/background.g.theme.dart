@@ -37,11 +37,7 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
     final value = this as BackgroundThemeExtension;
 
     return BackgroundThemeExtension(
-      color: Color.lerp(
-        value.color,
-        otherValue.color,
-        t,
-      )!,
+      color: Color.lerp(value.color, otherValue.color, t)!,
       radius: otherValue.radius,
     );
   }
@@ -61,11 +57,7 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
   int get hashCode {
     final value = this as BackgroundThemeExtension;
 
-    return Object.hash(
-      runtimeType,
-      value.color,
-      value.radius,
-    );
+    return Object.hash(runtimeType, value.color, value.radius);
   }
 }
 

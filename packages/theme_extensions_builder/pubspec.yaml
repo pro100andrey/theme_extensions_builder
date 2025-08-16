@@ -24,10 +24,10 @@ topics:
  - codegen
 
 environment:
-  sdk: '^3.8.1'
+  sdk: ">=3.8.0 <4.0.0"
 
 dependencies:
-  analyzer: "^7.4.0"
+  analyzer: ">=7.7.1 <8.0.0"
   build: ^3.0.0
   build_config: ^1.1.2
   dart_style: ^3.1.1
@@ -35,9 +35,9 @@ dependencies:
   flutter:
     sdk: flutter
   meta: ^1.16.0
-  source_gen: ^3.0.0
+  source_gen: ^3.1.0
 
   theme_extensions_builder_annotation: ^5.0.0
 
 dev_dependencies:
-  pro_lints: ^4.0.0
+  pro_lints: ^5.0.0

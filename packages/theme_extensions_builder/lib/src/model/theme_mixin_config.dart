@@ -1,4 +1,4 @@
-import 'field.dart';
+import 'field_symbol.dart';
 
 /// A class that contains the configuration for the `ThemeMixinTemplate` class
 class ThemeMixinConfig {

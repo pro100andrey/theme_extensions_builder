@@ -7,7 +7,7 @@ import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 import '../model/build_context_config.dart';
-import '../model/field.dart';
+import '../model/field_symbol.dart';
 import '../model/theme_mixin_config.dart';
 import '../templates/build_context_template.dart';
 import '../templates/theme_mixin_template.dart';
@@ -81,10 +81,15 @@ class _ClassVisitor extends ElementVisitor2<void> {
     }
 
     if (element.isFinal) {
+      final type = element.type.getDisplayString();
+      final isNullable = type.endsWith('?');
+      final resultType = isNullable ? type.substring(0, type.length - 1) : type;
+
       fields[element.displayName] = FieldSymbol(
         lerpInfo: _hasLerp(element),
         name: element.displayName,
-        type: element.type.getDisplayString(),
+        type: resultType,
+        isNullable: isNullable,
       );
     }
   }

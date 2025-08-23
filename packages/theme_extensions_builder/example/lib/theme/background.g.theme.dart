@@ -16,7 +16,7 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
     double? radius,
     MySubTextTheme? subTextTheme,
   }) {
-    final object = this as BackgroundThemeExtension;
+    final object = (this as BackgroundThemeExtension);
 
     return BackgroundThemeExtension(
       color: color ?? object.color,
@@ -31,12 +31,11 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
     double t,
   ) {
     final otherValue = other;
-
     if (otherValue is! BackgroundThemeExtension) {
       return this;
     }
 
-    final value = this as BackgroundThemeExtension;
+    final value = (this as BackgroundThemeExtension);
 
     return BackgroundThemeExtension(
       color: Color.lerp(value.color, otherValue.color, t)!,
@@ -47,19 +46,21 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
 
   @override
   bool operator ==(Object other) {
-    final value = this as BackgroundThemeExtension;
+    if (identical(this, other)) {
+      return true;
+    }
 
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is BackgroundThemeExtension &&
-            identical(value.color, other.color) &&
-            identical(value.radius, other.radius) &&
-            identical(value.subTextTheme, other.subTextTheme));
+    final value = (this as BackgroundThemeExtension);
+    return other.runtimeType == runtimeType &&
+        other is BackgroundThemeExtension &&
+        identical(value.color, other.color) &&
+        identical(value.radius, other.radius) &&
+        identical(value.subTextTheme, other.subTextTheme);
   }
 
   @override
   int get hashCode {
-    final value = this as BackgroundThemeExtension;
+    final value = (this as BackgroundThemeExtension);
 
     return Object.hash(
       runtimeType,

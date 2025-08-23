@@ -18,7 +18,7 @@ mixin _$ThemeExtensionMixin on ThemeExtension<ElevatedButtonThemeExtension> {
     Color? backgroundColor,
     Color? foregroundColor,
   }) {
-    final object = this as ElevatedButtonThemeExtension;
+    final object = (this as ElevatedButtonThemeExtension);
 
     return ElevatedButtonThemeExtension(
       borderRadius: borderRadius ?? object.borderRadius,
@@ -35,19 +35,18 @@ mixin _$ThemeExtensionMixin on ThemeExtension<ElevatedButtonThemeExtension> {
     double t,
   ) {
     final otherValue = other;
-
     if (otherValue is! ElevatedButtonThemeExtension) {
       return this;
     }
 
-    final value = this as ElevatedButtonThemeExtension;
+    final value = (this as ElevatedButtonThemeExtension);
 
     return ElevatedButtonThemeExtension(
       borderRadius: BorderRadius.lerp(
         value.borderRadius,
         otherValue.borderRadius,
         t,
-      ),
+      )!,
       test: otherValue.test,
       radius: otherValue.radius,
       backgroundColor: Color.lerp(
@@ -65,21 +64,23 @@ mixin _$ThemeExtensionMixin on ThemeExtension<ElevatedButtonThemeExtension> {
 
   @override
   bool operator ==(Object other) {
-    final value = this as ElevatedButtonThemeExtension;
+    if (identical(this, other)) {
+      return true;
+    }
 
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is ElevatedButtonThemeExtension &&
-            identical(value.borderRadius, other.borderRadius) &&
-            identical(value.test, other.test) &&
-            identical(value.radius, other.radius) &&
-            identical(value.backgroundColor, other.backgroundColor) &&
-            identical(value.foregroundColor, other.foregroundColor));
+    final value = (this as ElevatedButtonThemeExtension);
+    return other.runtimeType == runtimeType &&
+        other is ElevatedButtonThemeExtension &&
+        identical(value.borderRadius, other.borderRadius) &&
+        identical(value.test, other.test) &&
+        identical(value.radius, other.radius) &&
+        identical(value.backgroundColor, other.backgroundColor) &&
+        identical(value.foregroundColor, other.foregroundColor);
   }
 
   @override
   int get hashCode {
-    final value = this as ElevatedButtonThemeExtension;
+    final value = (this as ElevatedButtonThemeExtension);
 
     return Object.hash(
       runtimeType,

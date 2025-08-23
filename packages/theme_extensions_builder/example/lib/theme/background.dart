@@ -18,21 +18,17 @@ class BackgroundThemeExtension extends ThemeExtension<BackgroundThemeExtension>
 }
 
 class MySubTextTheme extends ThemeExtension<MySubTextTheme> {
-  
- const  MySubTextTheme({required this.color, required this.fontSize});
+  const MySubTextTheme({required this.color, required this.fontSize});
 
   final Color color;
   final double fontSize;
 
   @override
-  ThemeExtension<MySubTextTheme> copyWith({Color? color, double? radius}) {
-    final object = this as BackgroundThemeExtension;
-
-    return MySubTextTheme(
-      color: color ?? object.color,
-      fontSize: radius ?? object.radius,
-    );
-  }
+  ThemeExtension<MySubTextTheme> copyWith({Color? color, double? fontSize}) =>
+      MySubTextTheme(
+        color: color ?? this.color,
+        fontSize: fontSize ?? this.fontSize,
+      );
 
   @override
   ThemeExtension<MySubTextTheme> lerp(

@@ -7,6 +7,6 @@ class ThemeMixinConfig {
     required this.className,
   });
 
-  final Map<String, Field> fields;
+  final Map<String, FieldSymbol> fields;
   final String className;
 }

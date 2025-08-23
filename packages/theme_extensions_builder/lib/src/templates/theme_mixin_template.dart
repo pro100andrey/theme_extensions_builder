@@ -1,3 +1,6 @@
+import 'package:code_builder/code_builder.dart';
+import 'package:dart_style/dart_style.dart';
+
 import '../model/field.dart';
 import '../model/theme_mixin_config.dart';
 
@@ -20,7 +23,7 @@ class ThemeMixinTemplate {
     final classParams = StringBuffer();
 
     config.fields.forEach((key, value) {
-      methodParams.write('${value.typeName.asNullableType()} $key,');
+      methodParams.write('${value.type.asNullableType()} $key,');
       classParams.write('$key: $key ?? object.$key,');
     });
 
@@ -44,16 +47,14 @@ class ThemeMixinTemplate {
     final classParams = StringBuffer();
 
     config.fields.forEach((key, value) {
-      if (value.hasLerp) {
+      if (value.hasLerp && value.lerpInfo!.isStatic) {
         classParams.write(
-          '$key: ${value.typeName.asType()}'
+          '$key: ${value.type.asType()}'
           '.lerp(value.$key, otherValue.$key, t,)'
           '${value.isNullable ? '' : '!'},',
         );
       } else {
-        classParams.write(
-          '$key: otherValue.$key,',
-        );
+        classParams.write('$key: otherValue.$key,');
       }
     });
 
@@ -77,7 +78,7 @@ class ThemeMixinTemplate {
   }
 
   String _equalOperator() {
-    String equality(Field field) {
+    String equality(FieldSymbol field) {
       final name = field.name;
       return 'identical(value.$name, other.$name)';
     }
@@ -106,7 +107,8 @@ class ThemeMixinTemplate {
   }
 
   String _hashCodeMethod() {
-    String hashMethod(String result, {bool convert = true}) => '''
+    String hashMethod(String result, {bool convert = true}) =>
+        '''
 
       @override int get hashCode {
         ${_castThisAsClassName()}
@@ -131,8 +133,214 @@ class ThemeMixinTemplate {
     return hashMethod('Object.hashAll([${hashedProps.join(',')}])');
   }
 
+  TypeReference themeExtensionRef({bool isNullable = false}) => TypeReference(
+    (t) => t
+      ..symbol = 'ThemeExtension'
+      ..types.add(refer(config.className))
+      ..isNullable = isNullable,
+  );
+
+  Method copyWith(ThemeMixinConfig config) {
+    final fields = config.fields;
+
+    final parameters = fields.entries
+        .map((e) {
+          final name = e.key;
+          final typeName = e.value.type.asNullableType();
+
+          return Parameter(
+            (p) => p
+              ..name = name
+              ..named = true
+              ..type = refer(typeName),
+          );
+        })
+        .toList(growable: false);
+
+    final body = BlockBuilder()
+      ..addExpression(
+        declareFinal('object').assign(
+          refer('this').asA(refer(config.className)),
+        ),
+      )
+      ..statements.add(const Code(''))
+      ..addExpression(
+        refer(config.className).newInstance([], {
+          for (final e in fields.entries)
+            e.key: refer(e.key).ifNullThen(
+              refer('object').property(e.key),
+            ),
+        }).returned,
+      );
+
+    final result = Method((m) {
+      m
+        ..name = 'copyWith'
+        ..annotations.add(refer('override'))
+        ..returns = themeExtensionRef()
+        ..requiredParameters.addAll(parameters)
+        ..body = body.build();
+    });
+
+    return result;
+  }
+
+  Method lerpMethod(ThemeMixinConfig config) {
+    final body = BlockBuilder();
+    final fields = config.fields;
+
+    body
+      ..addExpression(
+        declareFinal('otherValue').assign(
+          refer('other'),
+        ),
+      )
+      ..statements.add(
+        ifCode(
+          refer('otherValue').isNotA(refer(config.className)).code,
+          [
+            refer('this').returned.statement,
+          ],
+        ),
+      )
+      ..statements.add(const Code(''))
+      ..addExpression(
+        declareFinal('value').assign(
+          refer('this').asA(refer(config.className)),
+        ),
+      )
+      ..statements.add(const Code(''))
+      ..addExpression(() {
+        final args = <String, Expression>{};
+
+        for (final e in fields.entries) {
+          final field = e.value;
+
+          if (field.hasLerp && field.lerpInfo!.isStatic) {
+            args[e.key] = refer(field.type).property('lerp').call([
+              refer('value').property(field.name),
+              refer('otherValue').property(field.name),
+              refer('t'),
+            ]).nullChecked;
+          } else {
+            args[e.key] = refer('otherValue').property(field.name);
+          }
+        }
+
+        final v = refer(config.className).newInstance([], args).returned;
+
+        return v;
+      }());
+
+    final result = Method((m) {
+      m
+        ..name = 'lerp'
+        ..annotations.add(refer('override'))
+        ..returns = themeExtensionRef()
+        ..requiredParameters.addAll([
+          Parameter(
+            (p) => p
+              ..name = 'other'
+              ..type = themeExtensionRef(isNullable: true),
+          ),
+          Parameter(
+            (p) => p
+              ..name = 't'
+              ..type = refer('double'),
+          ),
+        ])
+        ..body = body.build();
+    });
+
+    return result;
+  }
+
+  Method equalOperator(ThemeMixinConfig config) {
+    // String equality(FieldSymbol field) {
+    //   final name = field.name;
+    //   return 'identical(value.$name, other.$name)';
+    // }
+
+    // final comparisons = [
+    //   'other.runtimeType == runtimeType',
+    //   'other is ${config.className}',
+    //   for (final field in config.fields.values) equality(field),
+    // ];
+
+    // final body = Block(
+    //   (b) => b.statements.addAll([
+    //     if (config.fields.isNotEmpty)
+    //       Code('final value = this as ${config.className};'),
+    //     Code('return identical(this, other) || (${comparisons.join('&&')});'),
+    //   ]),
+    // );
+
+    final body = BlockBuilder();
+    final fields = config.fields;
+
+    body.addExpression(
+      declareFinal('value').assign(
+        refer('this').asA(refer(config.className)),
+      ),
+    );
+
+    final result = Method((m) {
+      m
+        ..name = 'operator =='
+        ..annotations.add(refer('override'))
+        ..returns = refer('bool')
+        ..requiredParameters.add(
+          Parameter(
+            (p) => p
+              ..name = 'other'
+              ..type = refer('Object'),
+          ),
+        )
+        ..body = body.build();
+    });
+
+    return result;
+  }
+
   @override
   String toString() {
+    final themeExtensionRef = TypeReference(
+      (t) => t
+        ..symbol = 'ThemeExtension'
+        ..types.add(refer(config.className)),
+    );
+
+    final mix = Mixin((m) {
+      m
+        ..name = r'_$ThemeExtensionMixin'
+        ..on = themeExtensionRef;
+
+      m.methods.addAll([
+        copyWith(config),
+        lerpMethod(config),
+        equalOperator(config),
+      ]);
+    });
+
+    final emitter = DartEmitter(
+      allocator: Allocator.simplePrefixing(),
+      useNullSafetySyntax: true,
+      orderDirectives: true,
+    );
+
+    final formatter = DartFormatter(
+      languageVersion: DartFormatter.latestLanguageVersion,
+      pageWidth: DartFormatter.defaultPageWidth,
+      trailingCommas: TrailingCommas.automate,
+    );
+
+    final dartCode = mix.accept(emitter).toString();
+    final formattedCode = formatter.format(dartCode);
+
+    print(formattedCode);
+
+    // return dartCode;
+
     const name = r'_$ThemeExtensionMixin';
 
     return '''
@@ -170,4 +378,31 @@ extension _StringExt on String {
 
     return this;
   }
+}
+
+Code ifCode(
+  Code condition,
+  List<Code> thenBody, [
+  List<Code>? elseBody,
+]) {
+  final buf = StringBuffer();
+  final conditionStr = condition.accept(DartEmitter());
+
+  buf.writeln('if ($conditionStr) {');
+
+  for (final c in thenBody) {
+    buf.writeln('  ${c.accept(DartEmitter())}');
+  }
+
+  buf.write('}');
+
+  if (elseBody != null && elseBody.isNotEmpty) {
+    buf.writeln(' else {');
+    for (final c in elseBody) {
+      buf.writeln('  ${c.accept(DartEmitter())}');
+    }
+    buf.write('}');
+  }
+
+  return Code(buf.toString());
 }

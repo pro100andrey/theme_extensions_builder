@@ -12,22 +12,23 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          extensions: [
-            ElevatedButtonThemeExtension(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.red,
-              test: WidgetStateProperty.resolveWith((states) => Colors.red),
-            ),
-            const BackgroundThemeExtension(
-              color: Colors.grey,
-              radius: 6,
-            ),
-          ],
+    title: 'Flutter Demo',
+    theme: ThemeData(
+      extensions: [
+        ElevatedButtonThemeExtension(
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.red,
+          test: WidgetStateProperty.resolveWith((states) => Colors.red),
         ),
-        home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      );
+        const BackgroundThemeExtension(
+          color: Colors.grey,
+          radius: 6,
+          subTextTheme: MySubTextTheme(color: Colors.black, fontSize: 12),
+        ),
+      ],
+    ),
+    home: const MyHomePage(title: 'Flutter Demo Home Page'),
+  );
 }
 
 class MyHomePage extends StatefulWidget {
@@ -50,28 +51,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: context.backgroundTheme.color,
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text(
-                'You have pushed the button this many times:',
-              ),
-              Text(
-                '$_counter',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              ElevatedButton(
-                onPressed: _incrementCounter,
-                child: const Text('Increment'),
-              ),
-            ],
+    backgroundColor: context.backgroundTheme.color,
+    appBar: AppBar(title: Text(widget.title)),
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          const Text('You have pushed the button this many times:'),
+          Text('$_counter', style: Theme.of(context).textTheme.headlineMedium),
+          ElevatedButton(
+            onPressed: _incrementCounter,
+            child: const Text('Increment'),
           ),
-        ),
-        // This trailing comma makes auto-formatting nicer for build methods.
-      );
+        ],
+      ),
+    ),
+    // This trailing comma makes auto-formatting nicer for build methods.
+  );
 }

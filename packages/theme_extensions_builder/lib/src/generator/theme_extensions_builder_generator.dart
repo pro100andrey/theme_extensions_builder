@@ -69,12 +69,10 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
 /// It's a class that extends the SimpleElementVisitor class, and it overrides
 /// the visitClassElement method
 class _ClassVisitor extends ElementVisitor2<void> {
-  final Map<String, Field> fields = {};
+  final Map<String, FieldSymbol> fields = {};
   final Map<String, List<bool>> hasInternalAnnotations = {};
 
-  final ignoreAnnotationTypeChecker = TypeChecker.fromRuntime(
-    ignore.runtimeType,
-  );
+  final ignoreAnnotationTypeChecker = TypeChecker.typeNamed(ignore.runtimeType);
 
   @override
   Future<void> visitFieldElement(FieldElement2 element) async {
@@ -83,19 +81,19 @@ class _ClassVisitor extends ElementVisitor2<void> {
     }
 
     if (element.isFinal) {
-      fields[element.displayName] = Field(
-        hasLerp: _hasLerp(element),
+      fields[element.displayName] = FieldSymbol(
+        lerpInfo: _hasLerp(element),
         name: element.displayName,
-        typeName: element.type.getDisplayString(),
+        type: element.type.getDisplayString(),
       );
     }
   }
 
-  bool _hasLerp(FieldElement2 field) {
+  LerpInfo? _hasLerp(FieldElement2 field) {
     final element = field.type.element3;
 
     if (element is! ClassElement2) {
-      return false;
+      return null;
     }
 
     final types = [
@@ -107,20 +105,17 @@ class _ClassVisitor extends ElementVisitor2<void> {
 
     for (final type in types) {
       for (final method in type.methods2) {
-        if (method.displayName == 'lerp' &&
-            method.isStatic &&
-            method.isPublic) {
-          final last = method.children2.last;
-          if (last is FormalParameterElement) {
-            return last.type.isDartCoreDouble;
+        if (method case MethodElement2(displayName: 'lerp', isPublic: true)) {
+          if (method.children2.last case FormalParameterElement(
+            :final type,
+          ) when type.isDartCoreDouble) {
+            return (isStatic: method.isStatic);
           }
-
-          return true;
         }
       }
     }
 
-    return false;
+    return null;
   }
 
   @override

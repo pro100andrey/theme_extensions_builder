@@ -1,25 +1,18 @@
+typedef LerpInfo = ({bool isStatic});
+
 /// It's a class that represents a field
-class Field {
-  const Field({
+class FieldSymbol {
+  const FieldSymbol({
     required this.name,
-    required this.typeName,
-    required this.hasLerp,
+    required this.type,
+    required this.lerpInfo,
   });
 
   final String name;
-  final String typeName;
-  final bool hasLerp;
+  final String type;
+  final LerpInfo? lerpInfo;
 
-  bool get isNullable => typeName.contains('?');
+  bool get isNullable => type.contains('?');
+  bool get hasLerp => lerpInfo != null;
 
-  Field copyWith({
-    String? name,
-    String? typeName,
-    bool? hasLerp,
-  }) =>
-      Field(
-        name: name ?? this.name,
-        typeName: typeName ?? this.typeName,
-        hasLerp: hasLerp ?? this.hasLerp,
-      );
 }

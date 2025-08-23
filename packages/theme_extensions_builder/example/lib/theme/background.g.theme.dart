@@ -14,12 +14,14 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
   ThemeExtension<BackgroundThemeExtension> copyWith({
     Color? color,
     double? radius,
+    MySubTextTheme? subTextTheme,
   }) {
     final object = this as BackgroundThemeExtension;
 
     return BackgroundThemeExtension(
       color: color ?? object.color,
       radius: radius ?? object.radius,
+      subTextTheme: subTextTheme ?? object.subTextTheme,
     );
   }
 
@@ -39,6 +41,7 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
     return BackgroundThemeExtension(
       color: Color.lerp(value.color, otherValue.color, t)!,
       radius: otherValue.radius,
+      subTextTheme: otherValue.subTextTheme,
     );
   }
 
@@ -50,14 +53,20 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
         (other.runtimeType == runtimeType &&
             other is BackgroundThemeExtension &&
             identical(value.color, other.color) &&
-            identical(value.radius, other.radius));
+            identical(value.radius, other.radius) &&
+            identical(value.subTextTheme, other.subTextTheme));
   }
 
   @override
   int get hashCode {
     final value = this as BackgroundThemeExtension;
 
-    return Object.hash(runtimeType, value.color, value.radius);
+    return Object.hash(
+      runtimeType,
+      value.color,
+      value.radius,
+      value.subTextTheme,
+    );
   }
 }
 

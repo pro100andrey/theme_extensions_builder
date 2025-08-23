@@ -2,15 +2,12 @@ import 'dart:async';
 
 import 'package:analyzer/dart/element/element2.dart';
 import 'package:build/build.dart';
-import 'package:dart_style/dart_style.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../model/build_context_config.dart';
-import '../model/field_symbol.dart';
-import '../model/theme_mixin_config.dart';
-import '../templates/build_context_template.dart';
-import '../templates/theme_mixin_template.dart';
+import '../models/field_symbol.dart';
+import '../models/generator_config.dart';
+import 'code_generator.dart';
 
 /// It's a Dart code generator that generates code for the `@ThemeExtensions`
 /// annotation
@@ -36,33 +33,24 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
     final classVisitor = _ClassVisitor();
     element.visitChildren2(classVisitor);
 
-    final buildContext = annotation.read('buildContextExtension').boolValue;
+    final buildContextExtension = annotation
+        .read('buildContextExtension')
+        .boolValue;
 
-    final generatorBuffer = StringBuffer()
-      ..write(
-        ThemeMixinTemplate(
-          ThemeMixinConfig(
-            fields: classVisitor.fields,
-            className: element.displayName,
-          ),
-        ),
-      );
+    final contextAccessorName =
+        annotation.read('contextAccessorName').literalValue as String?;
 
-    if (buildContext) {
-      generatorBuffer.write(
-        BuildContextTemplate(
-          BuildContextConfig(className: element.displayName),
-        ),
-      );
-    }
-
-    final formatter = DartFormatter(
-      languageVersion: DartFormatter.latestShortStyleLanguageVersion,
+    final generatorConfig = GeneratorConfig(
+      fields: classVisitor.fields,
+      className: element.displayName,
+      contextAccessorName: contextAccessorName,
+      buildContextExtension: buildContextExtension,
     );
 
-    final code = generatorBuffer.toString();
+    const generator = CodeGenerator();
+    final code = generator.generate(generatorConfig);
 
-    return formatter.format(code);
+    return code;
   }
 }
 

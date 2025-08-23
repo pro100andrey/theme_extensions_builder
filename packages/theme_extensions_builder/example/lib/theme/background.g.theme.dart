@@ -72,6 +72,6 @@ mixin _$ThemeExtensionMixin on ThemeExtension<BackgroundThemeExtension> {
 }
 
 extension BackgroundThemeExtensionBuildContext on BuildContext {
-  BackgroundThemeExtension get backgroundTheme =>
+  BackgroundThemeExtension get bgTheme =>
       Theme.of(this).extension<BackgroundThemeExtension>()!;
 }

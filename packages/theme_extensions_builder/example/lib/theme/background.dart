@@ -3,7 +3,7 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 
 part 'background.g.theme.dart';
 
-@ThemeExtensions()
+@ThemeExtensions(contextAccessorName: 'bgTheme')
 class BackgroundThemeExtension extends ThemeExtension<BackgroundThemeExtension>
     with _$ThemeExtensionMixin {
   const BackgroundThemeExtension({

@@ -1,12 +1,12 @@
-import 'dart:async';
+// ignore_for_file: avoid_print
 
 import 'package:analyzer/dart/element/element2.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../models/field_symbol.dart';
 import '../models/generator_config.dart';
+import '../models/symbols.dart';
 import 'code_generator.dart';
 
 /// It's a Dart code generator that generates code for the `@ThemeExtensions`
@@ -17,11 +17,11 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
   final BuilderOptions builderOptions;
 
   @override
-  Future<String> generateForAnnotatedElement(
+  String generateForAnnotatedElement(
     Element2 element,
     ConstantReader annotation,
     BuildStep buildStep,
-  ) async {
+  ) {
     if (element is! ClassElement2) {
       throw InvalidGenerationSourceError(
         'ThemeExtensions can only annotate classes',
@@ -37,14 +37,19 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
         .read('buildContextExtension')
         .boolValue;
 
-    final contextAccessorName =
-        annotation.read('contextAccessorName').literalValue as String?;
+    final contextAccessorName = annotation
+        .read('contextAccessorName')
+        .literalValue as String?  ;
+
+    final autoNameMixin =
+        builderOptions.config['auto_name_mixin'] as bool? ?? false;
 
     final generatorConfig = GeneratorConfig(
       fields: classVisitor.fields,
       className: element.displayName,
       contextAccessorName: contextAccessorName,
       buildContextExtension: buildContextExtension,
+      autoNameMixin: autoNameMixin,
     );
 
     const generator = CodeGenerator();
@@ -122,7 +127,7 @@ class _ClassVisitor extends ElementVisitor2<void> {
 
   @override
   void visitExtensionElement(ExtensionElement2 element) {}
-
+  
   @override
   void visitExtensionTypeElement(ExtensionTypeElement2 element) {}
 
@@ -170,7 +175,6 @@ class _ClassVisitor extends ElementVisitor2<void> {
 
   @override
   void visitTopLevelFunctionElement(TopLevelFunctionElement element) {}
-
   @override
   void visitTopLevelVariableElement(TopLevelVariableElement2 element) {}
 

@@ -1,8 +1,8 @@
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
 
-import '../models/field_symbol.dart';
 import '../models/generator_config.dart';
+import '../models/symbols.dart';
 
 ///
 class CodeGenerator {
@@ -16,8 +16,11 @@ class CodeGenerator {
     );
 
     final mix = Mixin((m) {
+      final name = config.autoNameMixin
+          ? '_\$${config.className}Mixin'
+          : r'_$ThemeExtensionMixin';
       m
-        ..name = r'_$ThemeExtensionMixin'
+        ..name = name
         ..on = themeExtensionRef;
 
       m.methods.addAll([
@@ -143,14 +146,30 @@ Method lerpMethod(GeneratorConfig config) {
     for (final e in fields.entries) {
       final field = e.value;
 
-      if (field.hasLerp && field.lerpInfo!.isStatic) {
-        args[e.key] = refer(field.type).property('lerp').call([
-          refer('value').property(field.name),
-          refer('otherValue').property(field.name),
-          refer('t'),
-        ]).nullChecked;
-      } else {
-        args[e.key] = refer('otherValue').property(field.name);
+      switch (field) {
+        case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: true)):
+          args[e.key] = refer(field.type).property('lerp').call([
+            refer('value').property(field.name),
+            refer('otherValue').property(field.name),
+            refer('t'),
+          ]).nullChecked;
+
+        case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: false)):
+          args[e.key] = refer('value')
+              .property(field.name)
+              .property('lerp')
+              .call([
+                refer('otherValue').property(field.name),
+                refer('t'),
+              ])
+              .asA(refer(field.type));
+        case _:
+          args[e.key] = refer('t')
+              .lessThan(literalNum(0.5))
+              .conditional(
+                refer('value').property(field.name),
+                refer('otherValue').property(field.name),
+              );
       }
     }
 

@@ -1,20 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-part 'background.g.theme.dart';
+part 'app_theme.g.theme.dart';
 
-@ThemeExtensions(contextAccessorName: 'bgTheme')
-class BackgroundThemeExtension extends ThemeExtension<BackgroundThemeExtension>
-    with _$ThemeExtensionMixin {
-  const BackgroundThemeExtension({
-    required this.color,
-    required this.radius,
+enum LayoutMode { compact, expanded }
+
+@ThemeExtensions(contextAccessorName: 'appTheme')
+class AppThemeExtension extends ThemeExtension<AppThemeExtension>
+    with _$AppThemeExtensionMixin {
+  const AppThemeExtension({
+    required this.primaryColor,
+    required this.layoutMode,
+    required this.insets,
     required this.subTextTheme,
   });
 
-  final Color color;
-  final double radius;
+  final Color primaryColor;
+  final LayoutMode layoutMode;
+  final EdgeInsets insets;
   final MySubTextTheme subTextTheme;
+}
+
+@ThemeExtensions()
+class CardThemeExtension extends ThemeExtension<CardThemeExtension>
+    with _$CardThemeExtensionMixin {
+  const CardThemeExtension({
+    required this.primaryColor,
+    required this.layoutMode,
+    required this.insets,
+  });
+
+  final Color primaryColor;
+  final LayoutMode layoutMode;
+  final EdgeInsets insets;
 }
 
 class MySubTextTheme extends ThemeExtension<MySubTextTheme> {
@@ -32,7 +50,7 @@ class MySubTextTheme extends ThemeExtension<MySubTextTheme> {
 
   @override
   ThemeExtension<MySubTextTheme> lerp(
-    ThemeExtension<MySubTextTheme> other,
+    ThemeExtension<MySubTextTheme>? other,
     double t,
   ) {
     final otherValue = other;

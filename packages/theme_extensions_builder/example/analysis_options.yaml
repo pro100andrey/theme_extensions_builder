@@ -1,2 +1,5 @@
 include: package:pro_lints/common.yaml
 
+formatter: 
+  trailing_commas: preserve
+

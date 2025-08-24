@@ -1,4 +1,4 @@
-import 'field_symbol.dart';
+import 'symbols.dart';
 
 typedef BuildContextAccessorConfig = ({
   /// The name of the context getter to be generated. By default, it will be
@@ -16,6 +16,7 @@ class GeneratorConfig {
     required this.className,
     required this.buildContextExtension,
     required this.contextAccessorName,
+    required this.autoNameMixin,
   });
 
   /// The fields to be included in the generated theme extension.
@@ -28,7 +29,10 @@ class GeneratorConfig {
   /// the same as [className].
   final String? contextAccessorName;
 
-  /// Whether to generate the BuildContext extension. Deprecated, use
-  /// [contextAccessorName] instead.
+  /// Whether to generate the BuildContext extension.
   final bool buildContextExtension;
+
+  /// If true, the mixin will be generated with the same name as the class plus
+  /// the suffix `Mixin`.
+  final bool autoNameMixin;
 }

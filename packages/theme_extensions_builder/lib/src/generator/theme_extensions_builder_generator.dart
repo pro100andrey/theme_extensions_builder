@@ -22,7 +22,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
     ConstantReader annotation,
     BuildStep buildStep,
   ) async {
-    if (element is! ClassElement2 || element is Enum) {
+    if (element is! ClassElement2) {
       throw InvalidGenerationSourceError(
         'ThemeExtensions can only annotate classes',
         element: element,
@@ -63,7 +63,7 @@ class _ClassVisitor extends ElementVisitor2<void> {
   final ignoreAnnotationTypeChecker = TypeChecker.typeNamed(ignore.runtimeType);
 
   @override
-  Future<void> visitFieldElement(FieldElement2 element) async {
+  void visitFieldElement(FieldElement2 element) {
     if (ignoreAnnotationTypeChecker.hasAnnotationOf(element)) {
       return;
     }

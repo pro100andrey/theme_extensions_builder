@@ -1,3 +1,5 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
@@ -12,12 +14,14 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension>
     required this.primaryColor,
     required this.layoutMode,
     required this.insets,
+    required this.radius,
     required this.subTextTheme,
   });
 
   final Color primaryColor;
   final LayoutMode layoutMode;
   final EdgeInsets insets;
+  final double radius;
   final MySubTextTheme subTextTheme;
 }
 

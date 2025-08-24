@@ -9,6 +9,7 @@ final lightTheme = ThemeData(
     AppThemeExtension(
       primaryColor: Colors.orange,
       layoutMode: LayoutMode.compact,
+      radius: 16,
       insets: EdgeInsets.all(8),
       subTextTheme: MySubTextTheme(
         color: Colors.black,

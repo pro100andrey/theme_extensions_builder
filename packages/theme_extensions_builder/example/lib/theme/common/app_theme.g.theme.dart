@@ -15,6 +15,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
     Color? primaryColor,
     LayoutMode? layoutMode,
     EdgeInsets? insets,
+    double? radius,
     MySubTextTheme? subTextTheme,
   }) {
     final object = (this as AppThemeExtension);
@@ -23,6 +24,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       primaryColor: primaryColor ?? object.primaryColor,
       layoutMode: layoutMode ?? object.layoutMode,
       insets: insets ?? object.insets,
+      radius: radius ?? object.radius,
       subTextTheme: subTextTheme ?? object.subTextTheme,
     );
   }
@@ -43,6 +45,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       primaryColor: Color.lerp(value.primaryColor, otherValue.primaryColor, t)!,
       layoutMode: t < 0.5 ? value.layoutMode : otherValue.layoutMode,
       insets: EdgeInsets.lerp(value.insets, otherValue.insets, t)!,
+      radius: lerpDouble$(value.radius, otherValue.radius, t)!,
       subTextTheme:
           (value.subTextTheme.lerp(otherValue.subTextTheme, t)
               as MySubTextTheme),
@@ -61,6 +64,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
         identical(value.primaryColor, other.primaryColor) &&
         identical(value.layoutMode, other.layoutMode) &&
         identical(value.insets, other.insets) &&
+        identical(value.radius, other.radius) &&
         identical(value.subTextTheme, other.subTextTheme);
   }
 
@@ -73,6 +77,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       value.primaryColor,
       value.layoutMode,
       value.insets,
+      value.radius,
       value.subTextTheme,
     );
   }

@@ -11,6 +11,7 @@ final darkTheme = ThemeData(
   extensions: const [
     AppThemeExtension(
       primaryColor: Colors.teal,
+      radius: 22,
       insets: EdgeInsets.all(16),
       layoutMode: LayoutMode.expanded,
       subTextTheme: MySubTextTheme(

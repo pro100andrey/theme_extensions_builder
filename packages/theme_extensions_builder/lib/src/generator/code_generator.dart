@@ -4,10 +4,11 @@ import 'package:dart_style/dart_style.dart';
 import '../models/generator_config.dart';
 import '../models/symbols.dart';
 
-///
+/// Generates code for theme extensions.
 class CodeGenerator {
   const CodeGenerator();
 
+  /// Generates code for the given [config].
   String generate(GeneratorConfig config) {
     final themeExtensionRef = TypeReference(
       (t) => t
@@ -163,6 +164,14 @@ Method lerpMethod(GeneratorConfig config) {
                 refer('t'),
               ])
               .asA(refer(field.type));
+
+        case FieldSymbol(isDouble: true):
+          args[e.key] = refer(r'lerpDouble$').call([
+            refer('value').property(field.name),
+            refer('otherValue').property(field.name),
+            refer('t'),
+          ]).nullChecked;
+
         case _:
           args[e.key] = refer('t')
               .lessThan(literalNum(0.5))

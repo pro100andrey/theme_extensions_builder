@@ -16,6 +16,7 @@ class FieldSymbol {
 
   bool get hasLerp => lerpInfo != null;
   bool get isStatic => lerpInfo?.isStatic ?? false;
+  bool get isDouble => type == 'double';
 }
 
 extension FieldSymbolX on FieldSymbol {

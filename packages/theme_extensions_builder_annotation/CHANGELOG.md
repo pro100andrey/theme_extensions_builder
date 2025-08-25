@@ -1,3 +1,7 @@
+## 5.1.0
+
+- Added: `contextAccessorName` property to `ThemeExtension` for setting the context accessor name.
+
 ## 5.0.0
 
 * Update dependencies.

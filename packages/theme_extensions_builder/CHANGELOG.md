@@ -11,9 +11,11 @@
 
 - **Automatic `lerp` Method Generation**: The generator now automatically creates `lerp` methods for `double` and other `ThemeExtension` types, simplifying their use in animations.
 
+- **Optimized lerp for non-interpolated types**: `lerp` method generation for types that do not have a `lerp` method now uses a ternary operator (`t < 0.5 ? value : otherValue`). This ensures a more efficient and predictable transition between values.
+
 ### Deprecations
 
-**`_$ThemeExtensionMixin` is Deprecated**: To support multiple extensions per file, the use of `with _$ThemeExtensionMixin` has been deprecated. Please use the newly generated mixin `with _\$[ClassName]Mixin` instead.
+- **`_$ThemeExtensionMixin` is Deprecated**: To support multiple extensions per file, the use of `with _$ThemeExtensionMixin` has been deprecated. Please use the newly generated mixin `with _\$[ClassName]Mixin` instead.
 
 ## 5.0.0
 

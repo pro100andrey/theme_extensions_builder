@@ -8,7 +8,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appTheme = context.appTheme;
+    final appTheme = context.baseAppTheme;
 
     return Scaffold(
       appBar: AppBar(

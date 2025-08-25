@@ -5,7 +5,7 @@ part 'app_theme.g.theme.dart';
 
 enum LayoutMode { compact, expanded }
 
-@ThemeExtensions(contextAccessorName: 'baseTheme')
+@ThemeExtensions(contextAccessorName: 'baseAppTheme')
 class AppThemeExtension extends ThemeExtension<AppThemeExtension>
     with _$AppThemeExtensionMixin {
   const AppThemeExtension({

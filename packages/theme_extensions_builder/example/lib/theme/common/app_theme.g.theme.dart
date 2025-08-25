@@ -84,7 +84,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
 }
 
 extension AppThemeExtensionBuildContext on BuildContext {
-  AppThemeExtension get appTheme =>
+  AppThemeExtension get baseAppTheme =>
       Theme.of(this).extension<AppThemeExtension>()!;
 }
 

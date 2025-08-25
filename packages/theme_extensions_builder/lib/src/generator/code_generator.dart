@@ -58,7 +58,8 @@ class CodeGenerator {
       buffer.write(contextExtension(config).accept(emitter).toString());
     }
 
-    final formattedCode = formatter.format(buffer.toString());
+    final rawCode = buffer.toString();
+    final formattedCode = formatter.format(rawCode);
 
     return formattedCode;
   }

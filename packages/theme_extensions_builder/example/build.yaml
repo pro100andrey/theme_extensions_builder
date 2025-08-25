@@ -2,7 +2,5 @@ targets:
   $default:
     builders:
       theme_extensions_builder:
-        options:
-          auto_name_mixin: true
         generate_for:
           - lib/theme/common/**.dart

@@ -17,10 +17,19 @@ class CodeGenerator {
     );
 
     final mix = Mixin((m) {
-      final name = config.autoNameMixin
+      final name = !config.isDeprecatedMixin
           ? '_\$${config.className}Mixin'
           : r'_$ThemeExtensionMixin';
       m
+        ..annotations.addAll([
+          if (config.isDeprecatedMixin)
+            refer('Deprecated').call([
+              literalString(
+                'This mixin is deprecated. '
+                'Use `with _\\\$${config.className}Mixin` instead.',
+              ),
+            ]),
+        ])
         ..name = name
         ..on = themeExtensionRef;
 

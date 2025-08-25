@@ -1,6 +1,8 @@
 // ignore_for_file: avoid_print
 
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
@@ -17,12 +19,12 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
   final BuilderOptions builderOptions;
 
   @override
-  String generateForAnnotatedElement(
-    Element2 element,
+  Future<String> generateForAnnotatedElement(
+    Element element,
     ConstantReader annotation,
     BuildStep buildStep,
-  ) {
-    if (element is! ClassElement2) {
+  ) async {
+    if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
         'ThemeExtensions can only annotate classes',
         element: element,
@@ -30,32 +32,66 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
       );
     }
 
+    final mixins = _getMixinsName(element);
+    final isDeprecatedMixin = mixins.any(
+      (m) => m.contains(r'_$ThemeExtensionMixin'),
+    );
+
     final classVisitor = _ClassVisitor();
-    element.visitChildren2(classVisitor);
+    element.visitChildren(classVisitor);
 
     final buildContextExtension = annotation
         .read('buildContextExtension')
         .boolValue;
 
-    final contextAccessorName = annotation
-        .read('contextAccessorName')
-        .literalValue as String?  ;
-
-    final autoNameMixin =
-        builderOptions.config['auto_name_mixin'] as bool? ?? false;
+    final contextAccessorName =
+        annotation.read('contextAccessorName').literalValue as String?;
 
     final generatorConfig = GeneratorConfig(
       fields: classVisitor.fields,
       className: element.displayName,
       contextAccessorName: contextAccessorName,
       buildContextExtension: buildContextExtension,
-      autoNameMixin: autoNameMixin,
+      isDeprecatedMixin: isDeprecatedMixin,
     );
 
     const generator = CodeGenerator();
     final code = generator.generate(generatorConfig);
 
     return code;
+  }
+
+  List<String> _getMixinsName(ClassElement element) {
+    final library = element.library.session.getParsedLibraryByElement(
+      element.library,
+    );
+
+    if (library is! ParsedLibraryResult) {
+      throw StateError('Could not get parsed library for element');
+    }
+
+    final compilationUnit = library.units.single.unit;
+
+    final classDeclaration = compilationUnit.declarations.firstWhere(
+      (decl) =>
+          decl is ClassDeclaration && decl.name.lexeme == element.displayName,
+    );
+
+    if (classDeclaration is! ClassDeclaration) {
+      throw StateError('Class declaration not found ');
+    }
+
+    final withClause = classDeclaration.withClause;
+
+    if (withClause == null) {
+      throw StateError('Mixin clause is missing');
+    }
+
+    final result = withClause.mixinTypes
+        .map((e) => e.name.lexeme)
+        .toList(growable: false);
+
+    return result;
   }
 }
 
@@ -68,7 +104,7 @@ class _ClassVisitor extends ElementVisitor2<void> {
   final ignoreAnnotationTypeChecker = TypeChecker.typeNamed(ignore.runtimeType);
 
   @override
-  void visitFieldElement(FieldElement2 element) {
+  void visitFieldElement(FieldElement element) {
     if (ignoreAnnotationTypeChecker.hasAnnotationOf(element)) {
       return;
     }
@@ -87,10 +123,10 @@ class _ClassVisitor extends ElementVisitor2<void> {
     }
   }
 
-  LerpInfo? _hasLerp(FieldElement2 field) {
-    final element = field.type.element3;
+  LerpInfo? _hasLerp(FieldElement field) {
+    final element = field.type.element;
 
-    if (element is! ClassElement2) {
+    if (element is! ClassElement) {
       return null;
     }
 
@@ -98,13 +134,13 @@ class _ClassVisitor extends ElementVisitor2<void> {
       element,
       ...element.allSupertypes
           .where((e) => !e.isDartCoreObject)
-          .map((e) => e.element3),
+          .map((e) => e.element),
     ];
 
     for (final type in types) {
-      for (final method in type.methods2) {
-        if (method case MethodElement2(displayName: 'lerp', isPublic: true)) {
-          if (method.children2.last case FormalParameterElement(
+      for (final method in type.methods) {
+        if (method case MethodElement(displayName: 'lerp', isPublic: true)) {
+          if (method.children.last case FormalParameterElement(
             :final type,
           ) when type.isDartCoreDouble) {
             return (isStatic: method.isStatic);
@@ -117,70 +153,72 @@ class _ClassVisitor extends ElementVisitor2<void> {
   }
 
   @override
-  void visitClassElement(ClassElement2 element) {}
+  void visitClassElement(ClassElement element) {
+    print('Visiting class: ${element.displayName}');
+  }
 
   @override
-  void visitConstructorElement(ConstructorElement2 element) {}
+  void visitConstructorElement(ConstructorElement element) {}
 
   @override
-  void visitEnumElement(EnumElement2 element) {}
+  void visitEnumElement(EnumElement element) {}
 
   @override
-  void visitExtensionElement(ExtensionElement2 element) {}
-  
-  @override
-  void visitExtensionTypeElement(ExtensionTypeElement2 element) {}
+  void visitExtensionElement(ExtensionElement element) {}
 
   @override
-  void visitFieldFormalParameterElement(FieldFormalParameterElement2 element) {}
+  void visitExtensionTypeElement(ExtensionTypeElement element) {}
+
+  @override
+  void visitFieldFormalParameterElement(FieldFormalParameterElement element) {}
 
   @override
   void visitFormalParameterElement(FormalParameterElement element) {}
 
   @override
-  void visitGenericFunctionTypeElement(GenericFunctionTypeElement2 element) {}
+  void visitGenericFunctionTypeElement(GenericFunctionTypeElement element) {}
 
   @override
   void visitGetterElement(GetterElement element) {}
 
   @override
-  void visitLabelElement(LabelElement2 element) {}
+  void visitLabelElement(LabelElement element) {}
 
   @override
-  void visitLibraryElement(LibraryElement2 element) {}
+  void visitLibraryElement(LibraryElement element) {}
 
   @override
   void visitLocalFunctionElement(LocalFunctionElement element) {}
 
   @override
-  void visitLocalVariableElement(LocalVariableElement2 element) {}
+  void visitLocalVariableElement(LocalVariableElement element) {}
 
   @override
-  void visitMethodElement(MethodElement2 element) {}
+  void visitMethodElement(MethodElement element) {}
 
   @override
-  void visitMixinElement(MixinElement2 element) {}
+  void visitMixinElement(MixinElement element) {}
 
   @override
-  void visitMultiplyDefinedElement(MultiplyDefinedElement2 element) {}
+  void visitMultiplyDefinedElement(MultiplyDefinedElement element) {}
 
   @override
-  void visitPrefixElement(PrefixElement2 element) {}
+  void visitPrefixElement(PrefixElement element) {}
 
   @override
   void visitSetterElement(SetterElement element) {}
 
   @override
-  void visitSuperFormalParameterElement(SuperFormalParameterElement2 element) {}
+  void visitSuperFormalParameterElement(SuperFormalParameterElement element) {}
 
   @override
   void visitTopLevelFunctionElement(TopLevelFunctionElement element) {}
   @override
-  void visitTopLevelVariableElement(TopLevelVariableElement2 element) {}
+  void visitTopLevelVariableElement(TopLevelVariableElement element) {}
 
   @override
-  void visitTypeAliasElement(TypeAliasElement2 element) {}
+  void visitTypeAliasElement(TypeAliasElement element) {}
 
   @override
-  void visitTypeParameterElement(TypeParameterElement2 element) {}
+  void visitTypeParameterElement(TypeParameterElement element) {}
 }

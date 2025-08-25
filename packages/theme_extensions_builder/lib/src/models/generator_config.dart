@@ -16,7 +16,7 @@ class GeneratorConfig {
     required this.className,
     required this.buildContextExtension,
     required this.contextAccessorName,
-    required this.autoNameMixin,
+    required this.isDeprecatedMixin,
   });
 
   /// The fields to be included in the generated theme extension.
@@ -32,7 +32,8 @@ class GeneratorConfig {
   /// Whether to generate the BuildContext extension.
   final bool buildContextExtension;
 
-  /// If true, the mixin will be generated with the same name as the class plus
-  /// the suffix `Mixin`.
-  final bool autoNameMixin;
+  /// If false, whether to generate a mixin with the same name as the class plus
+  /// the suffix `Mixin`. Otherwise, the mixin will generated with a
+  ///  `_$ThemeExtensionMixin` name.
+  final bool isDeprecatedMixin;
 }

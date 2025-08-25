@@ -7,7 +7,7 @@
 
 - **Multiple Extensions per File**: Added support for defining multiple theme extensions within a single file.
 
-- **New `@ThemeExtension`s Annotation Property**: The `contextAccessorName` property has been added to the `@ThemeExtensions` annotation, allowing you to customize the accessor name for your theme extension on `BuildContext`.
+- **New `@ThemeExtension` Annotation Property**: The `contextAccessorName` property has been added to the `@ThemeExtensions` annotation, allowing you to customize the accessor name for your theme extension on `BuildContext`.
 
 - **Automatic `lerp` Method Generation**: The generator now automatically creates `lerp` methods for `double` and other `ThemeExtension` types, simplifying their use in animations.
 

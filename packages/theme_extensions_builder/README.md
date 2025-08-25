@@ -1,6 +1,6 @@
 # theme_extensions_builder
 
-"Welcome to `theme_extensions_builder`! This code generator is your go-to solution for creating Flutter `ThemeExtension` classes, helping you eliminate tedious boilerplate code. Stop writing repetitive `copyWith`, `lerp`, `==`, and `hashCode` methods by hand—just add a simple annotation and let the builder handle the rest."
+Welcome to `theme_extensions_builder`! This code generator is your go-to solution for creating Flutter `ThemeExtension` classes, helping you eliminate tedious boilerplate code. Stop writing repetitive `copyWith`, `lerp`, `==`, and `hashCode` methods by hand—just add a simple annotation and let the builder handle the rest."
 
 ## Install
 

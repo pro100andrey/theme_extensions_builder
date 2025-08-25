@@ -1,3 +1,10 @@
+targets:
+  $default:
+    builders:
+      theme_extensions_builder:
+        generate_for:
+          - test/**.dart
+
 builders:
   theme_extensions_builder:
     import: "package:theme_extensions_builder/theme_extensions_builder.dart"

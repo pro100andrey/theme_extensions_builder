@@ -1,6 +1,6 @@
 # theme_extensions_builder
 
-Welcome to `theme_extensions_builder`, the code generator for Flutter ThemeExtension classes introduced in Flutter 3.0. The generator helps to minimize the required boilerplate code.
+"Welcome to `theme_extensions_builder`! This code generator is your go-to solution for creating Flutter `ThemeExtension` classes, helping you eliminate tedious boilerplate code. Stop writing repetitive `copyWith`, `lerp`, `==`, and `hashCode` methods by hand—just add a simple annotation and let the builder handle the rest."
 
 ## Install
 
@@ -52,7 +52,7 @@ part 'elevated_button.g.theme.dart';
 @themeExtensions
 class ElevatedButtonThemeExtension
     extends ThemeExtension<ElevatedButtonThemeExtension>
-    with _$ThemeExtensionMixin {
+    with _$ElevatedButtonThemeExtensionMixin {
   const ElevatedButtonThemeExtension({
     required this.backgroundColor,
     required this.foregroundColor,
@@ -81,7 +81,7 @@ part of 'elevated_button.dart';
 // ThemeExtensionsGenerator
 // **************************************************************************
 
-mixin _$ThemeExtensionMixin on ThemeExtension<ElevatedButtonThemeExtension> {
+mixin _$ElevatedButtonThemeExtensionMixin on ThemeExtension<ElevatedButtonThemeExtension> {
   @override
   ThemeExtension<ElevatedButtonThemeExtension> copyWith({
     BorderRadius? borderRadius,

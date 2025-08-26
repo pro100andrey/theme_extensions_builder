@@ -8,7 +8,7 @@ issue_tracker: https://github.com/pro100andrey/theme_extensions_builder/issues
 homepage: https://github.com/pro100andrey/theme_extensions_builder
 documentation: https://github.com/pro100andrey/theme_extensions_builder/blob/main/packages/theme_extensions_builder/README.md
 
-version: 5.1.0
+version: 5.1.0+1
 
 platforms:
   android:

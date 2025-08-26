@@ -17,6 +17,6 @@ double? lerpDouble$(num? a, num? b, double t) {
   assert(a.isFinite, 'Cannot interpolate between finite and non-finite values');
   assert(b.isFinite, 'Cannot interpolate between finite and non-finite values');
   assert(t.isFinite, 't must be finite when interpolating between values');
-  
+
   return a * (1.0 - t) + b * t;
 }

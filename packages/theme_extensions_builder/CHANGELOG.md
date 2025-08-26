@@ -1,4 +1,8 @@
 
+## 5.1.0+1
+
+- Fixed typo's
+
 ## 5.1.0
 
 ### New Features

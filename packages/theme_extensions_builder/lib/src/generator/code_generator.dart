@@ -303,7 +303,7 @@ Method hashMethod(GeneratorConfig config) {
       body.addExpression(
         refer('runtimeType').property('hashCode').returned,
       );
-    case <= 20:
+    case <= 19:
       body.addExpression(
         refer('Object').property('hash').call([
           refer('runtimeType'),
@@ -314,9 +314,11 @@ Method hashMethod(GeneratorConfig config) {
     case _:
       body.addExpression(
         refer('Object').property('hashAll').call([
-          refer('runtimeType'),
-          for (final field in fields.values)
-            refer('value').property(field.name),
+          literalList([
+            refer('runtimeType'),
+            for (final field in fields.values)
+              refer('value').property(field.name),
+          ]),
         ]).returned,
       );
   }

@@ -314,9 +314,13 @@ Method hashMethod(GeneratorConfig config) {
     case _:
       body.addExpression(
         refer('Object').property('hashAll').call([
-          refer('runtimeType'),
-          for (final field in fields.values)
-            refer('value').property(field.name),
+          literalList(
+            [
+              refer('runtimeType'),
+              for (final field in fields.values)
+                refer('value').property(field.name),
+            ],
+          ),
         ]).returned,
       );
   }

@@ -32,7 +32,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
       );
     }
 
-    final mixins = _getMixinsName(element);
+    final mixins = _getMixinsNames(element);
     final isDeprecatedMixin = mixins.any(
       (m) => m.contains(r'_$ThemeExtensionMixin'),
     );
@@ -61,7 +61,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
     return code;
   }
 
-  List<String> _getMixinsName(ClassElement element) {
+  List<String> _getMixinsNames(ClassElement element) {
     final library = element.library.session.getParsedLibraryByElement(
       element.library,
     );
@@ -153,9 +153,7 @@ class _ClassVisitor extends ElementVisitor2<void> {
   }
 
   @override
-  void visitClassElement(ClassElement element) {
-    print('Visiting class: ${element.displayName}');
-  }
+  void visitClassElement(ClassElement element) {}
 
   @override
   void visitConstructorElement(ConstructorElement element) {}
@@ -213,6 +211,7 @@ class _ClassVisitor extends ElementVisitor2<void> {
 
   @override
   void visitTopLevelFunctionElement(TopLevelFunctionElement element) {}
+
   @override
   void visitTopLevelVariableElement(TopLevelVariableElement element) {}
 

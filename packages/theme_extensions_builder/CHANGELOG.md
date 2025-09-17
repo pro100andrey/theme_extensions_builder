@@ -1,3 +1,7 @@
+## 5.1.1
+
+- **Bug Fix**: Resolved an issue in the `Object.hashAll` implementation that caused incorrect hash code generation when a theme extension contained more than 20 fields.
+- **Dependency Updates**: Updated `build` and `source_gen` dependencies to ensure compatibility with the latest versions.
 
 ## 5.1.0+1
 

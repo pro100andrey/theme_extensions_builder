@@ -60,10 +60,12 @@ mixin _$AlertTheme {
       return other;
     }
 
-    return AlertTheme(
+    return copyWith(
       canMerge: other.canMerge,
       iconPadding: other.iconPadding,
-      titleTextStyle: other.titleTextStyle,
+      titleTextStyle:
+          current.titleTextStyle?.merge(other.titleTextStyle) ??
+          other.titleTextStyle,
       mainAxisAlignment: other.mainAxisAlignment,
       crossAxisAlignment: other.crossAxisAlignment,
       baseTheme: other.baseTheme,
@@ -133,7 +135,7 @@ mixin _$BaseTheme {
       return other;
     }
 
-    return BaseTheme(backgroundColor: other.backgroundColor);
+    return copyWith(backgroundColor: other.backgroundColor);
   }
 
   @override

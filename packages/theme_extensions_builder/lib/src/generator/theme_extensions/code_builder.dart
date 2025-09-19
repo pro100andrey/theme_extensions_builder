@@ -3,8 +3,8 @@ import 'package:dart_style/dart_style.dart';
 
 import '../../common/code_builder.dart';
 import '../../common/symbols.dart';
+import '../../config/config.dart';
 import '../../extensions/string.dart';
-import 'config.dart';
 
 /// Generates code for theme extensions.
 class ThemeExtensionsCodeBuilder {
@@ -106,7 +106,7 @@ Method copyWith(ThemeExtensionsConfig config) {
           (p) => p
             ..name = field.name
             ..named = true
-            ..type = refer(field.nullableType),
+            ..type = refer(field.type.nullable),
         ),
       )
       .toList(growable: false);

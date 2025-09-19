@@ -16,9 +16,15 @@ extension StringCamelCase on String {
 
 extension StringNullable on String {
   String get nullable {
+    if (this == 'dynamic') {
+      return this;
+    }
+
     if (endsWith('?')) {
       return this;
     }
+
     return '$this?';
   }
+
 }

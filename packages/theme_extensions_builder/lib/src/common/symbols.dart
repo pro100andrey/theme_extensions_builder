@@ -7,24 +7,16 @@ class FieldSymbol {
     required this.type,
     required this.lerpInfo,
     required this.isNullable,
+    this.hasMerge = false,
   });
 
   final String name;
   final String type;
   final LerpInfo? lerpInfo;
+  final bool hasMerge;
   final bool isNullable;
 
   bool get hasLerp => lerpInfo != null;
   bool get isStatic => lerpInfo?.isStatic ?? false;
   bool get isDouble => type == 'double';
-}
-
-extension FieldSymbolX on FieldSymbol {
-  String get nullableType {
-    if (type == 'dynamic') {
-      return type;
-    }
-
-    return '$type?';
-  }
 }

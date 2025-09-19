@@ -7,9 +7,10 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
+import '../../common/analysis.dart';
 import '../../common/symbols.dart';
 import '../../common/visitors.dart';
-import 'config.dart';
+import '../../config/config.dart';
 import 'code_builder.dart';
 
 /// It's a Dart code generator that generates code for the `@ThemeExtensions`
@@ -116,7 +117,7 @@ class _ClassVisitor extends BaseClassVisitor {
       final resultType = isNullable ? type.substring(0, type.length - 1) : type;
 
       fields[element.displayName] = FieldSymbol(
-        lerpInfo: _hasLerp(element),
+        lerpInfo: hasLerp(element),
         name: element.displayName,
         type: resultType,
         isNullable: isNullable,
@@ -124,32 +125,5 @@ class _ClassVisitor extends BaseClassVisitor {
     }
   }
 
-  LerpInfo? _hasLerp(FieldElement field) {
-    final element = field.type.element;
-
-    if (element is! ClassElement) {
-      return null;
-    }
-
-    final types = [
-      element,
-      ...element.allSupertypes
-          .where((e) => !e.isDartCoreObject)
-          .map((e) => e.element),
-    ];
-
-    for (final type in types) {
-      for (final method in type.methods) {
-        if (method case MethodElement(displayName: 'lerp', isPublic: true)) {
-          if (method.children.last case FormalParameterElement(
-            :final type,
-          ) when type.isDartCoreDouble) {
-            return (isStatic: method.isStatic);
-          }
-        }
-      }
-    }
-
-    return null;
-  }
+ 
 }

@@ -25,7 +25,7 @@ class AppState extends State<App> {
     const alertTheme = AlertTheme();
     const alertTheme2 = AlertTheme(canMerge: false);
 
-    final alertTheme3 = AlertTheme.lerp(alertTheme, alertTheme2, 0.5);
+    final _ = AlertTheme.lerp(alertTheme, alertTheme2, 0.5);
 
     setState(() {
       _isDark = !_isDark;

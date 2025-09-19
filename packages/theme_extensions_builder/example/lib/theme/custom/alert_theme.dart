@@ -8,7 +8,7 @@ class AlertTheme with _$AlertTheme {
   const AlertTheme({
     this.canMerge = true,
     this.iconPadding,
-    this.titleTextStyle,
+     this.titleTextStyle,
     this.mainAxisAlignment,
     this.crossAxisAlignment,
     this.baseTheme,

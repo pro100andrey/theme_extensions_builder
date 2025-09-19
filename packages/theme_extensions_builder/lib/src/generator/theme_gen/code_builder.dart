@@ -3,8 +3,8 @@ import 'package:dart_style/dart_style.dart';
 
 import '../../common/code_builder.dart';
 import '../../common/symbols.dart';
+import '../../config/config.dart';
 import '../../extensions/string.dart';
-import 'config.dart';
 
 /// Generates code for theme extensions.
 class ThemeGenCodeBuilder {
@@ -94,7 +94,7 @@ Method copyWith(ThemeGenConfig config) {
           (p) => p
             ..name = field.name
             ..named = true
-            ..type = refer(field.nullableType),
+            ..type = refer(field.type.nullable),
         ),
       )
       .toList(growable: false);
@@ -130,31 +130,42 @@ Method merge(ThemeGenConfig config) {
         refer('this').asA(refer(config.className)),
       ),
     )
-    ..statements.add(const Code(''));
-
-  body
+    ..statements.add(const Code(''))
     ..statements.add(
       ifCode(
         refer('other').equalTo(literalNull).code,
         [refer('current').returned.statement],
       ),
     )
-    ..statements.add(const Code(''));
-
-  body
+    ..statements.add(const Code(''))
     ..statements.add(
       ifCode(
         refer('other').negate().property('canMerge').code,
         [refer('other').returned.statement],
       ),
     )
-    ..statements.add(const Code(''));
+    ..statements.add(const Code(''))
+    ..addExpression(
+      refer('copyWith').call([], {
+        for (final e in fields.entries)
+          e.key: e.value.hasMerge
+              ? () {
+                  var prop = refer('current').property(e.value.name);
 
-  body.addExpression(
-    refer(config.className).newInstance([], {
-      for (final e in fields.entries) e.key: refer('other').property(e.key),
-    }).returned,
-  );
+                  prop = e.value.isNullable
+                      ? prop.nullSafeProperty('merge')
+                      : prop.property('merge');
+
+                  prop = prop.call([refer('other').property(e.key)]);
+
+                  if (e.value.isNullable) {
+                    prop = prop.ifNullThen(refer('other').property(e.key));
+                  }
+                  return prop;
+                }()
+              : refer('other').property(e.key),
+      }).returned,
+    );
 
   final result = Method((m) {
     m
@@ -184,63 +195,62 @@ Method staticLerp(ThemeGenConfig config) {
         [refer('a').returned.statement],
       ),
     )
-    ..statements.add(const Code(''));
+    ..statements.add(const Code(''))
+    ..addExpression(() {
+      final args = <String, Expression>{};
 
-  body.addExpression(() {
-    final args = <String, Expression>{};
+      for (final e in fields.entries) {
+        final field = e.value;
 
-    for (final e in fields.entries) {
-      final field = e.value;
-
-      switch (field) {
-        // When the field has a static lerp method
-        case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: true)):
-          args[e.key] = refer(field.type).property('lerp').call([
-            refer('a'.nullable).property(field.name),
-            refer('b'.nullable).property(field.name),
-            refer('t'),
-          ]).nullChecked;
-        // When the field has a non-static lerp method
-        case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: false)):
-          args[e.key] = refer('a'.nullable)
-              .property(field.name)
-              .property('lerp')
-              .call([
-                refer('b'.nullable).property(field.name),
-                refer('t'),
-              ])
-              .asA(refer(field.type));
-        // When the field is of type double
-        case FieldSymbol(isDouble: true):
-          args[e.key] = refer(r'lerpDouble$').call([
-            refer('a'.nullable).property(field.name),
-            refer('b'.nullable).property(field.name),
-            refer('t'),
-          ]).nullChecked;
-
-        case _:
-          if (field.name == 'canMerge') {
-            args[e.key] = refer('b'.nullable)
+        switch (field) {
+          // When the field has a static lerp method
+          case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: true)):
+            args[e.key] = refer(field.type).property('lerp').call([
+              refer('a'.nullable).property(field.name),
+              refer('b'.nullable).property(field.name),
+              refer('t'),
+            ]).nullChecked;
+          // When the field has a non-static lerp method
+          case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: false)):
+            args[e.key] = refer('a'.nullable)
                 .property(field.name)
-                .ifNullThen(
-                  literalTrue,
+                .property('lerp')
+                .call([
+                  refer('b'.nullable).property(field.name),
+                  refer('t'),
+                ])
+                .asA(refer(field.type));
+          // When the field is of type double
+          case FieldSymbol(isDouble: true):
+            args[e.key] = refer(r'lerpDouble$').call([
+              refer('a'.nullable).property(field.name),
+              refer('b'.nullable).property(field.name),
+              refer('t'),
+            ]).nullChecked;
+
+          case _:
+            if (field.name == 'canMerge') {
+              args[e.key] = refer('b'.nullable)
+                  .property(field.name)
+                  .ifNullThen(
+                    literalTrue,
+                  );
+              continue;
+            }
+
+            args[e.key] = refer('t')
+                .lessThan(literalNum(0.5))
+                .conditional(
+                  refer('a'.nullable).property(field.name),
+                  refer('b'.nullable).property(field.name),
                 );
-            continue;
-          }
-
-          args[e.key] = refer('t')
-              .lessThan(literalNum(0.5))
-              .conditional(
-                refer('a'.nullable).property(field.name),
-                refer('b'.nullable).property(field.name),
-              );
+        }
       }
-    }
 
-    final v = refer(config.className).newInstance([], args).returned;
+      final v = refer(config.className).newInstance([], args).returned;
 
-    return v;
-  }());
+      return v;
+    }());
 
   final result = Method((m) {
     m

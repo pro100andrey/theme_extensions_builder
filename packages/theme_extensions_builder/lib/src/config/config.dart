@@ -1,13 +1,9 @@
-import '../../common/symbols.dart';
+import '../common/symbols.dart';
 
-// Configuration for the theme extensions generator.
-class ThemeExtensionsConfig {
-  const ThemeExtensionsConfig({
+sealed class BaseConfig {
+  const BaseConfig({
     required this.fields,
     required this.className,
-    required this.buildContextExtension,
-    required this.contextAccessorName,
-    required this.isDeprecatedMixin,
   });
 
   /// The fields to be included in the generated theme extension.
@@ -15,6 +11,25 @@ class ThemeExtensionsConfig {
 
   /// The name of the class to be generated.
   final String className;
+}
+
+// Configuration for the theme extensions generator.
+class ThemeGenConfig extends BaseConfig {
+  const ThemeGenConfig({
+    required super.fields,
+    required super.className,
+  });
+}
+
+// Configuration for the theme extensions generator.
+class ThemeExtensionsConfig extends BaseConfig {
+  const ThemeExtensionsConfig({
+    required super.fields,
+    required super.className,
+    required this.buildContextExtension,
+    required this.contextAccessorName,
+    required this.isDeprecatedMixin,
+  });
 
   /// The name of the context getter to be generated. By default, it will be
   /// the same as [className].

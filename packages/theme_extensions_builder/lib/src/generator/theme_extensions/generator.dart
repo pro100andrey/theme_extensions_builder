@@ -124,6 +124,4 @@ class _ClassVisitor extends BaseClassVisitor {
       );
     }
   }
-
- 
 }

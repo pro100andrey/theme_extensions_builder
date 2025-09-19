@@ -26,5 +26,4 @@ extension StringNullable on String {
 
     return '$this?';
   }
-
 }

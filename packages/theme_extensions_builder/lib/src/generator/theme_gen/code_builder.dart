@@ -40,12 +40,7 @@ class ThemeGenCodeBuilder {
       trailingCommas: TrailingCommas.automate,
     );
 
-    final buffer = StringBuffer(mix.accept(emitter).toString());
-    // if (config.buildContextExtension) {
-    //   buffer.write(contextExtension(config).accept(emitter).toString());
-    // }
-
-    final rawCode = buffer.toString();
+    final rawCode = mix.accept(emitter).toString();
     final formattedCode = formatter.format(rawCode);
 
     return formattedCode;
@@ -109,16 +104,6 @@ Method copyWith(ThemeGenConfig config) {
 
   return result;
 }
-
-// ShadOptionTheme mergeWith(ShadOptionTheme? other) {
-//   if (other == null) return this;
-//   if (!other.merge) return other;
-//   return copyWith(
-//     hoveredBackgroundColor: other.hoveredBackgroundColor,
-//     padding: other.padding,
-//     radius: other.radius,
-//   );
-// }
 
 Method merge(ThemeGenConfig config) {
   final body = BlockBuilder();

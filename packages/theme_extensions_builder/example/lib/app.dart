@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'pages/home_page.dart';
+import 'theme/custom/alert_theme.dart';
 import 'theme/dark_theme.dart';
 import 'theme/light_theme.dart';
 
@@ -21,6 +22,11 @@ class AppState extends State<App> {
   );
 
   void toggleTheme() {
+    const alertTheme = AlertTheme();
+    const alertTheme2 = AlertTheme(canMerge: false);
+
+    final alertTheme3 = AlertTheme.lerp(alertTheme, alertTheme2, 0.5);
+
     setState(() {
       _isDark = !_isDark;
     });

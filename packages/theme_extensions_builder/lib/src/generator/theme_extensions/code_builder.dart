@@ -1,15 +1,17 @@
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
 
-import '../models/generator_config.dart';
-import '../models/symbols.dart';
+import '../../common/code_builder.dart';
+import '../../common/symbols.dart';
+import '../../extensions/string.dart';
+import 'config.dart';
 
 /// Generates code for theme extensions.
-class CodeGenerator {
-  const CodeGenerator();
+class ThemeExtensionsCodeBuilder {
+  const ThemeExtensionsCodeBuilder();
 
   /// Generates code for the given [config].
-  String generate(GeneratorConfig config) {
+  String generate(ThemeExtensionsConfig config) {
     final themeExtensionRef = TypeReference(
       (t) => t
         ..symbol = 'ThemeExtension'
@@ -66,7 +68,7 @@ class CodeGenerator {
 }
 
 TypeReference themeExtensionRef(
-  GeneratorConfig config, {
+  ThemeExtensionsConfig config, {
   bool isNullable = false,
 }) => TypeReference(
   (t) => t
@@ -75,7 +77,7 @@ TypeReference themeExtensionRef(
     ..isNullable = isNullable,
 );
 
-Method copyWith(GeneratorConfig config) {
+Method copyWith(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
 
@@ -121,7 +123,7 @@ Method copyWith(GeneratorConfig config) {
   return result;
 }
 
-Method lerpMethod(GeneratorConfig config) {
+Method lerpMethod(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
 
@@ -220,7 +222,7 @@ Method lerpMethod(GeneratorConfig config) {
   return result;
 }
 
-Method equalOperator(GeneratorConfig config) {
+Method equalOperator(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
 
@@ -284,7 +286,7 @@ Method equalOperator(GeneratorConfig config) {
   return result;
 }
 
-Method hashMethod(GeneratorConfig config) {
+Method hashMethod(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
 
@@ -335,7 +337,7 @@ Method hashMethod(GeneratorConfig config) {
   return result;
 }
 
-Extension contextExtension(GeneratorConfig config) {
+Extension contextExtension(ThemeExtensionsConfig config) {
   final result = Extension((b) {
     b
       ..name = '${config.className}BuildContext'
@@ -359,47 +361,4 @@ Extension contextExtension(GeneratorConfig config) {
   });
 
   return result;
-}
-
-Code ifCode(
-  Code condition,
-  List<Code> thenBody, [
-  List<Code>? elseBody,
-]) {
-  final buf = StringBuffer();
-  final conditionStr = condition.accept(DartEmitter());
-
-  buf.writeln('if ($conditionStr) {');
-
-  for (final c in thenBody) {
-    buf.writeln('  ${c.accept(DartEmitter())}');
-  }
-
-  buf.write('}');
-
-  if (elseBody != null && elseBody.isNotEmpty) {
-    buf.writeln(' else {');
-    for (final c in elseBody) {
-      buf.writeln('  ${c.accept(DartEmitter())}');
-    }
-    buf.write('}');
-  }
-
-  return Code(buf.toString());
-}
-
-extension GetterHelper on String {
-  String get camelCase {
-    if (isEmpty) {
-      return '';
-    }
-
-    var property = this[0].toLowerCase() + substring(1);
-
-    if (property.endsWith('Extension')) {
-      property = property.substring(0, property.length - 'Extension'.length);
-    }
-
-    return property;
-  }
 }

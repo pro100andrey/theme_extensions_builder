@@ -7,9 +7,10 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../models/generator_config.dart';
-import '../models/symbols.dart';
-import 'code_generator.dart';
+import '../../common/symbols.dart';
+import '../../common/visitors.dart';
+import 'config.dart';
+import 'code_builder.dart';
 
 /// It's a Dart code generator that generates code for the `@ThemeExtensions`
 /// annotation
@@ -47,7 +48,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
     final contextAccessorName =
         annotation.read('contextAccessorName').literalValue as String?;
 
-    final generatorConfig = GeneratorConfig(
+    final generatorConfig = ThemeExtensionsConfig(
       fields: classVisitor.fields,
       className: element.displayName,
       contextAccessorName: contextAccessorName,
@@ -55,7 +56,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
       isDeprecatedMixin: isDeprecatedMixin,
     );
 
-    const generator = CodeGenerator();
+    const generator = ThemeExtensionsCodeBuilder();
     final code = generator.generate(generatorConfig);
 
     return code;
@@ -97,7 +98,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
 
 /// It's a class that extends the SimpleElementVisitor class, and it overrides
 /// the visitClassElement method
-class _ClassVisitor extends ElementVisitor2<void> {
+class _ClassVisitor extends BaseClassVisitor {
   final Map<String, FieldSymbol> fields = {};
   final Map<String, List<bool>> hasInternalAnnotations = {};
 
@@ -151,73 +152,4 @@ class _ClassVisitor extends ElementVisitor2<void> {
 
     return null;
   }
-
-  @override
-  void visitClassElement(ClassElement element) {}
-
-  @override
-  void visitConstructorElement(ConstructorElement element) {}
-
-  @override
-  void visitEnumElement(EnumElement element) {}
-
-  @override
-  void visitExtensionElement(ExtensionElement element) {}
-
-  @override
-  void visitExtensionTypeElement(ExtensionTypeElement element) {}
-
-  @override
-  void visitFieldFormalParameterElement(FieldFormalParameterElement element) {}
-
-  @override
-  void visitFormalParameterElement(FormalParameterElement element) {}
-
-  @override
-  void visitGenericFunctionTypeElement(GenericFunctionTypeElement element) {}
-
-  @override
-  void visitGetterElement(GetterElement element) {}
-
-  @override
-  void visitLabelElement(LabelElement element) {}
-
-  @override
-  void visitLibraryElement(LibraryElement element) {}
-
-  @override
-  void visitLocalFunctionElement(LocalFunctionElement element) {}
-
-  @override
-  void visitLocalVariableElement(LocalVariableElement element) {}
-
-  @override
-  void visitMethodElement(MethodElement element) {}
-
-  @override
-  void visitMixinElement(MixinElement element) {}
-
-  @override
-  void visitMultiplyDefinedElement(MultiplyDefinedElement element) {}
-
-  @override
-  void visitPrefixElement(PrefixElement element) {}
-
-  @override
-  void visitSetterElement(SetterElement element) {}
-
-  @override
-  void visitSuperFormalParameterElement(SuperFormalParameterElement element) {}
-
-  @override
-  void visitTopLevelFunctionElement(TopLevelFunctionElement element) {}
-
-  @override
-  void visitTopLevelVariableElement(TopLevelVariableElement element) {}
-
-  @override
-  void visitTypeAliasElement(TypeAliasElement element) {}
-
-  @override
-  void visitTypeParameterElement(TypeParameterElement element) {}
 }

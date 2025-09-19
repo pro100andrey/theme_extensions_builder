@@ -1,17 +1,8 @@
-import 'symbols.dart';
+import '../../common/symbols.dart';
 
-typedef BuildContextAccessorConfig = ({
-  /// The name of the context getter to be generated. By default, it will be
-  /// the same as [className].
-  String? contextAccessorName,
-
-  /// Whether to generate the BuildContext extension.
-  bool buildContextExtension,
-});
-
-// Configuration for the code generator
-class GeneratorConfig {
-  const GeneratorConfig({
+// Configuration for the theme extensions generator.
+class ThemeExtensionsConfig {
+  const ThemeExtensionsConfig({
     required this.fields,
     required this.className,
     required this.buildContextExtension,

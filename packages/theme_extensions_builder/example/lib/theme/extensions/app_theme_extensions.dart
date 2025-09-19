@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-part 'app_theme.g.theme.dart';
+part 'app_theme_extensions.g.theme.dart';
 
 enum LayoutMode { compact, expanded }
 

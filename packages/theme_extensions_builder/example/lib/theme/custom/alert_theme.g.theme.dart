@@ -19,33 +19,50 @@ mixin _$AlertTheme {
 
     return AlertTheme(
       canMerge: b?.canMerge ?? true,
-      iconPadding: EdgeInsetsGeometry.lerp(a?.iconPadding, b?.iconPadding, t)!,
-      titleTextStyle: TextStyle.lerp(a?.titleTextStyle, b?.titleTextStyle, t)!,
+      transitionDuration: lerpDuration$(
+        a?.transitionDuration,
+        b?.transitionDuration,
+        t,
+      )!,
+      iconPadding: EdgeInsetsGeometry.lerp(a?.iconPadding, b?.iconPadding, t),
+      titleTextStyle: TextStyle.lerp(a?.titleTextStyle, b?.titleTextStyle, t),
       mainAxisAlignment: t < 0.5 ? a?.mainAxisAlignment : b?.mainAxisAlignment,
       crossAxisAlignment: t < 0.5
           ? a?.crossAxisAlignment
           : b?.crossAxisAlignment,
-      baseTheme: BaseTheme.lerp(a?.baseTheme, b?.baseTheme, t)!,
+      baseTheme: BaseTheme.lerp(a?.baseTheme, b?.baseTheme, t),
+      borderRadius: lerpDouble$(a?.borderRadius, b?.borderRadius, t),
+      animationDuration: lerpDuration$(
+        a?.animationDuration,
+        b?.animationDuration,
+        t,
+      ),
     );
   }
 
   AlertTheme copyWith({
     bool? canMerge,
+    Duration? transitionDuration,
     EdgeInsetsGeometry? iconPadding,
     TextStyle? titleTextStyle,
     MainAxisAlignment? mainAxisAlignment,
     CrossAxisAlignment? crossAxisAlignment,
     BaseTheme? baseTheme,
+    double? borderRadius,
+    Duration? animationDuration,
   }) {
     final a = (this as AlertTheme);
 
     return AlertTheme(
       canMerge: canMerge ?? a.canMerge,
+      transitionDuration: transitionDuration ?? a.transitionDuration,
       iconPadding: iconPadding ?? a.iconPadding,
       titleTextStyle: titleTextStyle ?? a.titleTextStyle,
       mainAxisAlignment: mainAxisAlignment ?? a.mainAxisAlignment,
       crossAxisAlignment: crossAxisAlignment ?? a.crossAxisAlignment,
       baseTheme: baseTheme ?? a.baseTheme,
+      borderRadius: borderRadius ?? a.borderRadius,
+      animationDuration: animationDuration ?? a.animationDuration,
     );
   }
 
@@ -62,6 +79,7 @@ mixin _$AlertTheme {
 
     return copyWith(
       canMerge: other.canMerge,
+      transitionDuration: other.transitionDuration,
       iconPadding: other.iconPadding,
       titleTextStyle:
           current.titleTextStyle?.merge(other.titleTextStyle) ??
@@ -69,6 +87,8 @@ mixin _$AlertTheme {
       mainAxisAlignment: other.mainAxisAlignment,
       crossAxisAlignment: other.crossAxisAlignment,
       baseTheme: other.baseTheme,
+      borderRadius: other.borderRadius,
+      animationDuration: other.animationDuration,
     );
   }
 
@@ -78,15 +98,22 @@ mixin _$AlertTheme {
       return true;
     }
 
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+
     final value = (this as AlertTheme);
-    return other.runtimeType == runtimeType &&
-        other is AlertTheme &&
-        identical(value.canMerge, other.canMerge) &&
-        identical(value.iconPadding, other.iconPadding) &&
-        identical(value.titleTextStyle, other.titleTextStyle) &&
-        identical(value.mainAxisAlignment, other.mainAxisAlignment) &&
-        identical(value.crossAxisAlignment, other.crossAxisAlignment) &&
-        identical(value.baseTheme, other.baseTheme);
+
+    return other is AlertTheme &&
+        other.canMerge == value.canMerge &&
+        other.transitionDuration == value.transitionDuration &&
+        other.iconPadding == value.iconPadding &&
+        other.titleTextStyle == value.titleTextStyle &&
+        other.mainAxisAlignment == value.mainAxisAlignment &&
+        other.crossAxisAlignment == value.crossAxisAlignment &&
+        other.baseTheme == value.baseTheme &&
+        other.borderRadius == value.borderRadius &&
+        other.animationDuration == value.animationDuration;
   }
 
   @override
@@ -96,11 +123,14 @@ mixin _$AlertTheme {
     return Object.hash(
       runtimeType,
       value.canMerge,
+      value.transitionDuration,
       value.iconPadding,
       value.titleTextStyle,
       value.mainAxisAlignment,
       value.crossAxisAlignment,
       value.baseTheme,
+      value.borderRadius,
+      value.animationDuration,
     );
   }
 }
@@ -114,7 +144,7 @@ mixin _$BaseTheme {
     }
 
     return BaseTheme(
-      backgroundColor: Color.lerp(a?.backgroundColor, b?.backgroundColor, t)!,
+      backgroundColor: Color.lerp(a?.backgroundColor, b?.backgroundColor, t),
     );
   }
 
@@ -144,10 +174,13 @@ mixin _$BaseTheme {
       return true;
     }
 
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+
     final value = (this as BaseTheme);
-    return other.runtimeType == runtimeType &&
-        other is BaseTheme &&
-        identical(value.backgroundColor, other.backgroundColor);
+
+    return other is BaseTheme && other.backgroundColor == value.backgroundColor;
   }
 
   @override

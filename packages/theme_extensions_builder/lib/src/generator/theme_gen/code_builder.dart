@@ -22,7 +22,6 @@ class ThemeGenCodeBuilder {
         staticLerp(config),
         copyWith(config),
         merge(config),
-
         equalOperator(config),
         hashMethod(config),
       ]);
@@ -190,14 +189,18 @@ Method staticLerp(ThemeGenConfig config) {
         switch (field) {
           // When the field has a static lerp method
           case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: true)):
-            args[e.key] = refer(field.type).property('lerp').call([
+            final expression = refer(field.type).property('lerp').call([
               refer('a'.nullable).property(field.name),
               refer('b'.nullable).property(field.name),
               refer('t'),
-            ]).nullChecked;
+            ]);
+
+            args[e.key] = field.isNullable
+                ? expression
+                : expression.nullChecked;
           // When the field has a non-static lerp method
           case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: false)):
-            args[e.key] = refer('a'.nullable)
+            final expression = refer('a'.nullable)
                 .property(field.name)
                 .property('lerp')
                 .call([
@@ -205,13 +208,30 @@ Method staticLerp(ThemeGenConfig config) {
                   refer('t'),
                 ])
                 .asA(refer(field.type));
+            args[e.key] = expression;
           // When the field is of type double
           case FieldSymbol(isDouble: true):
-            args[e.key] = refer(r'lerpDouble$').call([
+            final expression = refer(r'lerpDouble$').call([
               refer('a'.nullable).property(field.name),
               refer('b'.nullable).property(field.name),
               refer('t'),
-            ]).nullChecked;
+            ]);
+
+            args[e.key] = field.isNullable
+                ? expression
+                : expression.nullChecked;
+
+          // When the field is of type Duration
+          case FieldSymbol(isDuration: true):
+            final expression = refer(r'lerpDuration$').call([
+              refer('a'.nullable).property(field.name),
+              refer('b'.nullable).property(field.name),
+              refer('t'),
+            ]);
+
+            args[e.key] = field.isNullable
+                ? expression
+                : expression.nullChecked;
 
           case _:
             if (field.name == 'canMerge') {
@@ -273,42 +293,46 @@ Method equalOperator(ThemeGenConfig config) {
     ..statements.add(
       ifCode(
         refer('identical').call([refer('this'), refer('other')]).code,
-        [const Code('return true;')],
+        [literalTrue.returned.statement],
+      ),
+    )
+    ..statements.add(const Code(''))
+    ..statements.add(
+      ifCode(
+        refer(
+          'other',
+        ).property('runtimeType').notEqualTo(refer('runtimeType')).code,
+        [literalFalse.returned.statement],
       ),
     )
     ..statements.add(const Code(''));
 
   if (fields.isNotEmpty) {
-    body.addExpression(
-      declareFinal('value').assign(
-        refer('this').asA(refer(config.className)),
-      ),
-    );
+    body
+      ..addExpression(
+        declareFinal('value').assign(
+          refer('this').asA(refer(config.className)),
+        ),
+      )
+      ..statements.add(const Code(''));
   }
 
-  final baseEquality = refer('other')
-      .property('runtimeType')
-      .equalTo(refer('runtimeType'))
-      .and(
-        refer('other').isA(refer(config.className)),
-      );
-
   body.addExpression(
-    fields.isEmpty
-        ? baseEquality.returned
-        : baseEquality
-              .and(
-                fields.entries
-                    .map((e) {
-                      final name = e.key;
-                      return refer('identical').call([
-                        refer('value').property(name),
-                        refer('other').property(name),
-                      ]);
-                    })
-                    .reduce((a, b) => a.and(b)),
-              )
-              .returned,
+    refer('other')
+        .isA(refer(config.className))
+        .and(
+          fields.entries
+              .map((e) {
+                final name = e.key;
+                return refer('other')
+                    .property(name)
+                    .equalTo(
+                      refer('value').property(name),
+                    );
+              })
+              .reduce((a, b) => a.and(b)),
+        )
+        .returned,
   );
 
   final result = Method((m) {

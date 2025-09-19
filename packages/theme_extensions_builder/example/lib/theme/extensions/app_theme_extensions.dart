@@ -14,6 +14,7 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension>
     required this.insets,
     required this.radius,
     required this.subTextTheme,
+    this.padding = const EdgeInsets.all(8),
   });
 
   final Color primaryColor;
@@ -21,6 +22,7 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension>
   final EdgeInsets insets;
   final double radius;
   final MySubTextTheme subTextTheme;
+  final EdgeInsetsGeometry? padding;
 }
 
 @ThemeExtensions()

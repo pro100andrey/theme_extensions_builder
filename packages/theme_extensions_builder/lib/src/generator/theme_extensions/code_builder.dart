@@ -161,14 +161,16 @@ Method lerpMethod(ThemeExtensionsConfig config) {
 
       switch (field) {
         case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: true)):
-          args[e.key] = refer(field.type).property('lerp').call([
+          final expression = refer(field.type).property('lerp').call([
             refer('value').property(field.name),
             refer('otherValue').property(field.name),
             refer('t'),
-          ]).nullChecked;
+          ]);
+
+          args[e.key] = field.isNullable ? expression : expression.nullChecked;
 
         case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: false)):
-          args[e.key] = refer('value')
+          final expression = refer('value')
               .property(field.name)
               .property('lerp')
               .call([
@@ -177,20 +179,26 @@ Method lerpMethod(ThemeExtensionsConfig config) {
               ])
               .asA(refer(field.type));
 
+          args[e.key] = expression;
+
         case FieldSymbol(isDouble: true):
-          args[e.key] = refer(r'lerpDouble$').call([
+          final expression = refer(r'lerpDouble$').call([
             refer('value').property(field.name),
             refer('otherValue').property(field.name),
             refer('t'),
-          ]).nullChecked;
+          ]);
+
+          args[e.key] = field.isNullable ? expression : expression.nullChecked;
 
         case _:
-          args[e.key] = refer('t')
+          final expression = refer('t')
               .lessThan(literalNum(0.5))
               .conditional(
                 refer('value').property(field.name),
                 refer('otherValue').property(field.name),
               );
+
+          args[e.key] =  expression;
       }
     }
 
@@ -230,42 +238,46 @@ Method equalOperator(ThemeExtensionsConfig config) {
     ..statements.add(
       ifCode(
         refer('identical').call([refer('this'), refer('other')]).code,
-        [const Code('return true;')],
+        [literalTrue.returned.statement],
+      ),
+    )
+    ..statements.add(const Code(''))
+    ..statements.add(
+      ifCode(
+        refer(
+          'other',
+        ).property('runtimeType').notEqualTo(refer('runtimeType')).code,
+        [literalFalse.returned.statement],
       ),
     )
     ..statements.add(const Code(''));
 
   if (fields.isNotEmpty) {
-    body.addExpression(
-      declareFinal('value').assign(
-        refer('this').asA(refer(config.className)),
-      ),
-    );
+    body
+      ..addExpression(
+        declareFinal('value').assign(
+          refer('this').asA(refer(config.className)),
+        ),
+      )
+      ..statements.add(const Code(''));
   }
 
-  final baseEquality = refer('other')
-      .property('runtimeType')
-      .equalTo(refer('runtimeType'))
-      .and(
-        refer('other').isA(refer(config.className)),
-      );
-
   body.addExpression(
-    fields.isEmpty
-        ? baseEquality.returned
-        : baseEquality
-              .and(
-                fields.entries
-                    .map((e) {
-                      final name = e.key;
-                      return refer('identical').call([
-                        refer('value').property(name),
-                        refer('other').property(name),
-                      ]);
-                    })
-                    .reduce((a, b) => a.and(b)),
-              )
-              .returned,
+    refer('other')
+        .isA(refer(config.className))
+        .and(
+          fields.entries
+              .map((e) {
+                final name = e.key;
+                return refer('other')
+                    .property(name)
+                    .equalTo(
+                      refer('value').property(name),
+                    );
+              })
+              .reduce((a, b) => a.and(b)),
+        )
+        .returned,
   );
 
   final result = Method((m) {

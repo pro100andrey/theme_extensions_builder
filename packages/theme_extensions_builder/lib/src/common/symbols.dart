@@ -19,4 +19,5 @@ class FieldSymbol {
   bool get hasLerp => lerpInfo != null;
   bool get isStatic => lerpInfo?.isStatic ?? false;
   bool get isDouble => type == 'double';
+  bool get isDuration => type == 'Duration';
 }

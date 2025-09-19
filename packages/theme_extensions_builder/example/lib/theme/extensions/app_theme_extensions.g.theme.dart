@@ -17,6 +17,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
     EdgeInsets? insets,
     double? radius,
     MySubTextTheme? subTextTheme,
+    EdgeInsetsGeometry? padding,
   }) {
     final object = (this as AppThemeExtension);
 
@@ -26,6 +27,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       insets: insets ?? object.insets,
       radius: radius ?? object.radius,
       subTextTheme: subTextTheme ?? object.subTextTheme,
+      padding: padding ?? object.padding,
     );
   }
 
@@ -49,6 +51,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       subTextTheme:
           (value.subTextTheme.lerp(otherValue.subTextTheme, t)
               as MySubTextTheme),
+      padding: EdgeInsetsGeometry.lerp(value.padding, otherValue.padding, t),
     );
   }
 
@@ -58,14 +61,19 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       return true;
     }
 
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+
     final value = (this as AppThemeExtension);
-    return other.runtimeType == runtimeType &&
-        other is AppThemeExtension &&
-        identical(value.primaryColor, other.primaryColor) &&
-        identical(value.layoutMode, other.layoutMode) &&
-        identical(value.insets, other.insets) &&
-        identical(value.radius, other.radius) &&
-        identical(value.subTextTheme, other.subTextTheme);
+
+    return other is AppThemeExtension &&
+        other.primaryColor == value.primaryColor &&
+        other.layoutMode == value.layoutMode &&
+        other.insets == value.insets &&
+        other.radius == value.radius &&
+        other.subTextTheme == value.subTextTheme &&
+        other.padding == value.padding;
   }
 
   @override
@@ -79,6 +87,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       value.insets,
       value.radius,
       value.subTextTheme,
+      value.padding,
     );
   }
 }
@@ -177,29 +186,33 @@ mixin _$AppColorsMixin on ThemeExtension<AppColors> {
       return true;
     }
 
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+
     final value = (this as AppColors);
-    return other.runtimeType == runtimeType &&
-        other is AppColors &&
-        identical(value.color1, other.color1) &&
-        identical(value.color2, other.color2) &&
-        identical(value.color3, other.color3) &&
-        identical(value.color4, other.color4) &&
-        identical(value.color5, other.color5) &&
-        identical(value.color6, other.color6) &&
-        identical(value.color7, other.color7) &&
-        identical(value.color8, other.color8) &&
-        identical(value.color9, other.color9) &&
-        identical(value.color10, other.color10) &&
-        identical(value.color11, other.color11) &&
-        identical(value.color12, other.color12) &&
-        identical(value.color13, other.color13) &&
-        identical(value.color14, other.color14) &&
-        identical(value.color15, other.color15) &&
-        identical(value.color16, other.color16) &&
-        identical(value.color17, other.color17) &&
-        identical(value.color18, other.color18) &&
-        identical(value.color19, other.color19) &&
-        identical(value.color20, other.color20);
+
+    return other is AppColors &&
+        other.color1 == value.color1 &&
+        other.color2 == value.color2 &&
+        other.color3 == value.color3 &&
+        other.color4 == value.color4 &&
+        other.color5 == value.color5 &&
+        other.color6 == value.color6 &&
+        other.color7 == value.color7 &&
+        other.color8 == value.color8 &&
+        other.color9 == value.color9 &&
+        other.color10 == value.color10 &&
+        other.color11 == value.color11 &&
+        other.color12 == value.color12 &&
+        other.color13 == value.color13 &&
+        other.color14 == value.color14 &&
+        other.color15 == value.color15 &&
+        other.color16 == value.color16 &&
+        other.color17 == value.color17 &&
+        other.color18 == value.color18 &&
+        other.color19 == value.color19 &&
+        other.color20 == value.color20;
   }
 
   @override
@@ -277,12 +290,16 @@ mixin _$CardThemeExtensionMixin on ThemeExtension<CardThemeExtension> {
       return true;
     }
 
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+
     final value = (this as CardThemeExtension);
-    return other.runtimeType == runtimeType &&
-        other is CardThemeExtension &&
-        identical(value.primaryColor, other.primaryColor) &&
-        identical(value.layoutMode, other.layoutMode) &&
-        identical(value.insets, other.insets);
+
+    return other is CardThemeExtension &&
+        other.primaryColor == value.primaryColor &&
+        other.layoutMode == value.layoutMode &&
+        other.insets == value.insets;
   }
 
   @override

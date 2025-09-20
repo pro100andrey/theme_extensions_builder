@@ -208,6 +208,7 @@ Method staticLerp(ThemeGenConfig config) {
                   refer('t'),
                 ])
                 .asA(refer(field.type));
+                
             args[e.key] = expression;
           // When the field is of type double
           case FieldSymbol(isDouble: true):

@@ -198,7 +198,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
                 refer('otherValue').property(field.name),
               );
 
-          args[e.key] =  expression;
+          args[e.key] = expression;
       }
     }
 

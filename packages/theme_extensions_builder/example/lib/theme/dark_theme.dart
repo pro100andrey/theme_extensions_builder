@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'common/app_theme.dart';
+import 'extensions/app_theme_extensions.dart';
 
 final darkTheme = ThemeData(
   brightness: Brightness.dark,

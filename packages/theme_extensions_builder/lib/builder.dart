@@ -1,12 +1,14 @@
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 
-import 'src/generator/theme_extensions_builder_generator.dart';
+import 'src/generator/theme_extensions/generator.dart';
+import 'src/generator/theme_gen/generator.dart';
 
 /// Function used by the build runner
 Builder themeExtensionsBuilder(BuilderOptions options) => PartBuilder(
   [
     ThemeExtensionsGenerator(builderOptions: options),
+    ThemeGenGenerator(builderOptions: options),
   ],
   '.g.theme.dart',
   header: '''

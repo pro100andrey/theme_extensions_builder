@@ -6,11 +6,18 @@ import '../../common/symbols.dart';
 import '../../config/config.dart';
 import '../../extensions/string.dart';
 
-/// Generates code for theme extensions.
+/// Generates code for `ThemeExtension` mixins and related helpers.
 class ThemeExtensionsCodeBuilder {
   const ThemeExtensionsCodeBuilder();
 
-  /// Generates code for the given [config].
+  /// Generates Dart code for the provided [config].
+  ///
+  /// The generated code includes:
+  /// - a mixin for the theme extension,
+  /// - `copyWith` and `lerp` methods,
+  /// - equality (`==`) operator and `hashCode`,
+  /// - optional BuildContext extension if `config.buildContextExtension` is
+  /// true.
   String generate(ThemeExtensionsConfig config) {
     final themeExtensionRef = TypeReference(
       (t) => t
@@ -67,6 +74,7 @@ class ThemeExtensionsCodeBuilder {
   }
 }
 
+// Returns a type reference for `ThemeExtension<T>` based on [config].
 TypeReference themeExtensionRef(
   ThemeExtensionsConfig config, {
   bool isNullable = false,
@@ -77,6 +85,9 @@ TypeReference themeExtensionRef(
     ..isNullable = isNullable,
 );
 
+/// Generates the `copyWith` method for the theme extension.
+///
+/// Allows creating a copy of the theme extension with some fields replaced.
 Method copyWith(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
@@ -123,6 +134,13 @@ Method copyWith(ThemeExtensionsConfig config) {
   return result;
 }
 
+/// Generates the `lerp` (linear interpolation) method for the theme extension.
+///
+/// Supports:
+/// - Fields with static `lerp` methods,
+/// - Fields with instance `lerp` methods,
+/// - `double` and `Duration` fields,
+/// - Default conditional interpolation for other types.
 Method lerpMethod(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
@@ -160,6 +178,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
       final field = e.value;
 
       switch (field) {
+        // Lerp class with static lerp method
         case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: true)):
           final expression = refer(field.type).property('lerp').call([
             refer('value').property(field.name),
@@ -169,6 +188,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
 
           args[e.key] = field.isNullable ? expression : expression.nullChecked;
 
+        // Lerp class with instance lerp method
         case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: false)):
           final expression = refer('value')
               .property(field.name)
@@ -181,6 +201,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
 
           args[e.key] = expression;
 
+        // When the field is of type double
         case FieldSymbol(isDouble: true):
           final expression = refer(r'lerpDouble$').call([
             refer('value').property(field.name),
@@ -190,6 +211,17 @@ Method lerpMethod(ThemeExtensionsConfig config) {
 
           args[e.key] = field.isNullable ? expression : expression.nullChecked;
 
+        // When the field is of type Duration
+        case FieldSymbol(isDuration: true):
+          final expression = refer(r'lerpDuration$').call([
+            refer('a'.nullable).property(field.name),
+            refer('b'.nullable).property(field.name),
+            refer('t'),
+          ]);
+
+          args[e.key] = field.isNullable ? expression : expression.nullChecked;
+
+        // Default case: use a simple conditional expression
         case _:
           final expression = refer('t')
               .lessThan(literalNum(0.5))
@@ -230,6 +262,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
   return result;
 }
 
+/// Generates the equality operator `==` for the theme extension.
 Method equalOperator(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
@@ -298,6 +331,7 @@ Method equalOperator(ThemeExtensionsConfig config) {
   return result;
 }
 
+/// Generates the `hashCode` getter for the theme extension.
 Method hashMethod(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
@@ -349,6 +383,12 @@ Method hashMethod(ThemeExtensionsConfig config) {
   return result;
 }
 
+/// Generates a `BuildContext` extension to easily access the theme extension.
+///
+/// Example:
+/// ```dart
+/// context.myThemeExtension
+/// ```
 Extension contextExtension(ThemeExtensionsConfig config) {
   final result = Extension((b) {
     b

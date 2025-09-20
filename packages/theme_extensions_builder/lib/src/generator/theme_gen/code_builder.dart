@@ -6,11 +6,14 @@ import '../../common/symbols.dart';
 import '../../config/config.dart';
 import '../../extensions/string.dart';
 
-/// Generates code for theme extensions.
+/// Generates code for theme extensions based on a given configuration.
 class ThemeGenCodeBuilder {
   const ThemeGenCodeBuilder();
 
-  /// Generates code for the given [config].
+  /// Generates Dart code for the provided [config].
+  ///
+  /// The generated code includes methods such as `copyWith`, `merge`,
+  /// `lerp`, equality operators, and hashCode.
   String generate(ThemeGenConfig config) {
     final mix = Mixin((m) {
       final name = '_\$${config.className}';
@@ -46,6 +49,7 @@ class ThemeGenCodeBuilder {
   }
 }
 
+/// Generates a getter `canMerge` which always returns true.
 Method canMerge(ThemeGenConfig config) {
   final result = Method((m) {
     m
@@ -59,6 +63,7 @@ Method canMerge(ThemeGenConfig config) {
   return result;
 }
 
+/// Generates a `copyWith` method for the theme class.
 Method copyWith(ThemeGenConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
@@ -104,6 +109,7 @@ Method copyWith(ThemeGenConfig config) {
   return result;
 }
 
+/// Generates a `merge` method for the theme class.
 Method merge(ThemeGenConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
@@ -168,6 +174,11 @@ Method merge(ThemeGenConfig config) {
   return result;
 }
 
+/// Generates a static `lerp` method for interpolating between two theme
+/// instances.
+///
+/// Supports fields with custom static or instance `lerp` methods, as well as
+/// `double` and `Duration` fields.
 Method staticLerp(ThemeGenConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
@@ -198,6 +209,7 @@ Method staticLerp(ThemeGenConfig config) {
             args[e.key] = field.isNullable
                 ? expression
                 : expression.nullChecked;
+
           // When the field has a non-static lerp method
           case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: false)):
             final expression = refer('a'.nullable)
@@ -208,8 +220,9 @@ Method staticLerp(ThemeGenConfig config) {
                   refer('t'),
                 ])
                 .asA(refer(field.type));
-                
+
             args[e.key] = expression;
+
           // When the field is of type double
           case FieldSymbol(isDouble: true):
             final expression = refer(r'lerpDouble$').call([
@@ -234,6 +247,7 @@ Method staticLerp(ThemeGenConfig config) {
                 ? expression
                 : expression.nullChecked;
 
+          // Default case: use a simple conditional expression
           case _:
             if (field.name == 'canMerge') {
               args[e.key] = refer('b'.nullable)
@@ -286,6 +300,7 @@ Method staticLerp(ThemeGenConfig config) {
   return result;
 }
 
+/// Generates the equality operator `==` for the theme class.
 Method equalOperator(ThemeGenConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
@@ -354,6 +369,7 @@ Method equalOperator(ThemeGenConfig config) {
   return result;
 }
 
+/// Generates the `hashCode` getter for the theme class.
 Method hashMethod(ThemeGenConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;

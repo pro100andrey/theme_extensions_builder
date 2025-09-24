@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-part 'alert_theme.g.theme.dart';
+part 'alert_theme_data.g.theme.dart';
 
 @ThemeGen()
-class AlertTheme with _$AlertTheme {
-  const AlertTheme({
+class AlertThemeData with _$AlertThemeData {
+  const AlertThemeData({
     this.canMerge = true,
     this.transitionDuration = const Duration(milliseconds: 300),
     this.iconPadding,
@@ -28,8 +28,8 @@ class AlertTheme with _$AlertTheme {
   final double? borderRadius;
   final Duration? animationDuration;
 
-  static AlertTheme? lerp(AlertTheme a, AlertTheme b, double t) =>
-      _$AlertTheme.lerp(a, b, t);
+  static AlertThemeData? lerp(AlertThemeData a, AlertThemeData b, double t) =>
+      _$AlertThemeData.lerp(a, b, t);
 }
 
 @ThemeGen()

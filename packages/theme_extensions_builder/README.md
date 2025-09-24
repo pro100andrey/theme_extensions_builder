@@ -36,7 +36,7 @@ part 'name.g.theme.dart';
 To run the code generator, run the following commands:
 
 ```console
-flutter pub run build_runner build --delete-conflicting-outputs
+flutter pub run build_runner build -d
 ```
 
 ## Create Theme Extension
@@ -159,6 +159,50 @@ extension ElevatedButtonThemeExtensionBuildContext on BuildContext {
       Theme.of(this).extension<ElevatedButtonThemeExtension>()!;
 }
 
+```
+
+## Create Theme
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
+
+part 'alert_theme_data.g.theme.dart';
+
+@ThemeGen()
+class AlertThemeData with _$AlertThemeData {
+  const AlertThemeData({
+    this.canMerge = true,
+    this.transitionDuration = const Duration(milliseconds: 300),
+    this.iconPadding,
+    this.titleTextStyle,
+    this.mainAxisAlignment,
+    this.crossAxisAlignment,
+    this.baseTheme,
+    this.borderRadius,
+    this.animationDuration,
+  });
+
+  @override
+  final bool canMerge;
+  final Duration transitionDuration;
+  final EdgeInsetsGeometry? iconPadding;
+  final TextStyle? titleTextStyle;
+  final MainAxisAlignment? mainAxisAlignment;
+  final CrossAxisAlignment? crossAxisAlignment;
+  final BaseTheme? baseTheme;
+  final double? borderRadius;
+  final Duration? animationDuration;
+
+  static AlertThemeData? lerp(AlertThemeData a, AlertThemeData b, double t) =>
+      _$AlertThemeData.lerp(a, b, t);
+}
+```
+
+and run the code generator:
+
+```console
+flutter pub run build_runner build -d
 ```
 
 ## VSCode controls nesting of files in the Explorer

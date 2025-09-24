@@ -3,21 +3,21 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, unused_element
 
-part of 'alert_theme.dart';
+part of 'alert_theme_data.dart';
 
 // **************************************************************************
 // ThemeGenGenerator
 // **************************************************************************
 
-mixin _$AlertTheme {
+mixin _$AlertThemeData {
   bool get canMerge => true;
 
-  static AlertTheme? lerp(AlertTheme? a, AlertTheme? b, double t) {
+  static AlertThemeData? lerp(AlertThemeData? a, AlertThemeData? b, double t) {
     if (identical(a, b)) {
       return a;
     }
 
-    return AlertTheme(
+    return AlertThemeData(
       canMerge: b?.canMerge ?? true,
       transitionDuration: lerpDuration$(
         a?.transitionDuration,
@@ -40,7 +40,7 @@ mixin _$AlertTheme {
     );
   }
 
-  AlertTheme copyWith({
+  AlertThemeData copyWith({
     bool? canMerge,
     Duration? transitionDuration,
     EdgeInsetsGeometry? iconPadding,
@@ -51,9 +51,9 @@ mixin _$AlertTheme {
     double? borderRadius,
     Duration? animationDuration,
   }) {
-    final a = (this as AlertTheme);
+    final a = (this as AlertThemeData);
 
-    return AlertTheme(
+    return AlertThemeData(
       canMerge: canMerge ?? a.canMerge,
       transitionDuration: transitionDuration ?? a.transitionDuration,
       iconPadding: iconPadding ?? a.iconPadding,
@@ -66,8 +66,8 @@ mixin _$AlertTheme {
     );
   }
 
-  AlertTheme merge(AlertTheme? other) {
-    final current = (this as AlertTheme);
+  AlertThemeData merge(AlertThemeData? other) {
+    final current = (this as AlertThemeData);
 
     if (other == null) {
       return current;
@@ -102,9 +102,9 @@ mixin _$AlertTheme {
       return false;
     }
 
-    final value = (this as AlertTheme);
+    final value = (this as AlertThemeData);
 
-    return other is AlertTheme &&
+    return other is AlertThemeData &&
         other.canMerge == value.canMerge &&
         other.transitionDuration == value.transitionDuration &&
         other.iconPadding == value.iconPadding &&
@@ -118,7 +118,7 @@ mixin _$AlertTheme {
 
   @override
   int get hashCode {
-    final value = (this as AlertTheme);
+    final value = (this as AlertThemeData);
 
     return Object.hash(
       runtimeType,

@@ -401,14 +401,14 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "6.0.0"
+    version: "6.0.0+dev.1"
   theme_extensions_builder_annotation:
     dependency: "direct main"
     description:
       path: "../../theme_extensions_builder_annotation"
       relative: true
     source: path
-    version: "6.0.0"
+    version: "6.0.0+dev.1"
   typed_data:
     dependency: transitive
     description:

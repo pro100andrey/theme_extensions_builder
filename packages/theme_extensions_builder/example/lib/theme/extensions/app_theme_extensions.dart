@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-part 'app_theme.g.theme.dart';
+part 'app_theme_extensions.g.theme.dart';
 
 enum LayoutMode { compact, expanded }
 
@@ -14,13 +14,17 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension>
     required this.insets,
     required this.radius,
     required this.subTextTheme,
+    this.animation = const Duration(milliseconds: 300),
+    this.padding = const EdgeInsets.all(8),
   });
 
   final Color primaryColor;
   final LayoutMode layoutMode;
   final EdgeInsets insets;
+  final Duration? animation;
   final double radius;
   final MySubTextTheme subTextTheme;
+  final EdgeInsetsGeometry? padding;
 }
 
 @ThemeExtensions()

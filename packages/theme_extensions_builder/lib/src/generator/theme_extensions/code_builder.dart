@@ -1,15 +1,24 @@
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
 
-import '../models/generator_config.dart';
-import '../models/symbols.dart';
+import '../../common/code_builder.dart';
+import '../../common/symbols.dart';
+import '../../config/config.dart';
+import '../../extensions/string.dart';
 
-/// Generates code for theme extensions.
-class CodeGenerator {
-  const CodeGenerator();
+/// Generates code for `ThemeExtension` mixins and related helpers.
+class ThemeExtensionsCodeBuilder {
+  const ThemeExtensionsCodeBuilder();
 
-  /// Generates code for the given [config].
-  String generate(GeneratorConfig config) {
+  /// Generates Dart code for the provided [config].
+  ///
+  /// The generated code includes:
+  /// - a mixin for the theme extension,
+  /// - `copyWith` and `lerp` methods,
+  /// - equality (`==`) operator and `hashCode`,
+  /// - optional BuildContext extension if `config.buildContextExtension` is
+  /// true.
+  String generate(ThemeExtensionsConfig config) {
     final themeExtensionRef = TypeReference(
       (t) => t
         ..symbol = 'ThemeExtension'
@@ -65,8 +74,9 @@ class CodeGenerator {
   }
 }
 
+// Returns a type reference for `ThemeExtension<T>` based on [config].
 TypeReference themeExtensionRef(
-  GeneratorConfig config, {
+  ThemeExtensionsConfig config, {
   bool isNullable = false,
 }) => TypeReference(
   (t) => t
@@ -75,7 +85,10 @@ TypeReference themeExtensionRef(
     ..isNullable = isNullable,
 );
 
-Method copyWith(GeneratorConfig config) {
+/// Generates the `copyWith` method for the theme extension.
+///
+/// Allows creating a copy of the theme extension with some fields replaced.
+Method copyWith(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
 
@@ -104,7 +117,7 @@ Method copyWith(GeneratorConfig config) {
           (p) => p
             ..name = field.name
             ..named = true
-            ..type = refer(field.nullableType),
+            ..type = refer(field.type.nullable),
         ),
       )
       .toList(growable: false);
@@ -121,7 +134,14 @@ Method copyWith(GeneratorConfig config) {
   return result;
 }
 
-Method lerpMethod(GeneratorConfig config) {
+/// Generates the `lerp` (linear interpolation) method for the theme extension.
+///
+/// Supports:
+/// - Fields with static `lerp` methods,
+/// - Fields with instance `lerp` methods,
+/// - `double` and `Duration` fields,
+/// - Default conditional interpolation for other types.
+Method lerpMethod(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
 
@@ -158,15 +178,19 @@ Method lerpMethod(GeneratorConfig config) {
       final field = e.value;
 
       switch (field) {
+        // Lerp class with static lerp method
         case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: true)):
-          args[e.key] = refer(field.type).property('lerp').call([
+          final expression = refer(field.type).property('lerp').call([
             refer('value').property(field.name),
             refer('otherValue').property(field.name),
             refer('t'),
-          ]).nullChecked;
+          ]);
 
+          args[e.key] = field.isNullable ? expression : expression.nullChecked;
+
+        // Lerp class with instance lerp method
         case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: false)):
-          args[e.key] = refer('value')
+          final expression = refer('value')
               .property(field.name)
               .property('lerp')
               .call([
@@ -175,20 +199,38 @@ Method lerpMethod(GeneratorConfig config) {
               ])
               .asA(refer(field.type));
 
+          args[e.key] = expression;
+
+        // When the field is of type double
         case FieldSymbol(isDouble: true):
-          args[e.key] = refer(r'lerpDouble$').call([
+          final expression = refer(r'lerpDouble$').call([
             refer('value').property(field.name),
             refer('otherValue').property(field.name),
             refer('t'),
-          ]).nullChecked;
+          ]);
 
+          args[e.key] = field.isNullable ? expression : expression.nullChecked;
+
+        // When the field is of type Duration
+        case FieldSymbol(isDuration: true):
+          final expression = refer(r'lerpDuration$').call([
+            refer('value').property(field.name),
+            refer('otherValue').property(field.name),
+            refer('t'),
+          ]);
+
+          args[e.key] = field.isNullable ? expression : expression.nullChecked;
+
+        // Default case: use a simple conditional expression
         case _:
-          args[e.key] = refer('t')
+          final expression = refer('t')
               .lessThan(literalNum(0.5))
               .conditional(
                 refer('value').property(field.name),
                 refer('otherValue').property(field.name),
               );
+
+          args[e.key] = expression;
       }
     }
 
@@ -220,7 +262,8 @@ Method lerpMethod(GeneratorConfig config) {
   return result;
 }
 
-Method equalOperator(GeneratorConfig config) {
+/// Generates the equality operator `==` for the theme extension.
+Method equalOperator(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
 
@@ -228,42 +271,46 @@ Method equalOperator(GeneratorConfig config) {
     ..statements.add(
       ifCode(
         refer('identical').call([refer('this'), refer('other')]).code,
-        [const Code('return true;')],
+        [literalTrue.returned.statement],
+      ),
+    )
+    ..statements.add(const Code(''))
+    ..statements.add(
+      ifCode(
+        refer(
+          'other',
+        ).property('runtimeType').notEqualTo(refer('runtimeType')).code,
+        [literalFalse.returned.statement],
       ),
     )
     ..statements.add(const Code(''));
 
   if (fields.isNotEmpty) {
-    body.addExpression(
-      declareFinal('value').assign(
-        refer('this').asA(refer(config.className)),
-      ),
-    );
+    body
+      ..addExpression(
+        declareFinal('value').assign(
+          refer('this').asA(refer(config.className)),
+        ),
+      )
+      ..statements.add(const Code(''));
   }
 
-  final baseEquality = refer('other')
-      .property('runtimeType')
-      .equalTo(refer('runtimeType'))
-      .and(
-        refer('other').isA(refer(config.className)),
-      );
-
   body.addExpression(
-    fields.isEmpty
-        ? baseEquality.returned
-        : baseEquality
-              .and(
-                fields.entries
-                    .map((e) {
-                      final name = e.key;
-                      return refer('identical').call([
-                        refer('value').property(name),
-                        refer('other').property(name),
-                      ]);
-                    })
-                    .reduce((a, b) => a.and(b)),
-              )
-              .returned,
+    refer('other')
+        .isA(refer(config.className))
+        .and(
+          fields.entries
+              .map((e) {
+                final name = e.key;
+                return refer('other')
+                    .property(name)
+                    .equalTo(
+                      refer('value').property(name),
+                    );
+              })
+              .reduce((a, b) => a.and(b)),
+        )
+        .returned,
   );
 
   final result = Method((m) {
@@ -284,7 +331,8 @@ Method equalOperator(GeneratorConfig config) {
   return result;
 }
 
-Method hashMethod(GeneratorConfig config) {
+/// Generates the `hashCode` getter for the theme extension.
+Method hashMethod(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
 
@@ -335,7 +383,13 @@ Method hashMethod(GeneratorConfig config) {
   return result;
 }
 
-Extension contextExtension(GeneratorConfig config) {
+/// Generates a `BuildContext` extension to easily access the theme extension.
+///
+/// Example:
+/// ```dart
+/// context.myThemeExtension
+/// ```
+Extension contextExtension(ThemeExtensionsConfig config) {
   final result = Extension((b) {
     b
       ..name = '${config.className}BuildContext'
@@ -359,47 +413,4 @@ Extension contextExtension(GeneratorConfig config) {
   });
 
   return result;
-}
-
-Code ifCode(
-  Code condition,
-  List<Code> thenBody, [
-  List<Code>? elseBody,
-]) {
-  final buf = StringBuffer();
-  final conditionStr = condition.accept(DartEmitter());
-
-  buf.writeln('if ($conditionStr) {');
-
-  for (final c in thenBody) {
-    buf.writeln('  ${c.accept(DartEmitter())}');
-  }
-
-  buf.write('}');
-
-  if (elseBody != null && elseBody.isNotEmpty) {
-    buf.writeln(' else {');
-    for (final c in elseBody) {
-      buf.writeln('  ${c.accept(DartEmitter())}');
-    }
-    buf.write('}');
-  }
-
-  return Code(buf.toString());
-}
-
-extension GetterHelper on String {
-  String get camelCase {
-    if (isEmpty) {
-      return '';
-    }
-
-    var property = this[0].toLowerCase() + substring(1);
-
-    if (property.endsWith('Extension')) {
-      property = property.substring(0, property.length - 'Extension'.length);
-    }
-
-    return property;
-  }
 }

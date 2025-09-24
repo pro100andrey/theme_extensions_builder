@@ -14,12 +14,14 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension>
     required this.insets,
     required this.radius,
     required this.subTextTheme,
+    this.animation = const Duration(milliseconds: 300),
     this.padding = const EdgeInsets.all(8),
   });
 
   final Color primaryColor;
   final LayoutMode layoutMode;
   final EdgeInsets insets;
+  final Duration? animation;
   final double radius;
   final MySubTextTheme subTextTheme;
   final EdgeInsetsGeometry? padding;

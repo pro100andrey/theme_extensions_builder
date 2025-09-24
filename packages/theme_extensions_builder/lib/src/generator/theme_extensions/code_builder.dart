@@ -214,8 +214,8 @@ Method lerpMethod(ThemeExtensionsConfig config) {
         // When the field is of type Duration
         case FieldSymbol(isDuration: true):
           final expression = refer(r'lerpDuration$').call([
-            refer('a'.nullable).property(field.name),
-            refer('b'.nullable).property(field.name),
+            refer('value').property(field.name),
+            refer('otherValue').property(field.name),
             refer('t'),
           ]);
 

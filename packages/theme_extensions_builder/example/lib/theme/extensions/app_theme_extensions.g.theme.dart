@@ -15,6 +15,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
     Color? primaryColor,
     LayoutMode? layoutMode,
     EdgeInsets? insets,
+    Duration? animation,
     double? radius,
     MySubTextTheme? subTextTheme,
     EdgeInsetsGeometry? padding,
@@ -25,6 +26,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       primaryColor: primaryColor ?? object.primaryColor,
       layoutMode: layoutMode ?? object.layoutMode,
       insets: insets ?? object.insets,
+      animation: animation ?? object.animation,
       radius: radius ?? object.radius,
       subTextTheme: subTextTheme ?? object.subTextTheme,
       padding: padding ?? object.padding,
@@ -47,6 +49,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       primaryColor: Color.lerp(value.primaryColor, otherValue.primaryColor, t)!,
       layoutMode: t < 0.5 ? value.layoutMode : otherValue.layoutMode,
       insets: EdgeInsets.lerp(value.insets, otherValue.insets, t)!,
+      animation: lerpDuration$(value.animation, otherValue.animation, t),
       radius: lerpDouble$(value.radius, otherValue.radius, t)!,
       subTextTheme:
           (value.subTextTheme.lerp(otherValue.subTextTheme, t)
@@ -71,6 +74,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
         other.primaryColor == value.primaryColor &&
         other.layoutMode == value.layoutMode &&
         other.insets == value.insets &&
+        other.animation == value.animation &&
         other.radius == value.radius &&
         other.subTextTheme == value.subTextTheme &&
         other.padding == value.padding;
@@ -85,6 +89,7 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       value.primaryColor,
       value.layoutMode,
       value.insets,
+      value.animation,
       value.radius,
       value.subTextTheme,
       value.padding,

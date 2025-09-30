@@ -15,7 +15,12 @@ extension StringCamelCase on String {
 }
 
 extension StringNullable on String {
-  String get nullable {
+  /// Returns a nullable version of the type if [f] is true.
+  String nullable({bool f = true}) {
+    if (!f) {
+      return this;
+    }
+
     if (this == 'dynamic') {
       return this;
     }

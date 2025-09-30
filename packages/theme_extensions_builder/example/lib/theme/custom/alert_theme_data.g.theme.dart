@@ -12,9 +12,9 @@ part of 'alert_theme_data.dart';
 mixin _$AlertThemeData {
   bool get canMerge => true;
 
-  static AlertThemeData? lerp(AlertThemeData? a, AlertThemeData? b, double t) {
-    if (identical(a, b)) {
-      return a;
+  static AlertThemeData lerp(AlertThemeData? a, AlertThemeData? b, double t) {
+    if (a == null && b == null) {
+      throw ArgumentError('Both a and b cannot be null');
     }
 
     return AlertThemeData(
@@ -138,9 +138,9 @@ mixin _$AlertThemeData {
 mixin _$BaseTheme {
   bool get canMerge => true;
 
-  static BaseTheme? lerp(BaseTheme? a, BaseTheme? b, double t) {
-    if (identical(a, b)) {
-      return a;
+  static BaseTheme lerp(BaseTheme? a, BaseTheme? b, double t) {
+    if (a == null && b == null) {
+      throw ArgumentError('Both a and b cannot be null');
     }
 
     return BaseTheme(

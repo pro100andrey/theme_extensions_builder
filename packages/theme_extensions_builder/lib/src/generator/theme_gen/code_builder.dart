@@ -93,7 +93,7 @@ Method copyWith(ThemeGenConfig config) {
           (p) => p
             ..name = field.name
             ..named = true
-            ..type = refer(field.type.nullable),
+            ..type = refer(field.type.nullable()),
         ),
       )
       .toList(growable: false);
@@ -165,7 +165,7 @@ Method merge(ThemeGenConfig config) {
         Parameter(
           (p) => p
             ..name = 'other'
-            ..type = refer(config.className.nullable),
+            ..type = refer(config.className.nullable()),
         ),
       )
       ..body = body.build();
@@ -182,12 +182,21 @@ Method merge(ThemeGenConfig config) {
 Method staticLerp(ThemeGenConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
-
+  // throw ArgumentError('Both a and b cannot be null');
   body
     ..statements.add(
       ifCode(
-        refer('identical').call([refer('a'), refer('b')]).code,
-        [refer('a').returned.statement],
+        refer(
+          'a',
+        ).equalTo(literalNull).and(refer('b').equalTo(literalNull)).code,
+        [
+          refer('ArgumentError')
+              .newInstance([
+                literalString('Both a and b cannot be null'),
+              ])
+              .thrown
+              .statement,
+        ],
       ),
     )
     ..statements.add(const Code(''))
@@ -201,8 +210,8 @@ Method staticLerp(ThemeGenConfig config) {
           // When the field has a static lerp method
           case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: true)):
             final expression = refer(field.type).property('lerp').call([
-              refer('a'.nullable).property(field.name),
-              refer('b'.nullable).property(field.name),
+              refer('a'.nullable()).property(field.name),
+              refer('b'.nullable()).property(field.name),
               refer('t'),
             ]);
 
@@ -212,11 +221,11 @@ Method staticLerp(ThemeGenConfig config) {
 
           // When the field has a non-static lerp method
           case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: false)):
-            final expression = refer('a'.nullable)
+            final expression = refer('a'.nullable())
                 .property(field.name)
                 .property('lerp')
                 .call([
-                  refer('b'.nullable).property(field.name),
+                  refer('b'.nullable()).property(field.name),
                   refer('t'),
                 ])
                 .asA(refer(field.type));
@@ -226,8 +235,8 @@ Method staticLerp(ThemeGenConfig config) {
           // When the field is of type double
           case FieldSymbol(isDouble: true):
             final expression = refer(r'lerpDouble$').call([
-              refer('a'.nullable).property(field.name),
-              refer('b'.nullable).property(field.name),
+              refer('a'.nullable()).property(field.name),
+              refer('b'.nullable()).property(field.name),
               refer('t'),
             ]);
 
@@ -238,8 +247,8 @@ Method staticLerp(ThemeGenConfig config) {
           // When the field is of type Duration
           case FieldSymbol(isDuration: true):
             final expression = refer(r'lerpDuration$').call([
-              refer('a'.nullable).property(field.name),
-              refer('b'.nullable).property(field.name),
+              refer('a'.nullable()).property(field.name),
+              refer('b'.nullable()).property(field.name),
               refer('t'),
             ]);
 
@@ -250,7 +259,7 @@ Method staticLerp(ThemeGenConfig config) {
           // Default case: use a simple conditional expression
           case _:
             if (field.name == 'canMerge') {
-              args[e.key] = refer('b'.nullable)
+              args[e.key] = refer('b'.nullable())
                   .property(field.name)
                   .ifNullThen(
                     literalTrue,
@@ -261,8 +270,8 @@ Method staticLerp(ThemeGenConfig config) {
             args[e.key] = refer('t')
                 .lessThan(literalNum(0.5))
                 .conditional(
-                  refer('a'.nullable).property(field.name),
-                  refer('b'.nullable).property(field.name),
+                  refer('a'.nullable()).property(field.name),
+                  refer('b'.nullable()).property(field.name),
                 );
         }
       }
@@ -276,17 +285,17 @@ Method staticLerp(ThemeGenConfig config) {
     m
       ..name = 'lerp'
       ..static = true
-      ..returns = refer(config.className.nullable)
+      ..returns = refer(config.className)
       ..requiredParameters.addAll([
         Parameter(
           (p) => p
             ..name = 'a'
-            ..type = refer(config.className.nullable),
+            ..type = refer(config.className.nullable()),
         ),
         Parameter(
           (p) => p
             ..name = 'b'
-            ..type = refer(config.className.nullable),
+            ..type = refer(config.className.nullable()),
         ),
         Parameter(
           (p) => p

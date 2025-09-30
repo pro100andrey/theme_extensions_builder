@@ -194,7 +194,7 @@ class AlertThemeData with _$AlertThemeData {
   final double? borderRadius;
   final Duration? animationDuration;
 
-  static AlertThemeData? lerp(AlertThemeData a, AlertThemeData b, double t) =>
+  static AlertThemeData lerp(AlertThemeData? a, AlertThemeData? b, double t) =>
       _$AlertThemeData.lerp(a, b, t);
 }
 ```

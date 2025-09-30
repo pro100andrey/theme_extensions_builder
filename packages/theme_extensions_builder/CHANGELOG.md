@@ -1,3 +1,7 @@
+## 6.0.0-dev.2
+
+- *Fixed*: static `lerp` return type to non-nullable
+
 ## 6.0.0-dev.1
 
 - *Updated*: dependencies.

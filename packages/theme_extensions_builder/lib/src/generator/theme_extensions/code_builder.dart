@@ -117,7 +117,7 @@ Method copyWith(ThemeExtensionsConfig config) {
           (p) => p
             ..name = field.name
             ..named = true
-            ..type = refer(field.type.nullable),
+            ..type = refer(field.type.nullable()),
         ),
       )
       .toList(growable: false);

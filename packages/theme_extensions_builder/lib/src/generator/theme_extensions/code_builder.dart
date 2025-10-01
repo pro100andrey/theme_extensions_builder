@@ -104,14 +104,14 @@ Method copyWith(ThemeExtensionsConfig config) {
 
   body.addExpression(
     refer(config.className).newInstance([], {
-      for (final e in fields.entries)
-        e.key: refer(e.key).ifNullThen(
-          refer('object').property(e.key),
+      for (final field in fields)
+        field.name: refer(field.name).ifNullThen(
+          refer('object').property(field.name),
         ),
     }).returned,
   );
 
-  final parameters = fields.values
+  final parameters = fields
       .map(
         (field) => Parameter(
           (p) => p
@@ -174,22 +174,28 @@ Method lerpMethod(ThemeExtensionsConfig config) {
   body.addExpression(() {
     final args = <String, Expression>{};
 
-    for (final e in fields.entries) {
-      final field = e.value;
-
+    for (final field in fields) {
       switch (field) {
         // Lerp class with static lerp method
-        case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: true)):
+        case FieldSymbol(
+          hasLerp: true,
+          lerpInfo: (isStatic: true, nullableArgs: _),
+        ):
           final expression = refer(field.type).property('lerp').call([
             refer('value').property(field.name),
             refer('otherValue').property(field.name),
             refer('t'),
           ]);
 
-          args[e.key] = field.isNullable ? expression : expression.nullChecked;
+          args[field.name] = field.isNullable
+              ? expression
+              : expression.nullChecked;
 
         // Lerp class with instance lerp method
-        case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: false)):
+        case FieldSymbol(
+          hasLerp: true,
+          lerpInfo: (isStatic: false, nullableArgs: _),
+        ):
           final expression = refer('value')
               .property(field.name)
               .property('lerp')
@@ -199,7 +205,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
               ])
               .asA(refer(field.type));
 
-          args[e.key] = expression;
+          args[field.name] = expression;
 
         // When the field is of type double
         case FieldSymbol(isDouble: true):
@@ -209,7 +215,9 @@ Method lerpMethod(ThemeExtensionsConfig config) {
             refer('t'),
           ]);
 
-          args[e.key] = field.isNullable ? expression : expression.nullChecked;
+          args[field.name] = field.isNullable
+              ? expression
+              : expression.nullChecked;
 
         // When the field is of type Duration
         case FieldSymbol(isDuration: true):
@@ -219,7 +227,9 @@ Method lerpMethod(ThemeExtensionsConfig config) {
             refer('t'),
           ]);
 
-          args[e.key] = field.isNullable ? expression : expression.nullChecked;
+          args[field.name] = field.isNullable
+              ? expression
+              : expression.nullChecked;
 
         // Default case: use a simple conditional expression
         case _:
@@ -230,7 +240,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
                 refer('otherValue').property(field.name),
               );
 
-          args[e.key] = expression;
+          args[field.name] = expression;
       }
     }
 
@@ -299,15 +309,14 @@ Method equalOperator(ThemeExtensionsConfig config) {
     refer('other')
         .isA(refer(config.className))
         .and(
-          fields.entries
-              .map((e) {
-                final name = e.key;
-                return refer('other')
-                    .property(name)
+          fields
+              .map(
+                (field) => refer('other')
+                    .property(field.name)
                     .equalTo(
-                      refer('value').property(name),
-                    );
-              })
+                      refer('value').property(field.name),
+                    ),
+              )
               .reduce((a, b) => a.and(b)),
         )
         .returned,
@@ -355,8 +364,7 @@ Method hashMethod(ThemeExtensionsConfig config) {
       body.addExpression(
         refer('Object').property('hash').call([
           refer('runtimeType'),
-          for (final field in fields.values)
-            refer('value').property(field.name),
+          for (final field in fields) refer('value').property(field.name),
         ]).returned,
       );
     case _:
@@ -364,8 +372,7 @@ Method hashMethod(ThemeExtensionsConfig config) {
         refer('Object').property('hashAll').call([
           literalList([
             refer('runtimeType'),
-            for (final field in fields.values)
-              refer('value').property(field.name),
+            for (final field in fields) refer('value').property(field.name),
           ]),
         ]).returned,
       );

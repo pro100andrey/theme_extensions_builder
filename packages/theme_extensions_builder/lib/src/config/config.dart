@@ -7,7 +7,7 @@ sealed class BaseConfig {
   });
 
   /// The fields to be included in the generated theme extension.
-  final Map<String, FieldSymbol> fields;
+  final List<FieldSymbol> fields;
 
   /// The name of the class to be generated.
   final String className;

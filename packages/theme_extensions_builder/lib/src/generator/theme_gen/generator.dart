@@ -50,7 +50,7 @@ class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
 /// It's a class that extends the SimpleElementVisitor class, and it overrides
 /// the visitClassElement method
 class _ClassVisitor extends BaseClassVisitor {
-  final Map<String, FieldSymbol> fields = {};
+  final List<FieldSymbol> fields = [];
   final Map<String, List<bool>> hasInternalAnnotations = {};
 
   final ignoreAnnotationTypeChecker = TypeChecker.typeNamed(ignore.runtimeType);
@@ -66,13 +66,15 @@ class _ClassVisitor extends BaseClassVisitor {
       final isNullable = type.endsWith('?');
       final resultType = isNullable ? type.substring(0, type.length - 1) : type;
 
-      fields[element.displayName] = FieldSymbol(
+      final symbol = FieldSymbol(
         lerpInfo: hasLerp(element),
-        hasMerge: hasMerge(element),
+        mergeInfo: hasMerge(element),
         name: element.displayName,
         type: resultType,
         isNullable: isNullable,
       );
+
+      fields.add(symbol);
     }
   }
 }

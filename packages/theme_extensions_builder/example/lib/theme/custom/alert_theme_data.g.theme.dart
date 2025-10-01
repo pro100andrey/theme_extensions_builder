@@ -32,7 +32,9 @@ mixin _$AlertThemeData {
           : b?.crossAxisAlignment,
       baseTheme: BaseTheme.lerp(a?.baseTheme, b?.baseTheme, t),
       borderRadius: lerpDouble$(a?.borderRadius, b?.borderRadius, t),
-      borderSide: BorderSide.lerp(a?.borderSide!!, t)!,
+      borderSide: a != null && b != null
+          ? BorderSide.lerp(a.borderSide, b.borderSide, t)
+          : b?.borderSide ?? a!.borderSide,
       curve: t < 0.5 ? a?.curve : b?.curve,
       border: Border.lerp(a?.border, b?.border, t)!,
       animationDuration: lerpDuration$(

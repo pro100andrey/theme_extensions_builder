@@ -237,28 +237,54 @@ Method staticLerp(ThemeGenConfig config) {
             hasLerp: true,
             lerpInfo: (isStatic: true, :final nullableArgs),
           ):
-            final expression = !nullableArgs && field.isNullable
-                ? refer('a')
-                      .notEqualTo(literalNull)
-                      .and(refer('b').notEqualTo(literalNull))
-                      .conditional(
-                        refer(field.type).property('lerp').call([
-                          refer('a').property(field.name).nullChecked,
-                          refer('b').property(field.name).nullChecked,
-                          refer('t'),
-                        ]),
-                        refer('t')
-                            .lessThan(literalNum(0.5))
-                            .conditional(
-                              refer('a'.nullable()).property(field.name),
-                              refer('b'.nullable()).property(field.name),
-                            ),
-                      )
-                : refer(field.type).property('lerp').call([
-                    refer('a'.nullable()).property(field.name),
-                    refer('b'.nullable()).property(field.name),
-                    refer('t'),
-                  ]);
+            if (!nullableArgs && field.isNullable) {
+              final expression = refer('a')
+                  .notEqualTo(literalNull)
+                  .and(refer('b').notEqualTo(literalNull))
+                  .conditional(
+                    refer(field.type).property('lerp').call([
+                      refer('a').property(field.name).nullChecked,
+                      refer('b').property(field.name).nullChecked,
+                      refer('t'),
+                    ]),
+                    refer('t')
+                        .lessThan(literalNum(0.5))
+                        .conditional(
+                          refer('a'.nullable()).property(field.name),
+                          refer('b'.nullable()).property(field.name),
+                        ),
+                  );
+
+              args[field.name] = expression;
+
+              continue;
+            } else if (!nullableArgs && !field.isNullable) {
+              final expression = refer('a')
+                  .notEqualTo(literalNull)
+                  .and(refer('b').notEqualTo(literalNull))
+                  .conditional(
+                    refer(field.type).property('lerp').call([
+                      refer('a').property(field.name),
+                      refer('b').property(field.name),
+                      refer('t'),
+                    ]),
+                    refer('b'.nullable())
+                        .property(field.name)
+                        .ifNullThen(
+                          refer('a').nullChecked.property(field.name),
+                        ),
+                  );
+
+              args[field.name] = expression;
+
+              continue;
+            }
+
+            final expression = refer(field.type).property('lerp').call([
+              refer('a'.nullable()).property(field.name),
+              refer('b'.nullable()).property(field.name),
+              refer('t'),
+            ]);
 
             args[field.name] = field.isNullable
                 ? expression

@@ -12,6 +12,9 @@ class AlertThemeData with _$AlertThemeData {
     this.titleTextStyle,
     this.mainAxisAlignment,
     this.crossAxisAlignment,
+    this.border = const Border(),
+    this.borderSide = const BorderSide(),
+    this.curve,
     this.baseTheme,
     this.borderRadius,
     this.animationDuration,
@@ -26,6 +29,9 @@ class AlertThemeData with _$AlertThemeData {
   final CrossAxisAlignment? crossAxisAlignment;
   final BaseTheme? baseTheme;
   final double? borderRadius;
+  final BorderSide borderSide;
+  final Curve? curve;
+  final Border border;
   final Duration? animationDuration;
 
   static AlertThemeData lerp(AlertThemeData? a, AlertThemeData? b, double t) =>

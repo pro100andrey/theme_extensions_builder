@@ -80,14 +80,14 @@ Method copyWith(ThemeGenConfig config) {
 
   body.addExpression(
     refer(config.className).newInstance([], {
-      for (final e in fields.entries)
-        e.key: refer(e.key).ifNullThen(
-          refer('a').property(e.key),
+      for (final field in fields)
+        field.name: refer(field.name).ifNullThen(
+          refer('a').property(field.name),
         ),
     }).returned,
   );
 
-  final parameters = fields.values
+  final parameters = fields
       .map(
         (field) => Parameter(
           (p) => p
@@ -137,23 +137,50 @@ Method merge(ThemeGenConfig config) {
     ..statements.add(const Code(''))
     ..addExpression(
       refer('copyWith').call([], {
-        for (final e in fields.entries)
-          e.key: e.value.hasMerge
+        for (final field in fields)
+          field.name: field.hasMerge
               ? () {
-                  var prop = refer('current').property(e.value.name);
+                  if (field.mergeInfo!.isStatic && field.isNullable) {
+                    final prop = refer('current')
+                        .property(field.name)
+                        .notEqualTo(literalNull)
+                        .and(
+                          refer(
+                            'other',
+                          ).property(field.name).notEqualTo(literalNull),
+                        )
+                        .conditional(
+                          refer(field.type).property('merge').call([
+                            refer('current').property(field.name).nullChecked,
+                            refer('other').property(field.name).nullChecked,
+                          ]),
+                          refer('other').property(field.name),
+                        );
 
-                  prop = e.value.isNullable
-                      ? prop.nullSafeProperty('merge')
-                      : prop.property('merge');
+                    return prop;
+                  } else if (field.mergeInfo!.isStatic && !field.isNullable) {
+                    return refer(field.type).property('merge').call([
+                      refer('current').property(field.name),
+                      refer('other').property(field.name),
+                    ]);
+                  } else {
+                    var prop = refer('current').property(field.name);
+                    prop = field.isNullable
+                        ? prop.nullSafeProperty('merge')
+                        : prop.property('merge');
 
-                  prop = prop.call([refer('other').property(e.key)]);
+                    prop = prop.call([refer('other').property(field.name)]);
 
-                  if (e.value.isNullable) {
-                    prop = prop.ifNullThen(refer('other').property(e.key));
+                    if (field.isNullable) {
+                      prop = prop.ifNullThen(
+                        refer('other').property(field.name),
+                      );
+                    }
+
+                    return prop;
                   }
-                  return prop;
                 }()
-              : refer('other').property(e.key),
+              : refer('other').property(field.name),
       }).returned,
     );
 
@@ -182,7 +209,7 @@ Method merge(ThemeGenConfig config) {
 Method staticLerp(ThemeGenConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
-  // throw ArgumentError('Both a and b cannot be null');
+
   body
     ..statements.add(
       ifCode(
@@ -203,24 +230,45 @@ Method staticLerp(ThemeGenConfig config) {
     ..addExpression(() {
       final args = <String, Expression>{};
 
-      for (final e in fields.entries) {
-        final field = e.value;
-
+      for (final field in fields) {
         switch (field) {
           // When the field has a static lerp method
-          case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: true)):
-            final expression = refer(field.type).property('lerp').call([
-              refer('a'.nullable()).property(field.name),
-              refer('b'.nullable()).property(field.name),
-              refer('t'),
-            ]);
+          case FieldSymbol(
+            hasLerp: true,
+            lerpInfo: (isStatic: true, :final nullableArgs),
+          ):
+            final expression = !nullableArgs && field.isNullable
+                ? refer('a')
+                      .notEqualTo(literalNull)
+                      .and(refer('b').notEqualTo(literalNull))
+                      .conditional(
+                        refer(field.type).property('lerp').call([
+                          refer('a').property(field.name).nullChecked,
+                          refer('b').property(field.name).nullChecked,
+                          refer('t'),
+                        ]),
+                        refer('t')
+                            .lessThan(literalNum(0.5))
+                            .conditional(
+                              refer('a'.nullable()).property(field.name),
+                              refer('b'.nullable()).property(field.name),
+                            ),
+                      )
+                : refer(field.type).property('lerp').call([
+                    refer('a'.nullable()).property(field.name),
+                    refer('b'.nullable()).property(field.name),
+                    refer('t'),
+                  ]);
 
-            args[e.key] = field.isNullable
+            args[field.name] = field.isNullable
                 ? expression
                 : expression.nullChecked;
 
           // When the field has a non-static lerp method
-          case FieldSymbol(hasLerp: true, lerpInfo: (isStatic: false)):
+          case FieldSymbol(
+            hasLerp: true,
+            lerpInfo: (isStatic: false, nullableArgs: _),
+          ):
             final expression = refer('a'.nullable())
                 .property(field.name)
                 .property('lerp')
@@ -230,7 +278,7 @@ Method staticLerp(ThemeGenConfig config) {
                 ])
                 .asA(refer(field.type));
 
-            args[e.key] = expression;
+            args[field.name] = expression;
 
           // When the field is of type double
           case FieldSymbol(isDouble: true):
@@ -240,7 +288,7 @@ Method staticLerp(ThemeGenConfig config) {
               refer('t'),
             ]);
 
-            args[e.key] = field.isNullable
+            args[field.name] = field.isNullable
                 ? expression
                 : expression.nullChecked;
 
@@ -252,14 +300,14 @@ Method staticLerp(ThemeGenConfig config) {
               refer('t'),
             ]);
 
-            args[e.key] = field.isNullable
+            args[field.name] = field.isNullable
                 ? expression
                 : expression.nullChecked;
 
           // Default case: use a simple conditional expression
           case _:
             if (field.name == 'canMerge') {
-              args[e.key] = refer('b'.nullable())
+              args[field.name] = refer('b'.nullable())
                   .property(field.name)
                   .ifNullThen(
                     literalTrue,
@@ -267,7 +315,7 @@ Method staticLerp(ThemeGenConfig config) {
               continue;
             }
 
-            args[e.key] = refer('t')
+            args[field.name] = refer('t')
                 .lessThan(literalNum(0.5))
                 .conditional(
                   refer('a'.nullable()).property(field.name),
@@ -346,15 +394,14 @@ Method equalOperator(ThemeGenConfig config) {
     refer('other')
         .isA(refer(config.className))
         .and(
-          fields.entries
-              .map((e) {
-                final name = e.key;
-                return refer('other')
-                    .property(name)
+          fields
+              .map(
+                (field) => refer('other')
+                    .property(field.name)
                     .equalTo(
-                      refer('value').property(name),
-                    );
-              })
+                      refer('value').property(field.name),
+                    ),
+              )
               .reduce((a, b) => a.and(b)),
         )
         .returned,
@@ -402,8 +449,7 @@ Method hashMethod(ThemeGenConfig config) {
       body.addExpression(
         refer('Object').property('hash').call([
           refer('runtimeType'),
-          for (final field in fields.values)
-            refer('value').property(field.name),
+          for (final field in fields) refer('value').property(field.name),
         ]).returned,
       );
     case _:
@@ -411,8 +457,7 @@ Method hashMethod(ThemeGenConfig config) {
         refer('Object').property('hashAll').call([
           literalList([
             refer('runtimeType'),
-            for (final field in fields.values)
-              refer('value').property(field.name),
+            for (final field in fields) refer('value').property(field.name),
           ]),
         ]).returned,
       );

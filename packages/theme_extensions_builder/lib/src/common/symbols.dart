@@ -1,4 +1,5 @@
-typedef LerpInfo = ({bool isStatic});
+typedef LerpInfo = ({bool isStatic, bool nullableArgs});
+typedef MergeInfo = ({bool isStatic});
 
 /// It's a class that represents a field
 class FieldSymbol {
@@ -7,17 +8,18 @@ class FieldSymbol {
     required this.type,
     required this.lerpInfo,
     required this.isNullable,
-    this.hasMerge = false,
+    required this.mergeInfo,
   });
 
   final String name;
   final String type;
   final LerpInfo? lerpInfo;
-  final bool hasMerge;
+  final MergeInfo? mergeInfo;
   final bool isNullable;
 
   bool get hasLerp => lerpInfo != null;
-  bool get isStatic => lerpInfo?.isStatic ?? false;
+  bool get hasMerge => mergeInfo != null;
+
   bool get isDouble => type == 'double';
   bool get isDuration => type == 'Duration';
 }

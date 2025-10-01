@@ -32,6 +32,9 @@ mixin _$AlertThemeData {
           : b?.crossAxisAlignment,
       baseTheme: BaseTheme.lerp(a?.baseTheme, b?.baseTheme, t),
       borderRadius: lerpDouble$(a?.borderRadius, b?.borderRadius, t),
+      borderSide: BorderSide.lerp(a?.borderSide!!, t)!,
+      curve: t < 0.5 ? a?.curve : b?.curve,
+      border: Border.lerp(a?.border, b?.border, t)!,
       animationDuration: lerpDuration$(
         a?.animationDuration,
         b?.animationDuration,
@@ -49,6 +52,9 @@ mixin _$AlertThemeData {
     CrossAxisAlignment? crossAxisAlignment,
     BaseTheme? baseTheme,
     double? borderRadius,
+    BorderSide? borderSide,
+    Curve? curve,
+    Border? border,
     Duration? animationDuration,
   }) {
     final a = (this as AlertThemeData);
@@ -62,6 +68,9 @@ mixin _$AlertThemeData {
       crossAxisAlignment: crossAxisAlignment ?? a.crossAxisAlignment,
       baseTheme: baseTheme ?? a.baseTheme,
       borderRadius: borderRadius ?? a.borderRadius,
+      borderSide: borderSide ?? a.borderSide,
+      curve: curve ?? a.curve,
+      border: border ?? a.border,
       animationDuration: animationDuration ?? a.animationDuration,
     );
   }
@@ -88,6 +97,9 @@ mixin _$AlertThemeData {
       crossAxisAlignment: other.crossAxisAlignment,
       baseTheme: other.baseTheme,
       borderRadius: other.borderRadius,
+      borderSide: BorderSide.merge(current.borderSide, other.borderSide),
+      curve: other.curve,
+      border: Border.merge(current.border, other.border),
       animationDuration: other.animationDuration,
     );
   }
@@ -113,6 +125,9 @@ mixin _$AlertThemeData {
         other.crossAxisAlignment == value.crossAxisAlignment &&
         other.baseTheme == value.baseTheme &&
         other.borderRadius == value.borderRadius &&
+        other.borderSide == value.borderSide &&
+        other.curve == value.curve &&
+        other.border == value.border &&
         other.animationDuration == value.animationDuration;
   }
 
@@ -130,6 +145,9 @@ mixin _$AlertThemeData {
       value.crossAxisAlignment,
       value.baseTheme,
       value.borderRadius,
+      value.borderSide,
+      value.curve,
+      value.border,
       value.animationDuration,
     );
   }

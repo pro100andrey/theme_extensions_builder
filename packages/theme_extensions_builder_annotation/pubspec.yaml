@@ -1,6 +1,5 @@
 name: theme_extensions_builder_annotation
-description:
->
+description: >
   Annotations for the theme_extensions_builder.
   This package does nothing without theme_extensions_builder.
 
@@ -9,7 +8,7 @@ issue_tracker: https://github.com/pro100andrey/theme_extensions_builder/issues
 homepage: https://github.com/pro100andrey/theme_extensions_builder
 documentation: https://github.com/pro100andrey/theme_extensions_builder/blob/main/packages/theme_extensions_builder/README.md
 
-version: 6.0.0-dev.1
+version: 6.0.0
 
 platforms:
   android:

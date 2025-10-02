@@ -1,4 +1,4 @@
-## 6.0.0-dev.1
+## 6.0.0
 
 - *Added*: `lerpDuration` property.
 - *Added*: `ThemeGen` annotation.

@@ -1,18 +1,5 @@
-## 6.0.0-dev.4
+## 6.0.0
 
-- *Fixed*: static `lerp` return type to nullable
-
-## 6.0.0-dev.3
-
-- *Fixed*: static `lerp`, `merge` methods.
-
-## 6.0.0-dev.2
-
-- *Fixed*: static `lerp` return type to non-nullable
-
-## 6.0.0-dev.1
-
-- *Updated*: dependencies.
 - *Added*: `lerpDuration` property.
 - *Added*: `ThemeGen` annotation for theme generation.
 

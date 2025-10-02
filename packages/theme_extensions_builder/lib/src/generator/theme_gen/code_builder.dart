@@ -216,14 +216,7 @@ Method staticLerp(ThemeGenConfig config) {
         refer(
           'a',
         ).equalTo(literalNull).and(refer('b').equalTo(literalNull)).code,
-        [
-          refer('ArgumentError')
-              .newInstance([
-                literalString('Both a and b cannot be null'),
-              ])
-              .thrown
-              .statement,
-        ],
+        [literalNull.returned.statement],
       ),
     )
     ..statements.add(const Code(''))
@@ -359,7 +352,7 @@ Method staticLerp(ThemeGenConfig config) {
     m
       ..name = 'lerp'
       ..static = true
-      ..returns = refer(config.className)
+      ..returns = refer(config.className.nullable())
       ..requiredParameters.addAll([
         Parameter(
           (p) => p

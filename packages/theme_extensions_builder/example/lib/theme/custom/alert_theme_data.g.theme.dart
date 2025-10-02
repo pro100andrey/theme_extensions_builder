@@ -12,9 +12,9 @@ part of 'alert_theme_data.dart';
 mixin _$AlertThemeData {
   bool get canMerge => true;
 
-  static AlertThemeData lerp(AlertThemeData? a, AlertThemeData? b, double t) {
+  static AlertThemeData? lerp(AlertThemeData? a, AlertThemeData? b, double t) {
     if (a == null && b == null) {
-      throw ArgumentError('Both a and b cannot be null');
+      return null;
     }
 
     return AlertThemeData(
@@ -33,10 +33,12 @@ mixin _$AlertThemeData {
       baseTheme: BaseTheme.lerp(a?.baseTheme, b?.baseTheme, t),
       borderRadius: lerpDouble$(a?.borderRadius, b?.borderRadius, t),
       borderSide: a != null && b != null
-          ? BorderSide.lerp(a.borderSide, b.borderSide, t)
-          : b?.borderSide ?? a!.borderSide,
+          ? BorderSide.lerp(a.borderSide!, b.borderSide!, t)
+          : t < 0.5
+          ? a?.borderSide
+          : b?.borderSide,
       curve: t < 0.5 ? a?.curve : b?.curve,
-      border: Border.lerp(a?.border, b?.border, t)!,
+      border: Border.lerp(a?.border, b?.border, t),
       animationDuration: lerpDuration$(
         a?.animationDuration,
         b?.animationDuration,
@@ -99,9 +101,13 @@ mixin _$AlertThemeData {
       crossAxisAlignment: other.crossAxisAlignment,
       baseTheme: other.baseTheme,
       borderRadius: other.borderRadius,
-      borderSide: BorderSide.merge(current.borderSide, other.borderSide),
+      borderSide: current.borderSide != null && other.borderSide != null
+          ? BorderSide.merge(current.borderSide!, other.borderSide!)
+          : other.borderSide,
       curve: other.curve,
-      border: Border.merge(current.border, other.border),
+      border: current.border != null && other.border != null
+          ? Border.merge(current.border!, other.border!)
+          : other.border,
       animationDuration: other.animationDuration,
     );
   }
@@ -158,9 +164,9 @@ mixin _$AlertThemeData {
 mixin _$BaseTheme {
   bool get canMerge => true;
 
-  static BaseTheme lerp(BaseTheme? a, BaseTheme? b, double t) {
+  static BaseTheme? lerp(BaseTheme? a, BaseTheme? b, double t) {
     if (a == null && b == null) {
-      throw ArgumentError('Both a and b cannot be null');
+      return null;
     }
 
     return BaseTheme(

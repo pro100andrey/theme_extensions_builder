@@ -1,3 +1,7 @@
+## 6.0.0-dev.4
+
+- *Fixed*: static `lerp` return type to nullable
+
 ## 6.0.0-dev.3
 
 - *Fixed*: static `lerp`, `merge` methods.

@@ -1,3 +1,7 @@
+## 6.0.1
+
+- *Fixed*:  `lerpDuration$`, `lerpDouble$` calculation in case of null values.
+
 ## 6.0.0
 
 - *Added*: `lerpDuration` property.

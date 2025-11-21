@@ -64,14 +64,13 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       return true;
     }
 
-    if (other.runtimeType != runtimeType) {
+    if (other is! AppThemeExtension) {
       return false;
     }
 
     final value = (this as AppThemeExtension);
 
-    return other is AppThemeExtension &&
-        other.primaryColor == value.primaryColor &&
+    return other.primaryColor == value.primaryColor &&
         other.layoutMode == value.layoutMode &&
         other.insets == value.insets &&
         other.animation == value.animation &&
@@ -191,14 +190,13 @@ mixin _$AppColorsMixin on ThemeExtension<AppColors> {
       return true;
     }
 
-    if (other.runtimeType != runtimeType) {
+    if (other is! AppColors) {
       return false;
     }
 
     final value = (this as AppColors);
 
-    return other is AppColors &&
-        other.color1 == value.color1 &&
+    return other.color1 == value.color1 &&
         other.color2 == value.color2 &&
         other.color3 == value.color3 &&
         other.color4 == value.color4 &&
@@ -295,14 +293,13 @@ mixin _$CardThemeExtensionMixin on ThemeExtension<CardThemeExtension> {
       return true;
     }
 
-    if (other.runtimeType != runtimeType) {
+    if (other is! CardThemeExtension) {
       return false;
     }
 
     final value = (this as CardThemeExtension);
 
-    return other is CardThemeExtension &&
-        other.primaryColor == value.primaryColor &&
+    return other.primaryColor == value.primaryColor &&
         other.layoutMode == value.layoutMode &&
         other.insets == value.insets;
   }

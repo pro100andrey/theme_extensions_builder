@@ -118,14 +118,13 @@ mixin _$AlertThemeData {
       return true;
     }
 
-    if (other.runtimeType != runtimeType) {
+    if (other is! AlertThemeData) {
       return false;
     }
 
     final value = (this as AlertThemeData);
 
-    return other is AlertThemeData &&
-        other.canMerge == value.canMerge &&
+    return other.canMerge == value.canMerge &&
         other.transitionDuration == value.transitionDuration &&
         other.iconPadding == value.iconPadding &&
         other.titleTextStyle == value.titleTextStyle &&
@@ -200,13 +199,13 @@ mixin _$BaseTheme {
       return true;
     }
 
-    if (other.runtimeType != runtimeType) {
+    if (other is! BaseTheme) {
       return false;
     }
 
     final value = (this as BaseTheme);
 
-    return other is BaseTheme && other.backgroundColor == value.backgroundColor;
+    return other.backgroundColor == value.backgroundColor;
   }
 
   @override

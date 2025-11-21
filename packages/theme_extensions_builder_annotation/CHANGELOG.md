@@ -1,3 +1,7 @@
+## 7.0.0
+
+- *Added*: `constructor` parameter to `ThemeExtensions` and `ThemeGen` annotations.
+
 ## 6.0.1
 
 - *Fixed*:  `lerpDuration$`, `lerpDouble$` calculation in case of null values.

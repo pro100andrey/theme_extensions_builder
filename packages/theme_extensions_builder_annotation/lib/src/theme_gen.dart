@@ -18,5 +18,17 @@ const themeGen = ThemeGen();
 @Target({TargetKind.classType})
 class ThemeGen {
   /// Creates a [ThemeGen] annotation.
-  const ThemeGen();
+  const ThemeGen({this.constructor});
+
+  /// The name of the constructor to be used. If `null`, the default
+  /// constructor will be used.
+  ///
+  /// Example:
+  /// ```dart
+  /// @ThemeGen(constructor: '_internal')
+  /// class MyTheme with _$MyTheme {
+  ///   MyTheme._internal({ ... });
+  /// }
+  /// ```
+  final String? constructor;
 }

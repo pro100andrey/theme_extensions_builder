@@ -1,7 +1,3 @@
-// ignore_for_file: avoid_print
-
-import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
@@ -34,66 +30,41 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
       );
     }
 
-    final mixins = _getMixinsNames(element);
-    final isDeprecatedMixin = mixins.any(
-      (m) => m.contains(r'_$ThemeExtensionMixin'),
-    );
-
-    final classVisitor = _ClassVisitor();
-    element.visitChildren(classVisitor);
-
     final buildContextExtension = annotation
         .read('buildContextExtension')
         .boolValue;
 
+    final constructor = annotation.read('constructor').literalValue as String?;
+
     final contextAccessorName =
         annotation.read('contextAccessorName').literalValue as String?;
+
+    final classVisitor = _ClassVisitor();
+    // Get all supertypes to visit their fields as well
+    final allSupertypes = element.allSupertypes;
+
+    for (final supertype in allSupertypes) {
+      final superElement = supertype.element;
+
+      if (superElement is ClassElement && !supertype.isDartCoreObject) {
+        superElement.visitChildren(classVisitor);
+      }
+    }
+
+    element.visitChildren(classVisitor);
 
     final generatorConfig = ThemeExtensionsConfig(
       fields: classVisitor.fields,
       className: element.displayName,
       contextAccessorName: contextAccessorName,
       buildContextExtension: buildContextExtension,
-      isDeprecatedMixin: isDeprecatedMixin,
+      constructor: constructor,
     );
 
     const generator = ThemeExtensionsCodeBuilder();
     final code = generator.generate(generatorConfig);
 
     return code;
-  }
-
-  List<String> _getMixinsNames(ClassElement element) {
-    final library = element.library.session.getParsedLibraryByElement(
-      element.library,
-    );
-
-    if (library is! ParsedLibraryResult) {
-      throw StateError('Could not get parsed library for element');
-    }
-
-    final compilationUnit = library.units.single.unit;
-
-    final classDeclaration = compilationUnit.declarations.firstWhere(
-      (decl) =>
-          decl is ClassDeclaration && decl.name.lexeme == element.displayName,
-    );
-
-    if (classDeclaration is! ClassDeclaration) {
-      throw StateError('Class declaration not found ');
-    }
-
-    final withClause = classDeclaration.withClause;
-
-    if (withClause == null) {
-      throw StateError('Mixin clause is missing');
-    }
-
-    final result = withClause.mixinTypes
-        .map((e) => e.name.lexeme)
-        .toList(growable: false);
-
-    return result;
   }
 }
 

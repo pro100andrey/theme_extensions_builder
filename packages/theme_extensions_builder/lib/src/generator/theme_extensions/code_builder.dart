@@ -26,20 +26,8 @@ class ThemeExtensionsCodeBuilder {
     );
 
     final mix = Mixin((m) {
-      final name = !config.isDeprecatedMixin
-          ? '_\$${config.className}Mixin'
-          : r'_$ThemeExtensionMixin';
       m
-        ..annotations.addAll([
-          if (config.isDeprecatedMixin)
-            refer('Deprecated').call([
-              literalString(
-                'This mixin is deprecated. '
-                'Use `with _\\\$${config.className}Mixin` instead.',
-              ),
-            ]),
-        ])
-        ..name = name
+        ..name = '_\$${config.className}Mixin'
         ..on = themeExtensionRef;
 
       m.methods.addAll([
@@ -103,12 +91,18 @@ Method copyWith(ThemeExtensionsConfig config) {
   }
 
   body.addExpression(
-    refer(config.className).newInstance([], {
-      for (final field in fields)
-        field.name: refer(field.name).ifNullThen(
-          refer('object').property(field.name),
-        ),
-    }).returned,
+    InvokeExpression.newOf(
+      refer(config.className),
+      [],
+      {
+        for (final field in fields)
+          field.name: refer(field.name).ifNullThen(
+            refer('object').property(field.name),
+          ),
+      },
+      [],
+      config.constructor,
+    ).returned,
   );
 
   final parameters = fields
@@ -244,9 +238,13 @@ Method lerpMethod(ThemeExtensionsConfig config) {
       }
     }
 
-    final v = refer(config.className).newInstance([], args).returned;
-
-    return v;
+    return InvokeExpression.newOf(
+      refer(config.className),
+      [],
+      args,
+      [],
+      config.constructor,
+    ).returned;
   }());
 
   final result = Method((m) {
@@ -287,9 +285,7 @@ Method equalOperator(ThemeExtensionsConfig config) {
     ..statements.add(const Code(''))
     ..statements.add(
       ifCode(
-        refer(
-          'other',
-        ).property('runtimeType').notEqualTo(refer('runtimeType')).code,
+        refer('other').isNotA(refer(config.className)).code,
         [literalFalse.returned.statement],
       ),
     )
@@ -302,25 +298,22 @@ Method equalOperator(ThemeExtensionsConfig config) {
           refer('this').asA(refer(config.className)),
         ),
       )
-      ..statements.add(const Code(''));
+      ..statements.add(const Code(''))
+      ..addExpression(
+        fields
+            .map(
+              (field) => refer('other')
+                  .property(field.name)
+                  .equalTo(
+                    refer('value').property(field.name),
+                  ),
+            )
+            .reduce((a, b) => a.and(b))
+            .returned,
+      );
+  } else {
+    body.addExpression(literalTrue.returned);
   }
-
-  body.addExpression(
-    refer('other')
-        .isA(refer(config.className))
-        .and(
-          fields
-              .map(
-                (field) => refer('other')
-                    .property(field.name)
-                    .equalTo(
-                      refer('value').property(field.name),
-                    ),
-              )
-              .reduce((a, b) => a.and(b)),
-        )
-        .returned,
-  );
 
   final result = Method((m) {
     m

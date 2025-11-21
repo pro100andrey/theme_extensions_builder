@@ -99,7 +99,7 @@ mixin _$AlertThemeData {
           other.titleTextStyle,
       mainAxisAlignment: other.mainAxisAlignment,
       crossAxisAlignment: other.crossAxisAlignment,
-      baseTheme: other.baseTheme,
+      baseTheme: current.baseTheme?.merge(other.baseTheme) ?? other.baseTheme,
       borderRadius: other.borderRadius,
       borderSide: current.borderSide != null && other.borderSide != null
           ? BorderSide.merge(current.borderSide!, other.borderSide!)

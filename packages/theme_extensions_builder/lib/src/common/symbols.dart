@@ -22,4 +22,27 @@ class FieldSymbol {
 
   bool get isDouble => type == 'double';
   bool get isDuration => type == 'Duration';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    return other is FieldSymbol &&
+        other.name == name &&
+        other.type == type &&
+        other.lerpInfo == lerpInfo &&
+        other.isNullable == isNullable &&
+        other.mergeInfo == mergeInfo;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    name,
+    type,
+    lerpInfo,
+    isNullable,
+    mergeInfo,
+  );
 }

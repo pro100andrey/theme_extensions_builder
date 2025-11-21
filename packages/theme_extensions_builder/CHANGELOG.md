@@ -1,3 +1,13 @@
+## 7.0.0
+
+- **Breaking changes**: Removed deprecated `_$ThemeExtensionMixin` mixin. Use `_$[ClassName]Mixin` instead.
+- **New Feature**: Added `constructor` parameter to `@ThemeExtensions` and `@ThemeGen` annotations, allowing you to specify a custom constructor name.
+- **Improvement**: Added support for inheriting fields from superclasses in both `@ThemeExtensions` and `@ThemeGen` generators.
+- **Improvement**: Optimized equality checks (`==` operator) to use type checking with `is!` instead of `runtimeType` comparison.
+- **Improvement**: Added `==` and `hashCode` implementations to `FieldSymbol` class for better comparison support.
+- **Updated**: Dependencies to latest versions.
+- **Fixes**: Various bug fixes and improvements - [issues/27](https://github.com/pro100andrey/theme_extensions_builder/issues/27), [issues/28](https://github.com/pro100andrey/theme_extensions_builder/issues/28), Special thanks to [nank1ro](https://github.com/nank1ro)! for finding and reporting issues.
+
 ## 6.0.1
 
 - *Fixed*:  `lerpDuration$`, `lerpDouble$` calculation in case of null values.

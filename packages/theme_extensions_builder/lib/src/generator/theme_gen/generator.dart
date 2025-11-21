@@ -32,12 +32,26 @@ class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
       );
     }
 
+    final constructor = annotation.read('constructor').literalValue as String?;
+
     final classVisitor = _ClassVisitor();
+    // Get all supertypes to visit their fields as well
+    final allSupertypes = element.allSupertypes;
+
+    for (final supertype in allSupertypes) {
+      final superElement = supertype.element;
+
+      if (superElement is ClassElement && !supertype.isDartCoreObject) {
+        superElement.visitChildren(classVisitor);
+      }
+    }
+    // Finally, visit the original class to get its own fields
     element.visitChildren(classVisitor);
 
     final generatorConfig = ThemeGenConfig(
       fields: classVisitor.fields,
       className: element.displayName,
+      constructor: constructor,
     );
 
     const generator = ThemeGenCodeBuilder();

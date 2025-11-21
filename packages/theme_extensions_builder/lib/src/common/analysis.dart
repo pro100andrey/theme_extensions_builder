@@ -6,7 +6,7 @@ import 'symbols.dart';
 
 /// Checks if the [field] type has a `lerp` method.
 ///
-/// Returns [LerpInfo] if a valid `lerp` method is found, otherwise returns 
+/// Returns [LerpInfo] if a valid `lerp` method is found, otherwise returns
 /// `null`.
 ///
 /// The `lerp` method can be:
@@ -56,7 +56,7 @@ LerpInfo? hasLerp(FieldElement field) {
 
 /// Checks if the [field] type has a `merge` method.
 ///
-/// Returns [MergeInfo] if a valid `merge` method is found, otherwise returns 
+/// Returns [MergeInfo] if a valid `merge` method is found, otherwise returns
 /// `null`.
 ///
 /// The `merge` method can be:

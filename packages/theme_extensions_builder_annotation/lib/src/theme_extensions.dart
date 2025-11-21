@@ -25,6 +25,7 @@ class ThemeExtensions {
   const ThemeExtensions({
     this.buildContextExtension = true,
     this.contextAccessorName,
+    this.constructor,
   });
 
   /// Whether to generate an extension on `BuildContext`.
@@ -33,4 +34,15 @@ class ThemeExtensions {
   /// Optional custom name for the context accessor property in the generated
   /// extensions.
   final String? contextAccessorName;
+
+  /// The name of the constructor to be used. If `null`, the default
+  /// constructor will be used.
+  //// Example:
+  /// ```dart
+  /// @ThemeExtensions(constructor: '_internal')
+  /// class MyTheme with _$MyTheme {
+  ///   MyTheme._internal({ ... });
+  /// }
+  /// ```
+  final String? constructor;
 }

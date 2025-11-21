@@ -5,17 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Generator",
-            
-            "request": "launch",
-            "program": "packages/theme_extensions_builder/example/.dart_tool/build/entrypoint/build.dart",
-            "type": "dart",
-            "args": [
-                "build",
-                "--delete-conflicting-outputs"
-            ]
-        },
-        {
             "name": " Example",
             "cwd": "packages/theme_extensions_builder/example",
             "request": "launch",

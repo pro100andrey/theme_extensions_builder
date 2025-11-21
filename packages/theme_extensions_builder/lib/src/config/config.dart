@@ -13,7 +13,7 @@ sealed class BaseConfig {
   /// The name of the class to be generated.
   final String className;
 
-  /// The name of the constructor to be used. If `null`, the default
+  /// The name of the constructor to be used. If `null`, the default constructor will be used.
   final String? constructor;
 }
 

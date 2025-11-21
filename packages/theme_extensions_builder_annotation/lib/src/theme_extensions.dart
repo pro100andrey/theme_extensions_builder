@@ -37,7 +37,7 @@ class ThemeExtensions {
 
   /// The name of the constructor to be used. If `null`, the default
   /// constructor will be used.
-  //// Example:
+  /// Example:
   /// ```dart
   /// @ThemeExtensions(constructor: '_internal')
   /// class MyTheme with _$MyTheme {

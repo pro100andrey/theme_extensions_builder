@@ -9,7 +9,15 @@
             "cwd": "packages/theme_extensions_builder/example",
             "request": "launch",
             "program": "lib/main.dart",
+            "flutterMode": "debug",
             "type": "dart",
+        },
+        {
+            "name": "Attach to Build Runner",
+            "request": "attach",
+            "type": "dart",
+            "vmServiceUri": "http://127.0.0.1:8181",
+            "preLaunchTask": "example: run build_runner",
         }
     ]
 }

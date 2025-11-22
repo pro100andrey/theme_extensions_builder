@@ -38,10 +38,12 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
     final value = (this as AppThemeExtension);
 
     return AppThemeExtension(
-      primaryColor: t < 0.5 ? value.primaryColor : otherValue.primaryColor,
-      backgroundColor: t < 0.5
-          ? value.backgroundColor
-          : otherValue.backgroundColor,
+      primaryColor: Color.lerp(value.primaryColor, otherValue.primaryColor, t)!,
+      backgroundColor: Color.lerp(
+        value.backgroundColor,
+        otherValue.backgroundColor,
+        t,
+      )!,
       layoutMode: t < 0.5 ? value.layoutMode : otherValue.layoutMode,
     );
   }

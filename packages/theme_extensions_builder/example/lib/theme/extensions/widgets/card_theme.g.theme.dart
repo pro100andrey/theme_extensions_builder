@@ -46,19 +46,29 @@ mixin _$CardThemeExtensionMixin on ThemeExtension<CardThemeExtension> {
     final value = (this as CardThemeExtension);
 
     return CardThemeExtension(
-      borderRadius: t < 0.5 ? value.borderRadius : otherValue.borderRadius,
-      backgroundColor: t < 0.5
-          ? value.backgroundColor
-          : otherValue.backgroundColor,
+      borderRadius: BorderRadius.lerp(
+        value.borderRadius,
+        otherValue.borderRadius,
+        t,
+      )!,
+      backgroundColor: Color.lerp(
+        value.backgroundColor,
+        otherValue.backgroundColor,
+        t,
+      )!,
       boxShadow: t < 0.5 ? value.boxShadow : otherValue.boxShadow,
-      titleTextStyle: t < 0.5
-          ? value.titleTextStyle
-          : otherValue.titleTextStyle,
-      subtitleTextStyle: t < 0.5
-          ? value.subtitleTextStyle
-          : otherValue.subtitleTextStyle,
-      border: t < 0.5 ? value.border : otherValue.border,
-      padding: t < 0.5 ? value.padding : otherValue.padding,
+      titleTextStyle: TextStyle.lerp(
+        value.titleTextStyle,
+        otherValue.titleTextStyle,
+        t,
+      )!,
+      subtitleTextStyle: TextStyle.lerp(
+        value.subtitleTextStyle,
+        otherValue.subtitleTextStyle,
+        t,
+      )!,
+      border: Border.lerp(value.border, otherValue.border, t)!,
+      padding: EdgeInsetsGeometry.lerp(value.padding, otherValue.padding, t)!,
     );
   }
 

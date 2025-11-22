@@ -173,9 +173,9 @@ Method lerpMethod(ThemeExtensionsConfig config) {
         // Lerp class with static lerp method
         case FieldSymbol(
           hasLerp: true,
-          lerpInfo: (isStatic: true, nullableArgs: _),
+          lerpInfo: (isStatic: true, nullableArgs: _, :final methodName),
         ):
-          final expression = refer(field.type).property('lerp').call([
+          final expression = refer(field.type).property(methodName).call([
             refer('value').property(field.name),
             refer('otherValue').property(field.name),
             refer('t'),
@@ -188,11 +188,11 @@ Method lerpMethod(ThemeExtensionsConfig config) {
         // Lerp class with instance lerp method
         case FieldSymbol(
           hasLerp: true,
-          lerpInfo: (isStatic: false, nullableArgs: _),
+          lerpInfo: (isStatic: false, nullableArgs: _, :final methodName),
         ):
           final expression = refer('value')
               .property(field.name)
-              .property('lerp')
+              .property(methodName)
               .call([
                 refer('otherValue').property(field.name),
                 refer('t'),

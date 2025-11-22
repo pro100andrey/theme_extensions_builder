@@ -1,4 +1,4 @@
-typedef LerpInfo = ({bool isStatic, bool nullableArgs});
+typedef LerpInfo = ({bool isStatic, bool nullableArgs, String methodName});
 typedef MergeInfo = ({bool isStatic});
 
 /// It's a class that represents a field

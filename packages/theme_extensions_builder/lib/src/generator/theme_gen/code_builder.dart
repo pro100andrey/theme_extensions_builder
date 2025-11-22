@@ -234,14 +234,14 @@ Method staticLerp(ThemeGenConfig config) {
           // When the field has a static lerp method
           case FieldSymbol(
             hasLerp: true,
-            lerpInfo: (isStatic: true, :final nullableArgs),
+            lerpInfo: (isStatic: true, :final nullableArgs, :final methodName),
           ):
             if (!nullableArgs && field.isNullable) {
               final expression = refer('a')
                   .notEqualTo(literalNull)
                   .and(refer('b').notEqualTo(literalNull))
                   .conditional(
-                    refer(field.type).property('lerp').call([
+                    refer(field.type).property(methodName).call([
                       refer('a').property(field.name).nullChecked,
                       refer('b').property(field.name).nullChecked,
                       refer('t'),
@@ -262,7 +262,7 @@ Method staticLerp(ThemeGenConfig config) {
                   .notEqualTo(literalNull)
                   .and(refer('b').notEqualTo(literalNull))
                   .conditional(
-                    refer(field.type).property('lerp').call([
+                    refer(field.type).property(methodName).call([
                       refer('a').property(field.name),
                       refer('b').property(field.name),
                       refer('t'),
@@ -279,7 +279,7 @@ Method staticLerp(ThemeGenConfig config) {
               continue;
             }
 
-            final expression = refer(field.type).property('lerp').call([
+            final expression = refer(field.type).property(methodName).call([
               refer('a'.nullable()).property(field.name),
               refer('b'.nullable()).property(field.name),
               refer('t'),
@@ -292,11 +292,15 @@ Method staticLerp(ThemeGenConfig config) {
           // When the field has a non-static lerp method
           case FieldSymbol(
             hasLerp: true,
-            lerpInfo: (isStatic: false, nullableArgs: _),
+            lerpInfo: (
+              isStatic: false,
+              nullableArgs: _,
+              methodName: final methodName,
+            ),
           ):
             final expression = refer('a'.nullable())
                 .property(field.name)
-                .property('lerp')
+                .property(methodName)
                 .call([
                   refer('b'.nullable()).property(field.name),
                   refer('t'),

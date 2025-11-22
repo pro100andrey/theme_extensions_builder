@@ -28,7 +28,10 @@ LerpInfo? hasLerp(FieldElement field) {
 
   for (final type in types) {
     for (final method in type.methods) {
-      if (method case MethodElement(displayName: 'lerp', isPublic: true)) {
+      if (method case MethodElement(
+        displayName: 'lerp' || 'lerpList',
+        isPublic: true,
+      )) {
         final length = method.children.length;
         final isStatic = method.isStatic;
 
@@ -45,7 +48,11 @@ LerpInfo? hasLerp(FieldElement field) {
                     .take(1)
                     .any((e) => e.type.nullabilitySuffix.name != 'none');
 
-          return (isStatic: isStatic, nullableArgs: nullableArgs);
+          return (
+            isStatic: isStatic,
+            nullableArgs: nullableArgs,
+            methodName: method.displayName,
+          );
         }
       }
     }

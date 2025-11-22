@@ -211,18 +211,21 @@ Alternative annotation for theme data classes that don't extend `ThemeExtension`
 @ThemeGen()
 class AlertThemeData with _$AlertThemeData {
   const AlertThemeData({
+    this.canMerge = true,
     this.transitionDuration = const Duration(milliseconds: 300),
     this.iconPadding,
     this.titleTextStyle,
     this.borderRadius,
   });
 
+  @override
+  final bool canMerge;
   final Duration transitionDuration;
   final EdgeInsetsGeometry? iconPadding;
   final TextStyle? titleTextStyle;
   final double? borderRadius;
 
-  static AlertThemeData lerp(AlertThemeData? a, AlertThemeData? b, double t) =>
+  static AlertThemeData? lerp(AlertThemeData? a, AlertThemeData? b, double t) =>
       _$AlertThemeData.lerp(a, b, t);
 }
 ```
@@ -234,6 +237,7 @@ The generator creates:
 1. **Mixin with methods**:
    - `copyWith()` - Create a copy with modified fields
    - `lerp()` - Interpolate between two theme instances
+   - `merge()` - Merge two theme instances
    - `operator ==` - Equality comparison
    - `hashCode` - Hash code for collections
 
@@ -243,102 +247,115 @@ The generator creates:
 **Example of generated code**:
 
 ```dart
-mixin _$ButtonThemeMixin on ThemeExtension<ButtonTheme> {
-  @override
-  ThemeExtension<ButtonTheme> copyWith({
-    Color? backgroundColor,
-    Color? foregroundColor,
-    BorderRadius? borderRadius,
-    EdgeInsets? padding,
-  }) {
-    final object = this as ButtonTheme;
-    return ButtonTheme(
-      backgroundColor: backgroundColor ?? object.backgroundColor,
-      foregroundColor: foregroundColor ?? object.foregroundColor,
-      borderRadius: borderRadius ?? object.borderRadius,
-      padding: padding ?? object.padding,
+part of 'alert_theme_data.dart';
+
+// **************************************************************************
+// ThemeGenGenerator
+// **************************************************************************
+
+mixin _$AlertThemeData {
+  bool get canMerge => true;
+
+  static AlertThemeData? lerp(AlertThemeData? a, AlertThemeData? b, double t) {
+    if (a == null && b == null) {
+      return null;
+    }
+
+    return AlertThemeData(
+      canMerge: b?.canMerge ?? true,
+      transitionDuration: lerpDuration$(
+        a?.transitionDuration,
+        b?.transitionDuration,
+        t,
+      )!,
+      iconPadding: EdgeInsetsGeometry.lerp(a?.iconPadding, b?.iconPadding, t),
+      titleTextStyle: TextStyle.lerp(a?.titleTextStyle, b?.titleTextStyle, t),
+      borderRadius: lerpDouble$(a?.borderRadius, b?.borderRadius, t),
     );
   }
 
-  @override
-  ThemeExtension<ButtonTheme> lerp(
-    ThemeExtension<ButtonTheme>? other,
-    double t,
-  ) {
-    if (other is! ButtonTheme) return this;
-    final value = this as ButtonTheme;
-    return ButtonTheme(
-      backgroundColor: Color.lerp(value.backgroundColor, other.backgroundColor, t)!,
-      foregroundColor: Color.lerp(value.foregroundColor, other.foregroundColor, t)!,
-      borderRadius: BorderRadius.lerp(value.borderRadius, other.borderRadius, t),
-      padding: EdgeInsets.lerp(value.padding, other.padding, t),
+  AlertThemeData copyWith({
+    bool? canMerge,
+    Duration? transitionDuration,
+    EdgeInsetsGeometry? iconPadding,
+    TextStyle? titleTextStyle,
+    double? borderRadius,
+  }) {
+    final a = (this as AlertThemeData);
+
+    return AlertThemeData(
+      canMerge: canMerge ?? a.canMerge,
+      transitionDuration: transitionDuration ?? a.transitionDuration,
+      iconPadding: iconPadding ?? a.iconPadding,
+      titleTextStyle: titleTextStyle ?? a.titleTextStyle,
+      borderRadius: borderRadius ?? a.borderRadius,
+    );
+  }
+
+  AlertThemeData merge(AlertThemeData? other) {
+    final current = (this as AlertThemeData);
+
+    if (other == null) {
+      return current;
+    }
+
+    if (!other.canMerge) {
+      return other;
+    }
+
+    return copyWith(
+      canMerge: other.canMerge,
+      transitionDuration: other.transitionDuration,
+      iconPadding: other.iconPadding,
+      titleTextStyle:
+          current.titleTextStyle?.merge(other.titleTextStyle) ??
+          other.titleTextStyle,
+      borderRadius: other.borderRadius,
     );
   }
 
   @override
   bool operator ==(Object other) {
-    final value = this as ButtonTheme;
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is ButtonTheme &&
-            identical(value.backgroundColor, other.backgroundColor) &&
-            identical(value.foregroundColor, other.foregroundColor) &&
-            identical(value.borderRadius, other.borderRadius) &&
-            identical(value.padding, other.padding));
+    if (identical(this, other)) {
+      return true;
+    }
+
+    if (other is! AlertThemeData) {
+      return false;
+    }
+
+    final value = (this as AlertThemeData);
+
+    return other.canMerge == value.canMerge &&
+        other.transitionDuration == value.transitionDuration &&
+        other.iconPadding == value.iconPadding &&
+        other.titleTextStyle == value.titleTextStyle &&
+        other.borderRadius == value.borderRadius;
   }
 
   @override
   int get hashCode {
-    final value = this as ButtonTheme;
+    final value = (this as AlertThemeData);
+
     return Object.hash(
       runtimeType,
-      value.backgroundColor,
-      value.foregroundColor,
+      value.canMerge,
+      value.transitionDuration,
+      value.iconPadding,
+      value.titleTextStyle,
       value.borderRadius,
-      value.padding,
     );
   }
-}
-
-extension ButtonThemeBuildContext on BuildContext {
-  ButtonTheme get buttonTheme => Theme.of(this).extension<ButtonTheme>()!;
 }
 ```
 
 ## 🎨 Advanced Examples
 
-### Complex Theme with Multiple Types
-
-```dart
-enum LayoutMode { compact, expanded }
-
-@ThemeExtensions()
-class AppThemeExtension extends ThemeExtension<AppThemeExtension>
-    with _$AppThemeExtensionMixin {
-  const AppThemeExtension({
-    required this.primaryColor,
-    required this.layoutMode,
-    required this.insets,
-    required this.radius,
-    this.animation = const Duration(milliseconds: 300),
-    this.padding = const EdgeInsets.all(8),
-  });
-
-  final Color primaryColor;
-  final LayoutMode layoutMode;
-  final EdgeInsets insets;
-  final Duration? animation;
-  final double radius;
-  final EdgeInsetsGeometry? padding;
-}
-```
-
 ### Multiple Theme Extensions
 
-You can define multiple theme extensions in the same project:
+You can define multiple theme extensions in the same file:
 
 ```dart
-// lib/theme/colors.dart
 @ThemeExtensions()
 class AppColors extends ThemeExtension<AppColors> with _$AppColorsMixin {
   const AppColors({
@@ -352,7 +369,6 @@ class AppColors extends ThemeExtension<AppColors> with _$AppColorsMixin {
   final Color error;
 }
 
-// lib/theme/typography.dart
 @ThemeExtensions()
 class AppTypography extends ThemeExtension<AppTypography> with _$AppTypographyMixin {
   const AppTypography({
@@ -381,52 +397,6 @@ final theme = ThemeData.light().copyWith(
     ),
   ],
 );
-```
-
-### Nested Theme Extensions
-
-```dart
-// Custom nested theme extension
-class SubTextTheme extends ThemeExtension<SubTextTheme> {
-  const SubTextTheme({
-    required this.color,
-    required this.fontSize,
-  });
-
-  final Color color;
-  final double fontSize;
-
-  @override
-  ThemeExtension<SubTextTheme> copyWith({Color? color, double? fontSize}) =>
-      SubTextTheme(
-        color: color ?? this.color,
-        fontSize: fontSize ?? this.fontSize,
-      );
-
-  @override
-  ThemeExtension<SubTextTheme> lerp(
-    ThemeExtension<SubTextTheme>? other,
-    double t,
-  ) {
-    if (other is! SubTextTheme) return this;
-    return SubTextTheme(
-      color: Color.lerp(color, other.color, t)!,
-      fontSize: lerpDouble(fontSize, other.fontSize, t)!,
-    );
-  }
-}
-
-// Main theme using nested extension
-@ThemeExtensions()
-class AppTheme extends ThemeExtension<AppTheme> with _$AppThemeMixin {
-  const AppTheme({
-    required this.primaryColor,
-    required this.subTextTheme,
-  });
-
-  final Color primaryColor;
-  final SubTextTheme subTextTheme;
-}
 ```
 
 ## 🛠️ IDE Configuration

@@ -146,7 +146,10 @@ List<String> getMixinsNames({required ClassElement element}) {
   final withClause = classDeclaration.withClause;
 
   if (withClause == null) {
-    throw StateError('Mixin clause is missing');
+    throw StateError(
+      'Mixin clause is missing for class ${element.displayName}. '
+      'Try adding "with _\$${element.displayName}" to the class declaration.',
+    );
   }
 
   final result = withClause.mixinTypes

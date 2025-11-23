@@ -1,23 +1,32 @@
 import 'package:flutter/material.dart';
 
-import 'extensions/app_theme_extensions.dart';
+import 'extensions/app_theme.dart';
+import 'extensions/widgets/card_theme.dart';
 
-final darkTheme = ThemeData(
-  brightness: Brightness.dark,
-  colorScheme: ColorScheme.fromSeed(
+ThemeData get darkTheme => ThemeData(
+  brightness: .dark,
+  colorScheme: .fromSeed(
     seedColor: Colors.blue,
-    brightness: Brightness.dark,
+    brightness: .dark,
   ),
-  extensions: const [
-    AppThemeExtension(
+  extensions: [
+    const AppThemeExtension(
       primaryColor: Colors.teal,
-      radius: 22,
-      insets: EdgeInsets.all(16),
-      layoutMode: LayoutMode.expanded,
-      subTextTheme: MySubTextTheme(
-        color: Colors.white,
-        fontSize: 16,
-      ),
+      backgroundColor: Colors.black,
+      layoutMode: .expanded,
+    ),
+    CardThemeExtension(
+      borderRadius: const .all(.circular(16)),
+      backgroundColor: Colors.black,
+      border: .all(color: Colors.white24, width: 1),
+      padding: const .all(20),
+      boxShadow: [
+        const BoxShadow(
+          color: Colors.white24,
+          blurRadius: 1,
+          offset: .new(-2, 4),
+        ),
+      ],
     ),
   ],
 );

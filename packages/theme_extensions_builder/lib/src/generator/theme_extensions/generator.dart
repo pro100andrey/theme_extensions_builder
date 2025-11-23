@@ -53,12 +53,18 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
 
     element.visitChildren(classVisitor);
 
+    final mixinName = getMixinsNames(element: element).firstWhere(
+      (m) => m.startsWith(r'_$'),
+      orElse: () => '_\$${element.displayName}',
+    );
+
     final generatorConfig = ThemeExtensionsConfig(
       fields: classVisitor.fields,
       className: element.displayName,
       contextAccessorName: contextAccessorName,
       buildContextExtension: buildContextExtension,
       constructor: constructor,
+      themeExtensionMixinName: mixinName,
     );
 
     const generator = ThemeExtensionsCodeBuilder();
@@ -88,7 +94,7 @@ class _ClassVisitor extends BaseClassVisitor {
       final resultType = isNullable ? type.substring(0, type.length - 1) : type;
 
       final symbol = FieldSymbol(
-        lerpInfo: hasLerp(element),
+        lerpInfo: lerpInfo(element: element),
         mergeInfo: null,
         name: element.displayName,
         type: resultType,

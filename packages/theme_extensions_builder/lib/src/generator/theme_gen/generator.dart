@@ -81,8 +81,8 @@ class _ClassVisitor extends BaseClassVisitor {
       final resultType = isNullable ? type.substring(0, type.length - 1) : type;
 
       final symbol = FieldSymbol(
-        lerpInfo: hasLerp(element),
-        mergeInfo: hasMerge(element),
+        lerpInfo: lerpInfo(element: element),
+        mergeInfo: mergeInfo(element: element),
         name: element.displayName,
         type: resultType,
         isNullable: isNullable,

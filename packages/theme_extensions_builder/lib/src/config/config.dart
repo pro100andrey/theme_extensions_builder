@@ -13,7 +13,8 @@ sealed class BaseConfig {
   /// The name of the class to be generated.
   final String className;
 
-  /// The name of the constructor to be used. If `null`, the default constructor will be used.
+  /// The name of the constructor to be used. If `null`, the default
+  /// constructor will be used.
   final String? constructor;
 }
 
@@ -34,6 +35,7 @@ class ThemeExtensionsConfig extends BaseConfig {
     required super.constructor,
     required this.buildContextExtension,
     required this.contextAccessorName,
+    required this.themeExtensionMixinName,
   });
 
   /// The name of the context getter to be generated. By default, it will be
@@ -42,4 +44,6 @@ class ThemeExtensionsConfig extends BaseConfig {
 
   /// Whether to generate the BuildContext extension.
   final bool buildContextExtension;
+
+  final String themeExtensionMixinName;
 }

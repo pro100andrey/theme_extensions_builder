@@ -1,0 +1,72 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "example: run build_runner clean",
+            "type": "shell",
+            "command": "dart",
+            "args": [
+                "run",
+                "build_runner",
+                "clean"
+            ],
+            "options": {
+                "cwd": "packages/theme_extensions_builder/example"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "group": "build"
+            }
+        },
+        {
+            "label": "example: run build_runner",
+            "type": "shell",
+            "command": "dart",
+            "args": [
+                "run",
+                "build_runner",
+                "build",
+                "-d",
+                "--dart-jit-vm-arg=--observe",
+                "--dart-jit-vm-arg=--pause-isolates-on-start",
+                "--dart-jit-vm-arg=--disable-service-auth-codes"
+            ],
+            "options": {
+                "cwd": "packages/theme_extensions_builder/example"
+            },
+            "dependsOn": "example: run build_runner clean",
+            "group": "build",
+            "isBackground": true,
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^(.*?):(\\d+):(\\d+): (Error|Warning|Hint): (.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 3,
+                        "severity": 4,
+                        "message": 5
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": "vm-service: *",
+                        "endsPattern": "The Dart DevTools debugger and profiler is available at: .*"
+                    }
+                }
+            ]
+        }
+    ]
+}

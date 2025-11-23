@@ -15,10 +15,11 @@
             },
             "group": "build",
             "presentation": {
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "shared",
                 "clear": true,
-                "group": "build"
+                "group": "build",
+                "close": true,
             }
         },
         {
@@ -48,7 +49,9 @@
                 "reveal": "silent",
                 "panel": "shared",
                 "showReuseMessage": false,
-                "clear": true
+                "clear": true,
+                "group": "build",
+                "close": true,
             },
             "problemMatcher": [
                 {

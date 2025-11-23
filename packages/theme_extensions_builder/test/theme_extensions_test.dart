@@ -5,54 +5,17 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 
 Future<void> main() async {
   initializeBuildLogTracking();
+  clearBuildLog();
 
-  final baseTypesReader = await initializeLibraryReaderForDirectory(
-    'test/src/theme_extensions',
-    'base_types.dart',
-  );
-
-  final nullableTypesReader = await initializeLibraryReaderForDirectory(
-    'test/src/theme_extensions',
-    'nullable_types.dart',
-  );
-
-  final customMixinNamesReader = await initializeLibraryReaderForDirectory(
-    'test/src/theme_extensions',
-    'custom_mixin_name.dart',
-  );
-
-  final emptyThemeReader = await initializeLibraryReaderForDirectory(
-    'test/src/theme_extensions',
-    'empty_theme.dart',
+  final reader = await initializeLibraryReaderForDirectory(
+    'test/src',
+    'theme_extensions.dart',
   );
 
   group('ThemeExtensionsGenerator', () {
-    group('Base types', () {
-      testAnnotatedElements<ThemeExtensions>(
-        baseTypesReader,
-        ThemeExtensionsGenerator(),
-      );
-    });
-
-    group('Nullable types', () {
-      testAnnotatedElements<ThemeExtensions>(
-        nullableTypesReader,
-        ThemeExtensionsGenerator(),
-      );
-    });
-
-    group('Custom mixin names', () {
-      testAnnotatedElements<ThemeExtensions>(
-        customMixinNamesReader,
-        ThemeExtensionsGenerator(),
-      );
-    });
-
-    group('Empty theme', () {
-      testAnnotatedElements<ThemeExtensions>(
-        emptyThemeReader,
-        ThemeExtensionsGenerator(),
-      );
-    });
+    testAnnotatedElements<ThemeExtensions>(
+      reader,
+      ThemeExtensionsGenerator(),
+    );
   });
 }

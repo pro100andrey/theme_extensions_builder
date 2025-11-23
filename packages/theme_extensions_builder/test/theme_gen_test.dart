@@ -6,29 +6,15 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 Future<void> main() async {
   initializeBuildLogTracking();
 
-  final baseTypesReader = await initializeLibraryReaderForDirectory(
-    'test/src/theme_gen',
-    'base_types.dart',
-  );
-
-  final emptyThemeReader = await initializeLibraryReaderForDirectory(
-    'test/src/theme_gen',
-    'empty_theme.dart',
+  final reader = await initializeLibraryReaderForDirectory(
+    'test/src',
+    'theme_gen.dart',
   );
 
   group('ThemeGenGenerator', () {
-    group('Base types', () {
-      testAnnotatedElements<ThemeGen>(
-        baseTypesReader,
-        ThemeGenGenerator(),
-      );
-    });
-
-    group('Empty theme', () {
-      testAnnotatedElements<ThemeGen>(
-        emptyThemeReader,
-        ThemeGenGenerator(),
-      );
-    });
+    testAnnotatedElements<ThemeGen>(
+      reader,
+      ThemeGenGenerator(),
+    );
   });
 }

@@ -1,10 +1,12 @@
+import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 import 'symbols.dart';
 
-/// Checks if the [field] type has a `lerp` method.
+/// Checks if the [element] type has a `lerp` method.
 ///
 /// Returns [LerpInfo] if a valid `lerp` method is found, otherwise returns
 /// `null`.
@@ -12,22 +14,24 @@ import 'symbols.dart';
 /// The `lerp` method can be:
 /// - Static: `static T lerp(T a, T b, double t)`
 /// - Instance: `T lerp(T other, double t)`
-LerpInfo? hasLerp(FieldElement field) {
-  final element = field.type.element;
+LerpInfo? lerpInfo({required FieldElement element}) {
+  final typeElement = element.type.element;
 
-  if (element is! ClassElement) {
+  if (typeElement is! ClassElement) {
     return null;
   }
 
   final types = [
-    element,
-    ...element.allSupertypes
+    typeElement,
+    ...typeElement.allSupertypes
         .where((e) => !e.isDartCoreObject)
         .map((e) => e.element),
   ];
 
   for (final type in types) {
     for (final method in type.methods) {
+      // Check type is List<T> with T being a valid type for lerp.
+
       if (method case MethodElement(
         displayName: 'lerp' || 'lerpList',
         isPublic: true,
@@ -61,7 +65,7 @@ LerpInfo? hasLerp(FieldElement field) {
   return null;
 }
 
-/// Checks if the [field] type has a `merge` method.
+/// Checks if the [element] type has a `merge` method.
 ///
 /// Returns [MergeInfo] if a valid `merge` method is found, otherwise returns
 /// `null`.
@@ -72,10 +76,10 @@ LerpInfo? hasLerp(FieldElement field) {
 ///
 /// Also checks if the class is annotated with `@ThemeGen`, which implies
 /// the existence of a `merge` method.
-MergeInfo? hasMerge(FieldElement field) {
-  final element = field.type.element;
+MergeInfo? mergeInfo({required FieldElement element}) {
+  final typeElement = element.type.element;
 
-  if (element is! ClassElement) {
+  if (typeElement is! ClassElement) {
     return null;
   }
 
@@ -89,8 +93,8 @@ MergeInfo? hasMerge(FieldElement field) {
   }
 
   final types = [
-    element,
-    ...element.allSupertypes
+    typeElement,
+    ...typeElement.allSupertypes
         .where((e) => !e.isDartCoreObject)
         .map((e) => e.element),
   ];
@@ -116,4 +120,38 @@ MergeInfo? hasMerge(FieldElement field) {
     }
   }
   return null;
+}
+
+/// Gets the names of mixins applied to the given [element].
+List<String> getMixinsNames({required ClassElement element}) {
+  final library = element.library.session.getParsedLibraryByElement(
+    element.library,
+  );
+
+  if (library is! ParsedLibraryResult) {
+    throw StateError('Could not get parsed library for element');
+  }
+
+  final compilationUnit = library.units.single.unit;
+
+  final classDeclaration = compilationUnit.declarations.firstWhere(
+    (decl) =>
+        decl is ClassDeclaration && decl.name.lexeme == element.displayName,
+  );
+
+  if (classDeclaration is! ClassDeclaration) {
+    throw StateError('Class declaration not found ');
+  }
+
+  final withClause = classDeclaration.withClause;
+
+  if (withClause == null) {
+    throw StateError('Mixin clause is missing');
+  }
+
+  final result = withClause.mixinTypes
+      .map((e) => e.name.lexeme)
+      .toList(growable: false);
+
+  return result;
 }

@@ -9,19 +9,19 @@ part of 'app_theme.dart';
 // ThemeExtensionsGenerator
 // **************************************************************************
 
-mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
+mixin _$AppThemeExtension on ThemeExtension<AppThemeExtension> {
   @override
   ThemeExtension<AppThemeExtension> copyWith({
     Color? primaryColor,
     Color? backgroundColor,
     LayoutMode? layoutMode,
   }) {
-    final object = (this as AppThemeExtension);
+    final _this = (this as AppThemeExtension);
 
     return AppThemeExtension(
-      primaryColor: primaryColor ?? object.primaryColor,
-      backgroundColor: backgroundColor ?? object.backgroundColor,
-      layoutMode: layoutMode ?? object.layoutMode,
+      primaryColor: primaryColor ?? _this.primaryColor,
+      backgroundColor: backgroundColor ?? _this.backgroundColor,
+      layoutMode: layoutMode ?? _this.layoutMode,
     );
   }
 
@@ -30,21 +30,20 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
     ThemeExtension<AppThemeExtension>? other,
     double t,
   ) {
-    final otherValue = other;
-    if (otherValue is! AppThemeExtension) {
+    if (other is! AppThemeExtension) {
       return this;
     }
 
-    final value = (this as AppThemeExtension);
+    final _this = (this as AppThemeExtension);
 
     return AppThemeExtension(
-      primaryColor: Color.lerp(value.primaryColor, otherValue.primaryColor, t)!,
+      primaryColor: Color.lerp(_this.primaryColor, other.primaryColor, t)!,
       backgroundColor: Color.lerp(
-        value.backgroundColor,
-        otherValue.backgroundColor,
+        _this.backgroundColor,
+        other.backgroundColor,
         t,
       )!,
-      layoutMode: t < 0.5 ? value.layoutMode : otherValue.layoutMode,
+      layoutMode: t < 0.5 ? _this.layoutMode : other.layoutMode,
     );
   }
 
@@ -54,26 +53,27 @@ mixin _$AppThemeExtensionMixin on ThemeExtension<AppThemeExtension> {
       return true;
     }
 
-    if (other is! AppThemeExtension) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final value = (this as AppThemeExtension);
+    final _this = (this as AppThemeExtension);
+    final _other = (other as AppThemeExtension);
 
-    return other.primaryColor == value.primaryColor &&
-        other.backgroundColor == value.backgroundColor &&
-        other.layoutMode == value.layoutMode;
+    return _other.primaryColor == _this.primaryColor &&
+        _other.backgroundColor == _this.backgroundColor &&
+        _other.layoutMode == _this.layoutMode;
   }
 
   @override
   int get hashCode {
-    final value = (this as AppThemeExtension);
+    final _this = (this as AppThemeExtension);
 
     return Object.hash(
       runtimeType,
-      value.primaryColor,
-      value.backgroundColor,
-      value.layoutMode,
+      _this.primaryColor,
+      _this.backgroundColor,
+      _this.layoutMode,
     );
   }
 }

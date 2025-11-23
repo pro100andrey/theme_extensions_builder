@@ -5,9 +5,9 @@ part 'app_theme.g.theme.dart';
 
 enum LayoutMode { compact, expanded }
 
-@ThemeExtensions()
+@themeExtensions
 class AppThemeExtension extends ThemeExtension<AppThemeExtension>
-    with _$AppThemeExtensionMixin {
+    with _$AppThemeExtension {
   const AppThemeExtension({
     required this.primaryColor,
     required this.backgroundColor,

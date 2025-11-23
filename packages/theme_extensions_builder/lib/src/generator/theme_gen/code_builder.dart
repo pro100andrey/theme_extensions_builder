@@ -54,7 +54,7 @@ Method canMerge(ThemeGenConfig config) {
   final result = Method((m) {
     m
       ..name = 'canMerge'
-      ..returns = refer('bool')
+      ..returns = 'bool'.ref
       ..type = MethodType.getter
       ..lambda = true
       ..body = literalTrue.code;
@@ -71,8 +71,8 @@ Method copyWith(ThemeGenConfig config) {
   if (fields.isNotEmpty) {
     body
       ..addExpression(
-        declareFinal('a').assign(
-          refer('this').asA(refer(config.className)),
+        declareFinal('_this').assign(
+          'this'.ref.asA(config.className.ref),
         ),
       )
       ..statements.add(const Code(''));
@@ -80,12 +80,12 @@ Method copyWith(ThemeGenConfig config) {
 
   body.addExpression(
     InvokeExpression.newOf(
-      refer(config.className),
+      config.className.ref,
       [],
       {
         for (final field in fields)
-          field.name: refer(field.name).ifNullThen(
-            refer('a').property(field.name),
+          field.name: field.name.ref.ifNullThen(
+            '_this'.ref.property(field.name),
           ),
       },
       [],
@@ -99,7 +99,7 @@ Method copyWith(ThemeGenConfig config) {
           (p) => p
             ..name = field.name
             ..named = true
-            ..type = refer(field.type.nullable()),
+            ..type = field.type.nullable().ref,
         ),
       )
       .toList(growable: false);
@@ -107,7 +107,7 @@ Method copyWith(ThemeGenConfig config) {
   final result = Method((m) {
     m
       ..name = 'copyWith'
-      ..returns = refer(config.className)
+      ..returns = config.className.ref
       ..optionalParameters.addAll(parameters)
       ..body = body.build();
   });
@@ -122,83 +122,83 @@ Method merge(ThemeGenConfig config) {
 
   body
     ..addExpression(
-      declareFinal('current').assign(
-        refer('this').asA(refer(config.className)),
+      declareFinal('_this').assign(
+        'this'.ref.asA(config.className.ref),
       ),
     )
     ..statements.add(const Code(''))
     ..statements.add(
       ifCode(
-        refer('other').equalTo(literalNull).code,
-        [refer('current').returned.statement],
+        'other'.ref.equalTo(literalNull).code,
+        ['_this'.ref.returned.statement],
       ),
     )
     ..statements.add(const Code(''))
     ..statements.add(
       ifCode(
-        refer('other').negate().property('canMerge').code,
-        [refer('other').returned.statement],
+        'other'.ref.negate().property('canMerge').code,
+        ['other'.ref.returned.statement],
       ),
     )
     ..statements.add(const Code(''))
     ..addExpression(
-      refer('copyWith').call([], {
+      'copyWith'.ref.call([], {
         for (final field in fields)
           field.name: field.hasMerge
               ? () {
                   if (field.mergeInfo!.isStatic && field.isNullable) {
-                    final prop = refer('current')
+                    final prop = '_this'.ref
                         .property(field.name)
                         .notEqualTo(literalNull)
                         .and(
-                          refer(
-                            'other',
-                          ).property(field.name).notEqualTo(literalNull),
+                          'other'.ref
+                              .property(field.name)
+                              .notEqualTo(literalNull),
                         )
                         .conditional(
-                          refer(field.type).property('merge').call([
-                            refer('current').property(field.name).nullChecked,
-                            refer('other').property(field.name).nullChecked,
+                          field.type.ref.property('merge').call([
+                            '_this'.ref.property(field.name).nullChecked,
+                            'other'.ref.property(field.name).nullChecked,
                           ]),
-                          refer('other').property(field.name),
+                          'other'.ref.property(field.name),
                         );
 
                     return prop;
                   } else if (field.mergeInfo!.isStatic && !field.isNullable) {
-                    return refer(field.type).property('merge').call([
-                      refer('current').property(field.name),
-                      refer('other').property(field.name),
+                    return field.type.ref.property('merge').call([
+                      '_this'.ref.property(field.name),
+                      'other'.ref.property(field.name),
                     ]);
                   } else {
-                    var prop = refer('current').property(field.name);
+                    var prop = '_this'.ref.property(field.name);
                     prop = field.isNullable
                         ? prop.nullSafeProperty('merge')
                         : prop.property('merge');
 
-                    prop = prop.call([refer('other').property(field.name)]);
+                    prop = prop.call(['other'.ref.property(field.name)]);
 
                     if (field.isNullable) {
                       prop = prop.ifNullThen(
-                        refer('other').property(field.name),
+                        'other'.ref.property(field.name),
                       );
                     }
 
                     return prop;
                   }
                 }()
-              : refer('other').property(field.name),
+              : 'other'.ref.property(field.name),
       }).returned,
     );
 
   final result = Method((m) {
     m
       ..name = 'merge'
-      ..returns = refer(config.className)
+      ..returns = config.className.ref
       ..requiredParameters.add(
         Parameter(
           (p) => p
             ..name = 'other'
-            ..type = refer(config.className.nullable()),
+            ..type = config.className.nullable().ref,
         ),
       )
       ..body = body.build();
@@ -219,9 +219,7 @@ Method staticLerp(ThemeGenConfig config) {
   body
     ..statements.add(
       ifCode(
-        refer(
-          'a',
-        ).equalTo(literalNull).and(refer('b').equalTo(literalNull)).code,
+        'a'.ref.equalTo(literalNull).and('b'.ref.equalTo(literalNull)).code,
         [literalNull.returned.statement],
       ),
     )
@@ -237,20 +235,20 @@ Method staticLerp(ThemeGenConfig config) {
             lerpInfo: (isStatic: true, :final nullableArgs, :final methodName),
           ):
             if (!nullableArgs && field.isNullable) {
-              final expression = refer('a')
+              final expression = 'a'.ref
                   .notEqualTo(literalNull)
-                  .and(refer('b').notEqualTo(literalNull))
+                  .and('b'.ref.notEqualTo(literalNull))
                   .conditional(
-                    refer(field.type).property(methodName).call([
-                      refer('a').property(field.name).nullChecked,
-                      refer('b').property(field.name).nullChecked,
-                      refer('t'),
+                    field.type.ref.property(methodName).call([
+                      'a'.ref.property(field.name).nullChecked,
+                      'b'.ref.property(field.name).nullChecked,
+                      't'.ref,
                     ]),
-                    refer('t')
+                    't'.ref
                         .lessThan(literalNum(0.5))
                         .conditional(
-                          refer('a'.nullable()).property(field.name),
-                          refer('b'.nullable()).property(field.name),
+                          'a'.nullable().ref.property(field.name),
+                          'b'.nullable().ref.property(field.name),
                         ),
                   );
 
@@ -258,19 +256,21 @@ Method staticLerp(ThemeGenConfig config) {
 
               continue;
             } else if (!nullableArgs && !field.isNullable) {
-              final expression = refer('a')
+              final expression = 'a'.ref
                   .notEqualTo(literalNull)
-                  .and(refer('b').notEqualTo(literalNull))
+                  .and('b'.ref.notEqualTo(literalNull))
                   .conditional(
-                    refer(field.type).property(methodName).call([
-                      refer('a').property(field.name),
-                      refer('b').property(field.name),
-                      refer('t'),
+                    field.type.ref.property(methodName).call([
+                      'a'.ref.property(field.name),
+                      'b'.ref.property(field.name),
+                      't'.ref,
                     ]),
-                    refer('b'.nullable())
+                    'b'
+                        .nullable()
+                        .ref
                         .property(field.name)
                         .ifNullThen(
-                          refer('a').nullChecked.property(field.name),
+                          'a'.ref.nullChecked.property(field.name),
                         ),
                   );
 
@@ -279,10 +279,10 @@ Method staticLerp(ThemeGenConfig config) {
               continue;
             }
 
-            final expression = refer(field.type).property(methodName).call([
-              refer('a'.nullable()).property(field.name),
-              refer('b'.nullable()).property(field.name),
-              refer('t'),
+            final expression = field.type.ref.property(methodName).call([
+              'a'.nullable().ref.property(field.name),
+              'b'.nullable().ref.property(field.name),
+              't'.ref,
             ]);
 
             args[field.name] = field.isNullable
@@ -298,23 +298,25 @@ Method staticLerp(ThemeGenConfig config) {
               methodName: final methodName,
             ),
           ):
-            final expression = refer('a'.nullable())
+            final expression = 'a'
+                .nullable()
+                .ref
                 .property(field.name)
                 .property(methodName)
                 .call([
-                  refer('b'.nullable()).property(field.name),
-                  refer('t'),
+                  'b'.nullable().ref.property(field.name),
+                  't'.ref,
                 ])
-                .asA(refer(field.type));
+                .asA(field.type.ref);
 
             args[field.name] = expression;
 
           // When the field is of type double
           case FieldSymbol(isDouble: true):
-            final expression = refer(r'lerpDouble$').call([
-              refer('a'.nullable()).property(field.name),
-              refer('b'.nullable()).property(field.name),
-              refer('t'),
+            final expression = r'lerpDouble$'.ref.call([
+              'a'.nullable().ref.property(field.name),
+              'b'.nullable().ref.property(field.name),
+              't'.ref,
             ]);
 
             args[field.name] = field.isNullable
@@ -323,10 +325,10 @@ Method staticLerp(ThemeGenConfig config) {
 
           // When the field is of type Duration
           case FieldSymbol(isDuration: true):
-            final expression = refer(r'lerpDuration$').call([
-              refer('a'.nullable()).property(field.name),
-              refer('b'.nullable()).property(field.name),
-              refer('t'),
+            final expression = r'lerpDuration$'.ref.call([
+              'a'.nullable().ref.property(field.name),
+              'b'.nullable().ref.property(field.name),
+              't'.ref,
             ]);
 
             args[field.name] = field.isNullable
@@ -336,7 +338,9 @@ Method staticLerp(ThemeGenConfig config) {
           // Default case: use a simple conditional expression
           case _:
             if (field.name == 'canMerge') {
-              args[field.name] = refer('b'.nullable())
+              args[field.name] = 'b'
+                  .nullable()
+                  .ref
                   .property(field.name)
                   .ifNullThen(
                     literalTrue,
@@ -344,17 +348,17 @@ Method staticLerp(ThemeGenConfig config) {
               continue;
             }
 
-            args[field.name] = refer('t')
+            args[field.name] = 't'.ref
                 .lessThan(literalNum(0.5))
                 .conditional(
-                  refer('a'.nullable()).property(field.name),
-                  refer('b'.nullable()).property(field.name),
+                  'a'.nullable().ref.property(field.name),
+                  'b'.nullable().ref.property(field.name),
                 );
         }
       }
 
       return InvokeExpression.newOf(
-        refer(config.className),
+        config.className.ref,
         [],
         args,
         [],
@@ -366,22 +370,22 @@ Method staticLerp(ThemeGenConfig config) {
     m
       ..name = 'lerp'
       ..static = true
-      ..returns = refer(config.className.nullable())
+      ..returns = config.className.nullable().ref
       ..requiredParameters.addAll([
         Parameter(
           (p) => p
             ..name = 'a'
-            ..type = refer(config.className.nullable()),
+            ..type = config.className.nullable().ref,
         ),
         Parameter(
           (p) => p
             ..name = 'b'
-            ..type = refer(config.className.nullable()),
+            ..type = config.className.nullable().ref,
         ),
         Parameter(
           (p) => p
             ..name = 't'
-            ..type = refer('double'),
+            ..type = 'double'.ref,
         ),
       ])
       ..body = body.build();
@@ -398,14 +402,14 @@ Method equalOperator(ThemeGenConfig config) {
   body
     ..statements.add(
       ifCode(
-        refer('identical').call([refer('this'), refer('other')]).code,
+        'identical'.ref.call(['this'.ref, 'other'.ref]).code,
         [literalTrue.returned.statement],
       ),
     )
     ..statements.add(const Code(''))
     ..statements.add(
       ifCode(
-        refer('other').isNotA(refer(config.className)).code,
+        'other'.ref.property('runtimeType').notEqualTo('runtimeType'.ref).code,
         [literalFalse.returned.statement],
       ),
     )
@@ -414,18 +418,19 @@ Method equalOperator(ThemeGenConfig config) {
   if (fields.isNotEmpty) {
     body
       ..addExpression(
-        declareFinal('value').assign(
-          refer('this').asA(refer(config.className)),
-        ),
+        declareFinal('_this').assign('this'.ref.asA(config.className.ref)),
+      )
+      ..addExpression(
+        declareFinal('_other').assign('other'.ref.asA(config.className.ref)),
       )
       ..statements.add(const Code(''))
       ..addExpression(
         fields
             .map(
-              (field) => refer('other')
+              (field) => '_other'.ref
                   .property(field.name)
                   .equalTo(
-                    refer('value').property(field.name),
+                    '_this'.ref.property(field.name),
                   ),
             )
             .reduce((a, b) => a.and(b))
@@ -438,13 +443,13 @@ Method equalOperator(ThemeGenConfig config) {
   final result = Method((m) {
     m
       ..name = 'operator =='
-      ..annotations.add(refer('override'))
-      ..returns = refer('bool')
+      ..annotations.add('override'.ref)
+      ..returns = 'bool'.ref
       ..requiredParameters.add(
         Parameter(
           (p) => p
             ..name = 'other'
-            ..type = refer('Object'),
+            ..type = 'Object'.ref,
         ),
       )
       ..body = body.build();
@@ -461,8 +466,8 @@ Method hashMethod(ThemeGenConfig config) {
   if (fields.isNotEmpty) {
     body
       ..addExpression(
-        declareFinal('value').assign(
-          refer('this').asA(refer(config.className)),
+        declareFinal('_this').assign(
+          'this'.ref.asA(config.className.ref),
         ),
       )
       ..statements.add(const Code(''));
@@ -471,21 +476,21 @@ Method hashMethod(ThemeGenConfig config) {
   switch (fields.length) {
     case 0:
       body.addExpression(
-        refer('runtimeType').property('hashCode').returned,
+        'runtimeType'.ref.property('hashCode').returned,
       );
     case <= 19:
       body.addExpression(
-        refer('Object').property('hash').call([
-          refer('runtimeType'),
-          for (final field in fields) refer('value').property(field.name),
+        'Object'.ref.property('hash').call([
+          'runtimeType'.ref,
+          for (final field in fields) '_this'.ref.property(field.name),
         ]).returned,
       );
     case _:
       body.addExpression(
-        refer('Object').property('hashAll').call([
+        'Object'.ref.property('hashAll').call([
           literalList([
-            refer('runtimeType'),
-            for (final field in fields) refer('value').property(field.name),
+            'runtimeType'.ref,
+            for (final field in fields) '_this'.ref.property(field.name),
           ]),
         ]).returned,
       );
@@ -494,8 +499,8 @@ Method hashMethod(ThemeGenConfig config) {
   final result = Method((m) {
     m
       ..name = 'hashCode'
-      ..annotations.add(refer('override'))
-      ..returns = refer('int')
+      ..annotations.add('override'.ref)
+      ..returns = 'int'.ref
       ..type = MethodType.getter
       ..body = body.build();
   });

@@ -1,4 +1,15 @@
 import 'package:code_builder/code_builder.dart';
+import 'package:meta/meta.dart';
+
+extension type const Ref._(Reference ref) implements Reference {
+  @redeclare
+  String get symbol => ref.symbol!;
+}
+
+extension StringRef on String {
+  ///Shortcut to get a [Ref] from a [String].
+  Ref get ref => Ref._(Reference(this));
+}
 
 Code ifCode(
   Code condition,

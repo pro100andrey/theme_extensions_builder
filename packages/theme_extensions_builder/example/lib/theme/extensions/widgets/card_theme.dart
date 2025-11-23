@@ -3,9 +3,9 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 
 part 'card_theme.g.theme.dart';
 
-@ThemeExtensions()
+@themeExtensions
 class CardThemeExtension extends ThemeExtension<CardThemeExtension>
-    with _$CardThemeExtensionMixin {
+    with _$CardThemeExtension {
   const CardThemeExtension({
     required this.borderRadius,
     required this.backgroundColor,

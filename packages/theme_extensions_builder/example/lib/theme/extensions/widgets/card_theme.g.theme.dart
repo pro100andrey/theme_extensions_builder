@@ -9,7 +9,7 @@ part of 'card_theme.dart';
 // ThemeExtensionsGenerator
 // **************************************************************************
 
-mixin _$CardThemeExtensionMixin on ThemeExtension<CardThemeExtension> {
+mixin _$CardThemeExtension on ThemeExtension<CardThemeExtension> {
   @override
   ThemeExtension<CardThemeExtension> copyWith({
     BorderRadius? borderRadius,
@@ -20,16 +20,16 @@ mixin _$CardThemeExtensionMixin on ThemeExtension<CardThemeExtension> {
     Border? border,
     EdgeInsetsGeometry? padding,
   }) {
-    final object = (this as CardThemeExtension);
+    final _this = (this as CardThemeExtension);
 
     return CardThemeExtension(
-      borderRadius: borderRadius ?? object.borderRadius,
-      backgroundColor: backgroundColor ?? object.backgroundColor,
-      boxShadow: boxShadow ?? object.boxShadow,
-      titleTextStyle: titleTextStyle ?? object.titleTextStyle,
-      subtitleTextStyle: subtitleTextStyle ?? object.subtitleTextStyle,
-      border: border ?? object.border,
-      padding: padding ?? object.padding,
+      borderRadius: borderRadius ?? _this.borderRadius,
+      backgroundColor: backgroundColor ?? _this.backgroundColor,
+      boxShadow: boxShadow ?? _this.boxShadow,
+      titleTextStyle: titleTextStyle ?? _this.titleTextStyle,
+      subtitleTextStyle: subtitleTextStyle ?? _this.subtitleTextStyle,
+      border: border ?? _this.border,
+      padding: padding ?? _this.padding,
     );
   }
 
@@ -38,37 +38,36 @@ mixin _$CardThemeExtensionMixin on ThemeExtension<CardThemeExtension> {
     ThemeExtension<CardThemeExtension>? other,
     double t,
   ) {
-    final otherValue = other;
-    if (otherValue is! CardThemeExtension) {
+    if (other is! CardThemeExtension) {
       return this;
     }
 
-    final value = (this as CardThemeExtension);
+    final _this = (this as CardThemeExtension);
 
     return CardThemeExtension(
       borderRadius: BorderRadius.lerp(
-        value.borderRadius,
-        otherValue.borderRadius,
+        _this.borderRadius,
+        other.borderRadius,
         t,
       )!,
       backgroundColor: Color.lerp(
-        value.backgroundColor,
-        otherValue.backgroundColor,
+        _this.backgroundColor,
+        other.backgroundColor,
         t,
       )!,
-      boxShadow: t < 0.5 ? value.boxShadow : otherValue.boxShadow,
+      boxShadow: t < 0.5 ? _this.boxShadow : other.boxShadow,
       titleTextStyle: TextStyle.lerp(
-        value.titleTextStyle,
-        otherValue.titleTextStyle,
+        _this.titleTextStyle,
+        other.titleTextStyle,
         t,
       )!,
       subtitleTextStyle: TextStyle.lerp(
-        value.subtitleTextStyle,
-        otherValue.subtitleTextStyle,
+        _this.subtitleTextStyle,
+        other.subtitleTextStyle,
         t,
       )!,
-      border: Border.lerp(value.border, otherValue.border, t)!,
-      padding: EdgeInsetsGeometry.lerp(value.padding, otherValue.padding, t)!,
+      border: Border.lerp(_this.border, other.border, t)!,
+      padding: EdgeInsetsGeometry.lerp(_this.padding, other.padding, t)!,
     );
   }
 
@@ -78,34 +77,35 @@ mixin _$CardThemeExtensionMixin on ThemeExtension<CardThemeExtension> {
       return true;
     }
 
-    if (other is! CardThemeExtension) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final value = (this as CardThemeExtension);
+    final _this = (this as CardThemeExtension);
+    final _other = (other as CardThemeExtension);
 
-    return other.borderRadius == value.borderRadius &&
-        other.backgroundColor == value.backgroundColor &&
-        other.boxShadow == value.boxShadow &&
-        other.titleTextStyle == value.titleTextStyle &&
-        other.subtitleTextStyle == value.subtitleTextStyle &&
-        other.border == value.border &&
-        other.padding == value.padding;
+    return _other.borderRadius == _this.borderRadius &&
+        _other.backgroundColor == _this.backgroundColor &&
+        _other.boxShadow == _this.boxShadow &&
+        _other.titleTextStyle == _this.titleTextStyle &&
+        _other.subtitleTextStyle == _this.subtitleTextStyle &&
+        _other.border == _this.border &&
+        _other.padding == _this.padding;
   }
 
   @override
   int get hashCode {
-    final value = (this as CardThemeExtension);
+    final _this = (this as CardThemeExtension);
 
     return Object.hash(
       runtimeType,
-      value.borderRadius,
-      value.backgroundColor,
-      value.boxShadow,
-      value.titleTextStyle,
-      value.subtitleTextStyle,
-      value.border,
-      value.padding,
+      _this.borderRadius,
+      _this.backgroundColor,
+      _this.boxShadow,
+      _this.titleTextStyle,
+      _this.subtitleTextStyle,
+      _this.border,
+      _this.padding,
     );
   }
 }

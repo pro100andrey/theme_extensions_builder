@@ -67,8 +67,9 @@ Method canMerge(ThemeGenConfig config) {
 Method copyWith(ThemeGenConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
+  final isEmpty = fields.isEmpty;
 
-  if (fields.isNotEmpty) {
+  if (!isEmpty) {
     body
       ..addExpression(
         declareFinal('_this').assign(
@@ -79,40 +80,35 @@ Method copyWith(ThemeGenConfig config) {
   }
 
   body.addExpression(
-    InvokeExpression.newOf(
-      config.className.ref,
-      [],
-      {
-        for (final field in fields)
-          field.name: field.name.ref.ifNullThen(
-            '_this'.ref.property(field.name),
-          ),
-      },
-      [],
-      config.constructor,
+    _buildConstructorCall(
+      config,
+      args: isEmpty
+          ? {}
+          : {
+              for (final field in fields)
+                field.name: field.name.ref.ifNullThen(
+                  '_this'.ref.property(field.name),
+                ),
+            },
     ).returned,
   );
 
-  final parameters = fields
-      .map(
-        (field) => Parameter(
-          (p) => p
-            ..name = field.name
-            ..named = true
-            ..type = field.type.nullable().ref,
-        ),
-      )
-      .toList(growable: false);
-
-  final result = Method((m) {
+  return Method((m) {
     m
       ..name = 'copyWith'
       ..returns = config.className.ref
-      ..optionalParameters.addAll(parameters)
+      ..optionalParameters.addAll(
+        fields.map(
+          (field) => Parameter(
+            (p) => p
+              ..name = field.name
+              ..named = true
+              ..type = field.type.nullable().ref,
+          ),
+        ),
+      )
       ..body = body.build();
   });
-
-  return result;
 }
 
 /// Generates a `merge` method for the theme class.
@@ -357,13 +353,7 @@ Method staticLerp(ThemeGenConfig config) {
         }
       }
 
-      return InvokeExpression.newOf(
-        config.className.ref,
-        [],
-        args,
-        [],
-        config.constructor,
-      ).returned;
+      return _buildConstructorCall(config, args: args).returned;
     }());
 
   final result = Method((m) {
@@ -506,4 +496,29 @@ Method hashMethod(ThemeGenConfig config) {
   });
 
   return result;
+}
+
+/// Helper to build constructor call with correct const/new.
+InvokeExpression _buildConstructorCall(
+  ThemeGenConfig config, {
+  required Map<String, Expression> args,
+}) {
+  final isEmpty = args.isEmpty;
+  final useConst = isEmpty && config.constConstructor;
+
+  return useConst
+      ? InvokeExpression.constOf(
+          config.className.ref,
+          [],
+          {},
+          [],
+          config.constructor,
+        )
+      : InvokeExpression.newOf(
+          config.className.ref,
+          [],
+          args,
+          [],
+          config.constructor,
+        );
 }

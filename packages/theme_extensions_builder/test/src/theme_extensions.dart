@@ -1,6 +1,29 @@
 import 'package:source_gen_test/annotations.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
+abstract class ThemeExtension<T extends ThemeExtension<T>> {
+  /// Enable const constructor for subclasses.
+  const ThemeExtension();
+
+  /// The extension's type.
+  Object get type => T;
+
+  /// Creates a copy of this theme extension with the given fields
+  /// replaced by the non-null parameter values.
+  ThemeExtension<T> copyWith() => throw UnimplementedError();
+
+  /// Linearly interpolate with another [ThemeExtension] object.
+  ///
+  /// {@macro dart.ui.shadow.lerp}
+  ThemeExtension<T> lerp(covariant ThemeExtension<T>? other, double t) =>
+      throw UnimplementedError();
+}
+
+// ignore: avoid_classes_with_only_static_members
+final class Color {
+  static Color? lerp(Color? x, Color? y, double t) => null;
+}
+
 mixin _$NullableTheme {}
 mixin _$EmptyTheme {}
 mixin _$EmptyThemeWithConst {}
@@ -74,16 +97,18 @@ extension NullableThemeBuildContext on BuildContext {
 }
 ''')
 @ThemeExtensions()
-class NullableTheme with _$NullableTheme {
+class NullableTheme extends ThemeExtension<NullableTheme> with _$NullableTheme {
   const NullableTheme({
     this.width,
     this.height,
     this.title,
+    this.color,
   });
 
   final double? width;
   final double? height;
   final String? title;
+  final Color? color;
 }
 
 @ShouldGenerate(r'''
@@ -126,7 +151,7 @@ extension EmptyThemeBuildContext on BuildContext {
 }
 ''')
 @ThemeExtensions()
-class EmptyTheme with _$EmptyTheme {
+class EmptyTheme extends ThemeExtension<EmptyTheme> with _$EmptyTheme {
   EmptyTheme();
 }
 
@@ -174,7 +199,8 @@ extension EmptyThemeWithConstBuildContext on BuildContext {
 }
 ''')
 @ThemeExtensions()
-class EmptyThemeWithConst with _$EmptyThemeWithConst {
+class EmptyThemeWithConst extends ThemeExtension<EmptyThemeWithConst>
+    with _$EmptyThemeWithConst {
   const EmptyThemeWithConst();
 }
 
@@ -217,7 +243,8 @@ mixin _$EmptyThemeNoExtension on ThemeExtension<EmptyThemeNoExtension> {
 }
 ''')
 @ThemeExtensions(buildContextExtension: false)
-class EmptyThemeNoExtension with _$EmptyThemeNoExtension {
+class EmptyThemeNoExtension extends ThemeExtension<EmptyThemeNoExtension>
+    with _$EmptyThemeNoExtension {
   EmptyThemeNoExtension();
 }
 
@@ -322,7 +349,7 @@ extension SimpleThemeBuildContext on BuildContext {
 }
 ''')
 @ThemeExtensions()
-class SimpleTheme with _$SimpleTheme {
+class SimpleTheme extends ThemeExtension<SimpleTheme> with _$SimpleTheme {
   const SimpleTheme({
     required this.size,
     required this.count,
@@ -405,7 +432,7 @@ extension CustomMixinNameBuildContext on BuildContext {
 }
 ''')
 @ThemeExtensions()
-class CustomMixinName with _$Custom {
+class CustomMixinName extends ThemeExtension<CustomMixinName> with _$Custom {
   const CustomMixinName({
     required this.size,
     required this.isEnabled,

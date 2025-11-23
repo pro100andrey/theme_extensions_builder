@@ -21,6 +21,11 @@ Future<void> main() async {
     'custom_mixin_name.dart',
   );
 
+  final emptyThemeReader = await initializeLibraryReaderForDirectory(
+    'test/src/theme_extensions',
+    'empty_theme.dart',
+  );
+
   group('ThemeExtensionsGenerator', () {
     group('Base types', () {
       testAnnotatedElements<ThemeExtensions>(
@@ -39,6 +44,13 @@ Future<void> main() async {
     group('Custom mixin names', () {
       testAnnotatedElements<ThemeExtensions>(
         customMixinNamesReader,
+        ThemeExtensionsGenerator(),
+      );
+    });
+
+    group('Empty theme', () {
+      testAnnotatedElements<ThemeExtensions>(
+        emptyThemeReader,
         ThemeExtensionsGenerator(),
       );
     });

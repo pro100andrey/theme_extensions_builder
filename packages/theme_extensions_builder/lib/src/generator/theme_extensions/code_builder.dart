@@ -79,30 +79,39 @@ TypeReference themeExtensionRef(
 Method copyWith(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
+  final classNameRef = config.className.ref;
 
   if (fields.isNotEmpty) {
     body
       ..addExpression(
         declareFinal('_this'.ref.symbol).assign(
-          'this'.ref.asA(config.className.ref),
+          'this'.ref.asA(classNameRef),
         ),
       )
       ..statements.add(const Code(''));
   }
 
   body.addExpression(
-    InvokeExpression.newOf(
-      config.className.ref,
-      [],
-      {
-        for (final field in fields)
-          field.name: field.name.ref.ifNullThen(
-            '_this'.ref.property(field.name),
-          ),
-      },
-      [],
-      config.constructor,
-    ).returned,
+    fields.isEmpty && config.constConstructor
+        ? InvokeExpression.constOf(
+            classNameRef,
+            [],
+            {},
+            [],
+            config.constructor,
+          ).returned
+        : InvokeExpression.newOf(
+            classNameRef,
+            [],
+            {
+              for (final field in fields)
+                field.name: field.name.ref.ifNullThen(
+                  '_this'.ref.property(field.name),
+                ),
+            },
+            [],
+            config.constructor,
+          ).returned,
   );
 
   final parameters = fields
@@ -231,13 +240,21 @@ Method lerpMethod(ThemeExtensionsConfig config) {
       }
     }
 
-    return InvokeExpression.newOf(
-      config.className.ref,
-      [],
-      args,
-      [],
-      config.constructor,
-    ).returned;
+    return fields.isEmpty && config.constConstructor
+        ? InvokeExpression.constOf(
+            config.className.ref,
+            [],
+            {},
+            [],
+            config.constructor,
+          ).returned
+        : InvokeExpression.newOf(
+            config.className.ref,
+            [],
+            args,
+            [],
+            config.constructor,
+          ).returned;
   }());
 
   final result = Method((m) {

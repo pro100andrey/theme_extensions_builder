@@ -34,6 +34,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
         .boolValue;
 
     final constructor = annotation.read('constructor').literalValue as String?;
+    final constConstructor = element.constructors.any((c) => c.isConst);
 
     final contextAccessorName =
         annotation.read('contextAccessorName').literalValue as String?;
@@ -64,6 +65,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
       buildContextExtension: buildContextExtension,
       constructor: constructor,
       themeExtensionMixinName: mixinName,
+      constConstructor: constConstructor,
     );
 
     const generator = ThemeExtensionsCodeBuilder();

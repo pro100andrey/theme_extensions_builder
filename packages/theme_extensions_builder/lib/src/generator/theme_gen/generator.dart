@@ -31,6 +31,7 @@ class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
     }
 
     final constructor = annotation.read('constructor').literalValue as String?;
+    final constConstructor = element.constructors.any((c) => c.isConst);
 
     final classVisitor = ThemeGenClassVisitor();
     // Get all supertypes to visit their fields as well
@@ -50,6 +51,7 @@ class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
       fields: classVisitor.fields,
       className: element.displayName,
       constructor: constructor,
+      constConstructor: constConstructor,
     );
 
     const generator = ThemeGenCodeBuilder();

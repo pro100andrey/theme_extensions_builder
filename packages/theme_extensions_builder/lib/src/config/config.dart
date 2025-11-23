@@ -5,6 +5,8 @@ sealed class BaseConfig {
     required this.fields,
     required this.className,
     required this.constructor,
+    required this.constConstructor,
+
   });
 
   /// The fields to be included in the generated theme extension.
@@ -16,6 +18,9 @@ sealed class BaseConfig {
   /// The name of the constructor to be used. If `null`, the default
   /// constructor will be used.
   final String? constructor;
+
+  /// Whether to generate a const constructor.
+  final bool constConstructor;
 }
 
 // Configuration for the theme extensions generator.
@@ -24,6 +29,7 @@ class ThemeGenConfig extends BaseConfig {
     required super.fields,
     required super.className,
     required super.constructor,
+    required super.constConstructor,
   });
 }
 
@@ -36,6 +42,7 @@ class ThemeExtensionsConfig extends BaseConfig {
     required this.buildContextExtension,
     required this.contextAccessorName,
     required this.themeExtensionMixinName,
+    required super.constConstructor,
   });
 
   /// The name of the context getter to be generated. By default, it will be

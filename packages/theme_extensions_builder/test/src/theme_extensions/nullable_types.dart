@@ -70,7 +70,7 @@ extension NullableThemeBuildContext on BuildContext {
 ''')
 @ThemeExtensions()
 class NullableTheme with _$NullableTheme {
-  NullableTheme({
+  const NullableTheme({
     this.width,
     this.height,
     this.title,

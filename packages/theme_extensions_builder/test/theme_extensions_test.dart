@@ -16,6 +16,11 @@ Future<void> main() async {
     'nullable_types.dart',
   );
 
+  final customMixinNamesReader = await initializeLibraryReaderForDirectory(
+    'test/src/theme_extensions',
+    'custom_mixin_name.dart',
+  );
+
   group('ThemeExtensionsGenerator', () {
     group('Base types', () {
       testAnnotatedElements<ThemeExtensions>(
@@ -27,6 +32,13 @@ Future<void> main() async {
     group('Nullable types', () {
       testAnnotatedElements<ThemeExtensions>(
         nullableTypesReader,
+        ThemeExtensionsGenerator(),
+      );
+    });
+
+    group('Custom mixin names', () {
+      testAnnotatedElements<ThemeExtensions>(
+        customMixinNamesReader,
         ThemeExtensionsGenerator(),
       );
     });

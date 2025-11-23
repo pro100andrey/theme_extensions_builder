@@ -39,7 +39,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
     final contextAccessorName =
         annotation.read('contextAccessorName').literalValue as String?;
 
-    final classVisitor = _ClassVisitor();
+    final classVisitor = ThemeExtensionsClassVisitor();
     // Get all supertypes to visit their fields as well
     final allSupertypes = element.allSupertypes;
 
@@ -76,9 +76,8 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
 
 /// It's a class that extends the SimpleElementVisitor class, and it overrides
 /// the visitClassElement method
-class _ClassVisitor extends BaseClassVisitor {
+class ThemeExtensionsClassVisitor extends BaseClassVisitor {
   final List<FieldSymbol> fields = [];
-  final Map<String, List<bool>> hasInternalAnnotations = {};
 
   final ignoreAnnotationTypeChecker = TypeChecker.typeNamed(ignore.runtimeType);
 

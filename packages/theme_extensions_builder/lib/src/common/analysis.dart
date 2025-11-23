@@ -33,7 +33,7 @@ LerpInfo? lerpInfo({required FieldElement element}) {
       // Check type is List<T> with T being a valid type for lerp.
 
       if (method case MethodElement(
-        displayName: 'lerp' || 'lerpList',
+        displayName: 'lerp',
         isPublic: true,
       )) {
         final length = method.children.length;

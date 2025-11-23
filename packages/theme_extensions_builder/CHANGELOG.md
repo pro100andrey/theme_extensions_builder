@@ -1,3 +1,8 @@
+
+## 7.0.1
+- **Improvement**: Updated `==` operator to check `runtimeType`.
+- **Improvement**: Internal variable renaming in generated code to avoid conflicts.
+
 ## 7.0.0
 
 - **Breaking changes**: Removed deprecated `_$ThemeExtensionMixin` mixin. Use `_$[ClassName]Mixin` instead.

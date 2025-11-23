@@ -1,5 +1,6 @@
 
 ## 7.0.1
+
 - **Improvement**: Updated `==` operator to check `runtimeType`.
 - **Improvement**: Internal variable renaming in generated code to avoid conflicts.
 

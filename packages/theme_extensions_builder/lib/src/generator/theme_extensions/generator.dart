@@ -11,9 +11,9 @@ import 'visitor.dart';
 /// It's a Dart code generator that generates code for the `@ThemeExtensions`
 /// annotation
 class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
-  ThemeExtensionsGenerator({required this.builderOptions});
+  ThemeExtensionsGenerator({this.builderOptions});
 
-  final BuilderOptions builderOptions;
+  final BuilderOptions? builderOptions;
 
   @override
   Future<String> generateForAnnotatedElement(

@@ -12,9 +12,9 @@ import 'visitor.dart';
 /// It's a Dart code generator that generates code for the `@ThemeGen`
 /// annotation.
 class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
-  ThemeGenGenerator({required this.builderOptions});
+  ThemeGenGenerator({this.builderOptions});
 
-  final BuilderOptions builderOptions;
+  final BuilderOptions? builderOptions;
 
   @override
   Future<String> generateForAnnotatedElement(

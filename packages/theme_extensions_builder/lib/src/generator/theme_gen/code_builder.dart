@@ -102,7 +102,7 @@ Method copyWith(ThemeGenConfig config) {
             (p) => p
               ..name = field.name
               ..named = true
-              ..type = field.type.nullableRef,
+              ..type = field.type.typeRef(optional: true),
           ),
         ),
       )
@@ -193,7 +193,7 @@ Method merge(ThemeGenConfig config) {
         Parameter(
           (p) => p
             ..name = 'other'
-            ..type = config.className.nullableRef,
+            ..type = config.className.typeRef(optional: true),
         ),
       )
       ..body = body.build();
@@ -225,56 +225,10 @@ Method staticLerp(ThemeGenConfig config) {
       for (final field in fields) {
         switch (field) {
           // When the field has a static lerp method
-          case FieldSymbol(
-            hasLerp: true,
-            lerpInfo: (isStatic: true, :final nullableArgs, :final methodName),
-          ):
-            if (!nullableArgs && field.isNullable) {
-              final expression = 'a'.ref
-                  .notEqualTo(literalNull)
-                  .and('b'.ref.notEqualTo(literalNull))
-                  .conditional(
-                    field.type.ref.property(methodName).call([
-                      'a'.ref.property(field.name).nullChecked,
-                      'b'.ref.property(field.name).nullChecked,
-                      't'.ref,
-                    ]),
-                    't'.ref
-                        .lessThan(literalNum(0.5))
-                        .conditional(
-                          'a'.nullableRef.property(field.name),
-                          'b'.nullableRef.property(field.name),
-                        ),
-                  );
-
-              args[field.name] = expression;
-
-              continue;
-            } else if (!nullableArgs && !field.isNullable) {
-              final expression = 'a'.ref
-                  .notEqualTo(literalNull)
-                  .and('b'.ref.notEqualTo(literalNull))
-                  .conditional(
-                    field.type.ref.property(methodName).call([
-                      'a'.ref.property(field.name),
-                      'b'.ref.property(field.name),
-                      't'.ref,
-                    ]),
-                    'b'.nullableRef
-                        .property(field.name)
-                        .ifNullThen(
-                          'a'.ref.nullChecked.property(field.name),
-                        ),
-                  );
-
-              args[field.name] = expression;
-
-              continue;
-            }
-
-            final expression = field.type.ref.property(methodName).call([
-              'a'.nullableRef.property(field.name),
-              'b'.nullableRef.property(field.name),
+          case FieldSymbol(lerpInfo: (isStatic: true, :final displayType)):
+            final expression = displayType.ref.property('lerp').call([
+              'a'.ref.prop(field.name, nullSafe: true),
+              'b'.ref.prop(field.name, nullSafe: true),
               't'.ref,
             ]);
 
@@ -283,30 +237,20 @@ Method staticLerp(ThemeGenConfig config) {
                 : expression.nullChecked;
 
           // When the field has a non-static lerp method
-          case FieldSymbol(
-            hasLerp: true,
-            lerpInfo: (
-              isStatic: false,
-              nullableArgs: _,
-              methodName: final methodName,
-            ),
-          ):
-            final expression = 'a'.nullableRef
-                .property(field.name)
-                .property(methodName)
-                .call([
-                  'b'.nullableRef.property(field.name),
-                  't'.ref,
-                ])
-                .asA(field.type.ref);
+          case FieldSymbol(lerpInfo: (isStatic: false, displayType: _)):
+            final expression = 'a'.ref
+                .nullSafeProperty(field.name)
+                .prop('lerp', nullSafe: field.isNullable)
+                .call(['b'.ref.prop(field.name, nullSafe: true), 't'.ref])
+                .asA(field.type.typeRef(optional: field.isNullable));
 
             args[field.name] = expression;
 
           // When the field is of type double
           case FieldSymbol(isDouble: true):
             final expression = r'lerpDouble$'.ref.call([
-              'a'.nullableRef.property(field.name),
-              'b'.nullableRef.property(field.name),
+              'a'.ref.prop(field.name, nullSafe: true),
+              'b'.ref.prop(field.name, nullSafe: true),
               't'.ref,
             ]);
 
@@ -317,8 +261,8 @@ Method staticLerp(ThemeGenConfig config) {
           // When the field is of type Duration
           case FieldSymbol(isDuration: true):
             final expression = r'lerpDuration$'.ref.call([
-              'a'.nullableRef.property(field.name),
-              'b'.nullableRef.property(field.name),
+              'a'.ref.prop(field.name, nullSafe: true),
+              'b'.ref.prop(field.name, nullSafe: true),
               't'.ref,
             ]);
 
@@ -329,19 +273,17 @@ Method staticLerp(ThemeGenConfig config) {
           // Default case: use a simple conditional expression
           case _:
             if (field.name == 'canMerge') {
-              args[field.name] = 'b'.nullableRef
-                  .property(field.name)
-                  .ifNullThen(
-                    literalTrue,
-                  );
+              args[field.name] = 'b'.ref
+                  .prop(field.name, nullSafe: true)
+                  .ifNullThen(literalTrue);
               continue;
             }
 
             args[field.name] = 't'.ref
                 .lessThan(literalNum(0.5))
                 .conditional(
-                  'a'.nullableRef.property(field.name),
-                  'b'.nullableRef.property(field.name),
+                  'a'.ref.prop(field.name, nullSafe: true),
+                  'b'.ref.prop(field.name, nullSafe: true),
                 );
         }
       }
@@ -353,17 +295,17 @@ Method staticLerp(ThemeGenConfig config) {
     m
       ..name = 'lerp'
       ..static = true
-      ..returns = config.className.nullableRef
+      ..returns = config.className.typeRef(optional: true)
       ..requiredParameters.addAll([
         Parameter(
           (p) => p
             ..name = 'a'
-            ..type = config.className.nullableRef,
+            ..type = config.className.typeRef(optional: true),
         ),
         Parameter(
           (p) => p
             ..name = 'b'
-            ..type = config.className.nullableRef,
+            ..type = config.className.typeRef(optional: true),
         ),
         Parameter(
           (p) => p

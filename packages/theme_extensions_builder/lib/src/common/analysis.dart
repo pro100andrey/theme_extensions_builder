@@ -54,8 +54,8 @@ LerpInfo? lerpInfo({required FieldElement element}) {
 
           return (
             isStatic: isStatic,
-            nullableArgs: nullableArgs,
-            methodName: method.displayName,
+
+            displayType: type.getDisplayString(),
           );
         }
       }

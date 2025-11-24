@@ -10,10 +10,13 @@ extension StringRef on String {
   ///Shortcut to get a [Ref] from a [String].
   Ref get ref => Ref._(Reference(this));
 
-  Ref get nullableRef => Ref._(TypeReference((b) => b
-    ..isNullable = true
-    ..symbol = this,
-  ));
+  Ref typeRef({bool optional = false}) => Ref._(
+    TypeReference(
+      (b) => b
+        ..isNullable = optional
+        ..symbol = this,
+    ),
+  );
 }
 
 Code ifCode(
@@ -41,4 +44,9 @@ Code ifCode(
   }
 
   return Code(buf.toString());
+}
+
+extension ExpressionExtensions on Expression {
+  Expression prop(String name, {bool nullSafe = false}) =>
+      nullSafe ? nullSafeProperty(name) : property(name);
 }

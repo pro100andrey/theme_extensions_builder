@@ -74,9 +74,7 @@ Method copyWith(ThemeExtensionsConfig config) {
   if (!isEmpty) {
     body
       ..addExpression(
-        declareFinal('_this'.ref.symbol).assign(
-          'this'.ref.asA(classNameRef),
-        ),
+        declareFinal('_this'.ref.symbol).assign('this'.ref.asA(classNameRef)),
       )
       ..statements.add(const Code(''));
   }
@@ -106,7 +104,7 @@ Method copyWith(ThemeExtensionsConfig config) {
             (p) => p
               ..name = field.name
               ..named = true
-              ..type = field.type.nullableRef,
+              ..type = field.type.typeRef(optional: true),
           ),
         ),
       )
@@ -148,7 +146,70 @@ Method lerpMethod(ThemeExtensionsConfig config) {
   body.addExpression(
     _buildConstructorCall(
       config,
-      args: _buildLerpArgs(fields),
+      args: () {
+        final args = <String, Expression>{};
+
+        for (final field in fields) {
+          switch (field) {
+            // Lerp class with static lerp method
+            case FieldSymbol(lerpInfo: (isStatic: true, :final displayType)):
+              final expression = displayType.ref.property('lerp').call([
+                '_this'.ref.property(field.name),
+                'other'.ref.property(field.name),
+                't'.ref,
+              ]);
+
+              args[field.name] = field.isNullable
+                  ? expression
+                  : expression.nullChecked;
+
+            // Lerp class with instance lerp method
+            case FieldSymbol(lerpInfo: (isStatic: false, displayType: _)):
+              final expression = '_this'.ref
+                  .property(field.name)
+                  .prop('lerp', nullSafe: field.isNullable)
+                  .call(['other'.ref.property(field.name), 't'.ref])
+                  .asA(field.type.typeRef(optional: field.isNullable));
+
+              args[field.name] = expression;
+
+            // When the field is of type double
+            case FieldSymbol(isDouble: true):
+              final expression = r'lerpDouble$'.ref.call([
+                '_this'.ref.property(field.name),
+                'other'.ref.property(field.name),
+                't'.ref,
+              ]);
+
+              args[field.name] = field.isNullable
+                  ? expression
+                  : expression.nullChecked;
+
+            // When the field is of type Duration
+            case FieldSymbol(isDuration: true):
+              final expression = r'lerpDuration$'.ref.call([
+                '_this'.ref.property(field.name),
+                'other'.ref.property(field.name),
+                't'.ref,
+              ]);
+
+              args[field.name] = field.isNullable
+                  ? expression
+                  : expression.nullChecked;
+
+            // Default case: use a simple conditional expression
+            case _:
+              args[field.name] = 't'.ref
+                  .lessThan(literalNum(0.5))
+                  .conditional(
+                    '_this'.ref.property(field.name),
+                    'other'.ref.property(field.name),
+                  );
+          }
+        }
+
+        return args;
+      }(),
     ).returned,
   );
 
@@ -289,17 +350,6 @@ Method hashMethod(ThemeExtensionsConfig config) {
   return result;
 }
 
-/// Builds the arguments map for lerp method.
-Map<String, Expression> _buildLerpArgs(List<FieldSymbol> fields) {
-  final args = <String, Expression>{};
-
-  for (final field in fields) {
-    args[field.name] = _buildLerpExpression(field);
-  }
-
-  return args;
-}
-
 // Returns a type reference for `ThemeExtension<T>` based on [config].
 TypeReference _buildThemeExtensionRef(
   ThemeExtensionsConfig config, {
@@ -310,70 +360,6 @@ TypeReference _buildThemeExtensionRef(
     ..types.add(config.className.ref)
     ..isNullable = isNullable,
 );
-
-/// Builds a single lerp expression for a field.
-Expression _buildLerpExpression(FieldSymbol field) => switch (field) {
-  // Lerp class with static lerp method
-  FieldSymbol(
-    hasLerp: true,
-    lerpInfo: (isStatic: true, nullableArgs: _, :final methodName),
-  ) =>
-    _wrapWithNullCheck(
-      field.type.ref.property(methodName).call([
-        '_this'.ref.property(field.name),
-        'other'.ref.property(field.name),
-        't'.ref,
-      ]),
-      field.isNullable,
-    ),
-
-  // Lerp class with instance lerp method
-  FieldSymbol(
-    hasLerp: true,
-    lerpInfo: (isStatic: false, nullableArgs: _, :final methodName),
-  ) =>
-    '_this'.ref
-        .property(field.name)
-        .property(methodName)
-        .call([
-          'other'.ref.property(field.name),
-          't'.ref,
-        ])
-        .asA(field.type.ref),
-
-  // When the field is of type double
-  FieldSymbol(isDouble: true) => _wrapWithNullCheck(
-    r'lerpDouble$'.ref.call([
-      '_this'.ref.property(field.name),
-      'other'.ref.property(field.name),
-      't'.ref,
-    ]),
-    field.isNullable,
-  ),
-
-  // When the field is of type Duration
-  FieldSymbol(isDuration: true) => _wrapWithNullCheck(
-    r'lerpDuration$'.ref.call([
-      '_this'.ref.property(field.name),
-      'other'.ref.property(field.name),
-      't'.ref,
-    ]),
-    field.isNullable,
-  ),
-
-  // Default case: use a simple conditional expression
-  _ =>
-    't'.ref
-        .lessThan(literalNum(0.5))
-        .conditional(
-          '_this'.ref.property(field.name),
-          'other'.ref.property(field.name),
-        ),
-};
-
-/// Wraps expression with null check if needed.
-Expression _wrapWithNullCheck(Expression expression, bool isNullable) =>
-    isNullable ? expression : expression.nullChecked;
 
 /// Helper to build constructor call with correct const/new.
 InvokeExpression _buildConstructorCall(

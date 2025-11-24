@@ -1,7 +1,7 @@
 import 'package:source_gen_test/annotations.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-mixin _$EmptyThemeGen {} 
+mixin _$EmptyThemeGen {}
 mixin _$EmptyThemeGenWithConst {}
 mixin _$SimpleThemeGen {}
 
@@ -119,7 +119,6 @@ class EmptyThemeGenWithConst with _$EmptyThemeGenWithConst {
   const EmptyThemeGenWithConst();
 }
 
-
 @ShouldGenerate(r'''
 mixin _$SimpleThemeGen {
   bool get canMerge => true;
@@ -181,11 +180,13 @@ mixin _$SimpleThemeGen {
 ''')
 @ThemeGen()
 class SimpleThemeGen with _$SimpleThemeGen {
-  SimpleThemeGen({
+  const SimpleThemeGen({
     required this.size,
     this.name,
+    this.theme,
   });
 
   final double size;
   final String? name;
+  final EmptyThemeGenWithConst? theme;
 }

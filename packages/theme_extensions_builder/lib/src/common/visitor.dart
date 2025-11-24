@@ -20,7 +20,7 @@ class ThemeClassVisitor extends BaseClassVisitor {
       return;
     }
 
-    if (element.isFinal) {
+    if (!element.isSynthetic) {
       final isNullable = element.type.nullabilitySuffix == .question;
       final resultType = element.type.getDisplayString().replaceAll('?', '');
 
@@ -34,25 +34,115 @@ class ThemeClassVisitor extends BaseClassVisitor {
 
       fields.add(symbol);
     }
-    // else {
-    //   throw InvalidGenerationSourceError(
-    //     'All fields in ThemeExtension classes must be final',
-    //     element: element,
-    //   );
-    // }
   }
 }
 
-extension type Filed(FieldElement element) {
+extension type FiledV(FieldElement element) {
+  /// The name of the field.
   String get name => element.displayName;
+
+  /// The type of the field.
   DartType get _type => element.type;
 
+  /// The display type of the field.
   String get displayType => _type.getDisplayString();
 
-  bool get isNullable => _type.nullabilitySuffix == .question;
-
+  /// The type of the field without nullability suffix.
   String get type =>
       isNullable ? displayType.replaceFirst('?', '') : displayType;
+
+  /// Whether the field is nullable.
+  bool get isNullable => _type.nullabilitySuffix == .question;
+
+  LerpInfo? _lerpInfoForInterface(InterfaceElement element) {
+    final method = element.getMethod('lerp');
+    if (method == null || !method.isPublic) {
+      return null;
+    }
+
+    final isStatic = method.isStatic;
+    final params = method.formalParameters;
+    final expectedCount = isStatic ? 3 : 2;
+    // Check parameter count matches expected count based on static or
+    // instance method
+    if (params.length != expectedCount) {
+      return null;
+    }
+
+    // Check if the last parameter 't' is double
+    if (!params.last.type.isDartCoreDouble) {
+      return null;
+    }
+
+    final argsToCheck = params.take(expectedCount - 1);
+    final hasNullableArgs = argsToCheck.any(
+      (p) => p.type.nullabilitySuffix != .none,
+    );
+
+    return (
+      isStatic: isStatic,
+      // nullableArgs: hasNullableArgs,
+      displayType: element.displayName,
+    );
+  }
+
+  LerpInfo? get lerpInfo {
+    final type = _type.element;
+
+    if (type is! InterfaceElement) {
+      return null;
+    }
+
+    // Use followedBy to create a lazy iterable instead of a new List
+    final candidates = [type].followedBy(
+      type.allSupertypes
+          .where((e) => !e.isDartCoreObject)
+          .map((e) => e.element),
+    );
+
+    final lerps = <LerpInfo>[];
+
+    for (final targetClass in candidates) {
+      final method = targetClass.getMethod('lerp');
+      if (method == null || !method.isPublic) {
+        continue;
+      }
+
+      final isStatic = method.isStatic;
+      final params = method.formalParameters;
+      final expectedCount = isStatic ? 3 : 2;
+      // Check parameter count matches expected count based on static or
+      // instance method
+      if (params.length != expectedCount) {
+        continue;
+      }
+
+      // Check if the last parameter 't' is double
+      if (!params.last.type.isDartCoreDouble) {
+        continue;
+      }
+
+      final argsToCheck = params.take(expectedCount - 1);
+      final hasNullableArgs = argsToCheck.any(
+        (p) => p.type.nullabilitySuffix != .none,
+      );
+
+      lerps.add((
+        isStatic: isStatic,
+
+        displayType: targetClass.displayName,
+      ));
+    }
+
+    print('Lerps for field  $displayType "$name": $lerps');
+
+    return lerps.firstOrNull;
+  }
+}
+
+LerpInfo? lerpInfo({required FieldElement element}) {
+  final field = FiledV(element);
+  return field.lerpInfo;
 }
 
 // /// It's a class that represents a field

@@ -13,13 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - uses: dart-lang/setup-dart@v1
         with:
-          channel: 'stable'
+          sdk: stable
 
       - name: Install dependencies (annotation)
         working-directory: packages/theme_extensions_builder_annotation
-        run: dart pub get
+        run: dart pub get --no-example 
 
       - name: Run formatter check (annotation)
         working-directory: packages/theme_extensions_builder_annotation
@@ -31,7 +31,7 @@ jobs:
 
       - name: Install dependencies (builder)
         working-directory: packages/theme_extensions_builder
-        run: dart pub get
+        run: dart pub get --no-example 
 
       - name: Run formatter check (builder)
         working-directory: packages/theme_extensions_builder

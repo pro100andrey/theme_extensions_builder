@@ -131,13 +131,22 @@ mixin _$SimpleThemeGen {
     return SimpleThemeGen(
       size: lerpDouble$(a?.size, b?.size, t)!,
       name: t < 0.5 ? a?.name : b?.name,
+      theme: t < 0.5 ? a?.theme : b?.theme,
     );
   }
 
-  SimpleThemeGen copyWith({double? size, String? name}) {
+  SimpleThemeGen copyWith({
+    double? size,
+    String? name,
+    EmptyThemeGenWithConst? theme,
+  }) {
     final _this = (this as SimpleThemeGen);
 
-    return SimpleThemeGen(size: size ?? _this.size, name: name ?? _this.name);
+    return SimpleThemeGen(
+      size: size ?? _this.size,
+      name: name ?? _this.name,
+      theme: theme ?? _this.theme,
+    );
   }
 
   SimpleThemeGen merge(SimpleThemeGen? other) {
@@ -151,7 +160,7 @@ mixin _$SimpleThemeGen {
       return other;
     }
 
-    return copyWith(size: other.size, name: other.name);
+    return copyWith(size: other.size, name: other.name, theme: other.theme);
   }
 
   @override
@@ -167,14 +176,16 @@ mixin _$SimpleThemeGen {
     final _this = (this as SimpleThemeGen);
     final _other = (other as SimpleThemeGen);
 
-    return _other.size == _this.size && _other.name == _this.name;
+    return _other.size == _this.size &&
+        _other.name == _this.name &&
+        _other.theme == _this.theme;
   }
 
   @override
   int get hashCode {
     final _this = (this as SimpleThemeGen);
 
-    return Object.hash(runtimeType, _this.size, _this.name);
+    return Object.hash(runtimeType, _this.size, _this.name, _this.theme);
   }
 }
 ''')

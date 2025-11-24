@@ -134,9 +134,7 @@ extension type FiledV(FieldElement element) {
       ));
     }
 
-    print('Lerps for field  $displayType "$name": $lerps');
-
-    return lerps.firstOrNull;
+   return lerps.firstOrNull;
   }
 }
 

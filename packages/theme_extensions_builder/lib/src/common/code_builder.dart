@@ -9,6 +9,11 @@ extension type const Ref._(Reference ref) implements Reference {
 extension StringRef on String {
   ///Shortcut to get a [Ref] from a [String].
   Ref get ref => Ref._(Reference(this));
+
+  Ref get nullableRef => Ref._(TypeReference((b) => b
+    ..isNullable = true
+    ..symbol = this,
+  ));
 }
 
 Code ifCode(

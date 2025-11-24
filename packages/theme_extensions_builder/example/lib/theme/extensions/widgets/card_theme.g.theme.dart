@@ -19,6 +19,7 @@ mixin _$CardThemeExtension on ThemeExtension<CardThemeExtension> {
     TextStyle? subtitleTextStyle,
     Border? border,
     EdgeInsetsGeometry? padding,
+    double? elevation,
   }) {
     final _this = (this as CardThemeExtension);
 
@@ -30,6 +31,7 @@ mixin _$CardThemeExtension on ThemeExtension<CardThemeExtension> {
       subtitleTextStyle: subtitleTextStyle ?? _this.subtitleTextStyle,
       border: border ?? _this.border,
       padding: padding ?? _this.padding,
+      elevation: elevation ?? _this.elevation,
     );
   }
 
@@ -68,6 +70,7 @@ mixin _$CardThemeExtension on ThemeExtension<CardThemeExtension> {
       )!,
       border: Border.lerp(_this.border, other.border, t)!,
       padding: EdgeInsetsGeometry.lerp(_this.padding, other.padding, t)!,
+      elevation: lerpDouble$(_this.elevation, other.elevation, t),
     );
   }
 
@@ -90,7 +93,8 @@ mixin _$CardThemeExtension on ThemeExtension<CardThemeExtension> {
         _other.titleTextStyle == _this.titleTextStyle &&
         _other.subtitleTextStyle == _this.subtitleTextStyle &&
         _other.border == _this.border &&
-        _other.padding == _this.padding;
+        _other.padding == _this.padding &&
+        _other.elevation == _this.elevation;
   }
 
   @override
@@ -106,6 +110,7 @@ mixin _$CardThemeExtension on ThemeExtension<CardThemeExtension> {
       _this.subtitleTextStyle,
       _this.border,
       _this.padding,
+      _this.elevation,
     );
   }
 }

@@ -4,7 +4,6 @@ import 'package:dart_style/dart_style.dart';
 import '../../common/code_builder.dart';
 import '../../common/symbols.dart';
 import '../../config/config.dart';
-import '../../extensions/string.dart';
 
 /// Generates code for theme extensions based on a given configuration.
 class ThemeGenCodeBuilder {
@@ -103,7 +102,7 @@ Method copyWith(ThemeGenConfig config) {
             (p) => p
               ..name = field.name
               ..named = true
-              ..type = field.type.nullable().ref,
+              ..type = field.type.nullableRef,
           ),
         ),
       )
@@ -194,7 +193,7 @@ Method merge(ThemeGenConfig config) {
         Parameter(
           (p) => p
             ..name = 'other'
-            ..type = config.className.nullable().ref,
+            ..type = config.className.nullableRef,
         ),
       )
       ..body = body.build();
@@ -243,8 +242,8 @@ Method staticLerp(ThemeGenConfig config) {
                     't'.ref
                         .lessThan(literalNum(0.5))
                         .conditional(
-                          'a'.nullable().ref.property(field.name),
-                          'b'.nullable().ref.property(field.name),
+                          'a'.nullableRef.property(field.name),
+                          'b'.nullableRef.property(field.name),
                         ),
                   );
 
@@ -261,9 +260,7 @@ Method staticLerp(ThemeGenConfig config) {
                       'b'.ref.property(field.name),
                       't'.ref,
                     ]),
-                    'b'
-                        .nullable()
-                        .ref
+                    'b'.nullableRef
                         .property(field.name)
                         .ifNullThen(
                           'a'.ref.nullChecked.property(field.name),
@@ -276,8 +273,8 @@ Method staticLerp(ThemeGenConfig config) {
             }
 
             final expression = field.type.ref.property(methodName).call([
-              'a'.nullable().ref.property(field.name),
-              'b'.nullable().ref.property(field.name),
+              'a'.nullableRef.property(field.name),
+              'b'.nullableRef.property(field.name),
               't'.ref,
             ]);
 
@@ -294,13 +291,11 @@ Method staticLerp(ThemeGenConfig config) {
               methodName: final methodName,
             ),
           ):
-            final expression = 'a'
-                .nullable()
-                .ref
+            final expression = 'a'.nullableRef
                 .property(field.name)
                 .property(methodName)
                 .call([
-                  'b'.nullable().ref.property(field.name),
+                  'b'.nullableRef.property(field.name),
                   't'.ref,
                 ])
                 .asA(field.type.ref);
@@ -310,8 +305,8 @@ Method staticLerp(ThemeGenConfig config) {
           // When the field is of type double
           case FieldSymbol(isDouble: true):
             final expression = r'lerpDouble$'.ref.call([
-              'a'.nullable().ref.property(field.name),
-              'b'.nullable().ref.property(field.name),
+              'a'.nullableRef.property(field.name),
+              'b'.nullableRef.property(field.name),
               't'.ref,
             ]);
 
@@ -322,8 +317,8 @@ Method staticLerp(ThemeGenConfig config) {
           // When the field is of type Duration
           case FieldSymbol(isDuration: true):
             final expression = r'lerpDuration$'.ref.call([
-              'a'.nullable().ref.property(field.name),
-              'b'.nullable().ref.property(field.name),
+              'a'.nullableRef.property(field.name),
+              'b'.nullableRef.property(field.name),
               't'.ref,
             ]);
 
@@ -334,9 +329,7 @@ Method staticLerp(ThemeGenConfig config) {
           // Default case: use a simple conditional expression
           case _:
             if (field.name == 'canMerge') {
-              args[field.name] = 'b'
-                  .nullable()
-                  .ref
+              args[field.name] = 'b'.nullableRef
                   .property(field.name)
                   .ifNullThen(
                     literalTrue,
@@ -347,8 +340,8 @@ Method staticLerp(ThemeGenConfig config) {
             args[field.name] = 't'.ref
                 .lessThan(literalNum(0.5))
                 .conditional(
-                  'a'.nullable().ref.property(field.name),
-                  'b'.nullable().ref.property(field.name),
+                  'a'.nullableRef.property(field.name),
+                  'b'.nullableRef.property(field.name),
                 );
         }
       }
@@ -360,17 +353,17 @@ Method staticLerp(ThemeGenConfig config) {
     m
       ..name = 'lerp'
       ..static = true
-      ..returns = config.className.nullable().ref
+      ..returns = config.className.nullableRef
       ..requiredParameters.addAll([
         Parameter(
           (p) => p
             ..name = 'a'
-            ..type = config.className.nullable().ref,
+            ..type = config.className.nullableRef,
         ),
         Parameter(
           (p) => p
             ..name = 'b'
-            ..type = config.className.nullable().ref,
+            ..type = config.className.nullableRef,
         ),
         Parameter(
           (p) => p

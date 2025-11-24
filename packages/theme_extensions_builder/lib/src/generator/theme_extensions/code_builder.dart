@@ -106,7 +106,7 @@ Method copyWith(ThemeExtensionsConfig config) {
             (p) => p
               ..name = field.name
               ..named = true
-              ..type = field.type.nullable().ref,
+              ..type = field.type.nullableRef,
           ),
         ),
       )

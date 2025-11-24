@@ -5,8 +5,8 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 
 import '../../common/analysis.dart';
 import '../../config/config.dart';
+import '../../common/visitor.dart';
 import 'code_builder.dart';
-import 'visitor.dart';
 
 /// It's a Dart code generator that generates code for the `@ThemeExtensions`
 /// annotation
@@ -39,7 +39,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
     final contextAccessorName =
         annotation.read('contextAccessorName').literalValue as String?;
 
-    final classVisitor = ThemeExtensionsClassVisitor();
+    final classVisitor = ThemeClassVisitor();
     // Get all supertypes to visit their fields as well
     final allSupertypes = element.allSupertypes;
 

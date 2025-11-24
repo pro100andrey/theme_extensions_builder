@@ -6,8 +6,8 @@ import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 import '../../config/config.dart';
+import '../../common/visitor.dart';
 import 'code_builder.dart';
-import 'visitor.dart';
 
 /// It's a Dart code generator that generates code for the `@ThemeGen`
 /// annotation.
@@ -33,7 +33,7 @@ class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
     final constructor = annotation.read('constructor').literalValue as String?;
     final constConstructor = element.constructors.any((c) => c.isConst);
 
-    final classVisitor = ThemeGenClassVisitor();
+    final classVisitor = ThemeClassVisitor();
     // Get all supertypes to visit their fields as well
     final allSupertypes = element.allSupertypes;
 

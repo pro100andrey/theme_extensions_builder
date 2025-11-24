@@ -14,21 +14,21 @@ extension StringCamelCase on String {
   }
 }
 
-extension StringNullable on String {
-  /// Returns a nullable version of the type if [f] is true.
-  String nullable({bool f = true}) {
-    if (!f) {
-      return this;
-    }
+// extension StringNullable on String {
+//   /// Returns a nullable version of the type if [f] is true.
+//   String nullable({bool f = true}) {
+//     if (!f) {
+//       return this;
+//     }
 
-    if (this == 'dynamic') {
-      return this;
-    }
+//     if (this == 'dynamic') {
+//       return this;
+//     }
 
-    if (endsWith('?')) {
-      return this;
-    }
+//     if (endsWith('?')) {
+//       return this;
+//     }
 
-    return '$this?';
-  }
-}
+//     return '$this?';
+//   }
+// }

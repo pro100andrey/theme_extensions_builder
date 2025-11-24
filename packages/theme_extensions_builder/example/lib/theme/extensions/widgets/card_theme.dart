@@ -6,7 +6,7 @@ part 'card_theme.g.theme.dart';
 @themeExtensions
 class CardThemeExtension extends ThemeExtension<CardThemeExtension>
     with _$CardThemeExtension {
-  const CardThemeExtension({
+   CardThemeExtension({
     required this.borderRadius,
     required this.backgroundColor,
     required this.boxShadow,
@@ -14,6 +14,8 @@ class CardThemeExtension extends ThemeExtension<CardThemeExtension>
     this.subtitleTextStyle = const .new(fontSize: 14),
     this.border = const .new(),
     this.padding = const .all(16),
+    this.elevation,
+    this.e = 1.0,
   });
 
   final BorderRadius borderRadius;
@@ -23,4 +25,6 @@ class CardThemeExtension extends ThemeExtension<CardThemeExtension>
   final TextStyle subtitleTextStyle;
   final Border border;
   final EdgeInsetsGeometry padding;
+  final double? elevation;
+  double e;
 }

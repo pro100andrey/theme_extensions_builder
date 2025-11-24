@@ -6,7 +6,6 @@ sealed class BaseConfig {
     required this.className,
     required this.constructor,
     required this.constConstructor,
-
   });
 
   /// The fields to be included in the generated theme extension.

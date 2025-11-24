@@ -13,9 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          channel: 'stable'
 
       - name: Install dependencies (annotation)
         working-directory: packages/theme_extensions_builder_annotation

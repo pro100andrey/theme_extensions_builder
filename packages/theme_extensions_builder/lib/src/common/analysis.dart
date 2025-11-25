@@ -6,64 +6,6 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 
 import 'symbols.dart';
 
-/// Checks if the [element] type has a `lerp` method.
-///
-/// Returns [LerpInfo] if a valid `lerp` method is found, otherwise returns
-/// `null`.
-///
-/// The `lerp` method can be:
-/// - Static: `static T lerp(T a, T b, double t)`
-/// - Instance: `T lerp(T other, double t)`
-LerpInfo? lerpInfo({required FieldElement element}) {
-  final typeElement = element.type.element;
-
-  if (typeElement is! ClassElement) {
-    return null;
-  }
-
-  final types = [
-    typeElement,
-    ...typeElement.allSupertypes
-        .where((e) => !e.isDartCoreObject)
-        .map((e) => e.element),
-  ];
-
-  for (final type in types) {
-    for (final method in type.methods) {
-      // Check type is List<T> with T being a valid type for lerp.
-
-      if (method case MethodElement(
-        displayName: 'lerp',
-        isPublic: true,
-      )) {
-        final length = method.children.length;
-        final isStatic = method.isStatic;
-
-        if (method.children.last case FormalParameterElement(:final type)
-            when type.isDartCoreDouble && (length == 3 && isStatic) ||
-                (length == 2 && !isStatic)) {
-          final nullableArgs = isStatic
-              ? method.children
-                    .whereType<FormalParameterElement>()
-                    .take(2)
-                    .any((e) => e.type.nullabilitySuffix.name != 'none')
-              : method.children
-                    .whereType<FormalParameterElement>()
-                    .take(1)
-                    .any((e) => e.type.nullabilitySuffix.name != 'none');
-
-          return LerpInfo(
-            isStatic: isStatic,
-            type: type.getDisplayString(),
-          );
-        }
-      }
-    }
-  }
-
-  return null;
-}
-
 /// Checks if the [element] type has a `merge` method.
 ///
 /// Returns [MergeInfo] if a valid `merge` method is found, otherwise returns

@@ -54,8 +54,14 @@ extension type FiledV(FieldElement element) {
   /// Whether the field is nullable.
   bool get isNullable => _type.nullabilitySuffix == .question;
 
-  LerpInfo? _lerpInfoForInterface(InterfaceElement element) {
-    final method = element.getMethod('lerp');
+  LerpInfo? get lerpInfo {
+    final type = _type.element;
+
+    if (type is! InterfaceElement) {
+      return null;
+    }
+
+    final method = type.getMethod('lerp');
     if (method == null || !method.isPublic) {
       return null;
     }
@@ -74,67 +80,10 @@ extension type FiledV(FieldElement element) {
       return null;
     }
 
-    final argsToCheck = params.take(expectedCount - 1);
-    final hasNullableArgs = argsToCheck.any(
-      (p) => p.type.nullabilitySuffix != .none,
-    );
-
     return LerpInfo(
       isStatic: isStatic,
-      type: element.displayName,
+      type: type.displayName,
     );
-  }
-
-  LerpInfo? get lerpInfo {
-    final type = _type.element;
-
-    if (type is! InterfaceElement) {
-      return null;
-    }
-
-    // Use followedBy to create a lazy iterable instead of a new List
-    final candidates = [type].followedBy(
-      type.allSupertypes
-          .where((e) => !e.isDartCoreObject)
-          .map((e) => e.element),
-    );
-
-    final lerps = <LerpInfo>[];
-
-    for (final targetClass in candidates) {
-      final method = targetClass.getMethod('lerp');
-      if (method == null || !method.isPublic) {
-        continue;
-      }
-
-      final isStatic = method.isStatic;
-      final params = method.formalParameters;
-      final expectedCount = isStatic ? 3 : 2;
-      // Check parameter count matches expected count based on static or
-      // instance method
-      if (params.length != expectedCount) {
-        continue;
-      }
-
-      // Check if the last parameter 't' is double
-      if (!params.last.type.isDartCoreDouble) {
-        continue;
-      }
-
-      final argsToCheck = params.take(expectedCount - 1);
-      final hasNullableArgs = argsToCheck.any(
-        (p) => p.type.nullabilitySuffix != .none,
-      );
-
-      lerps.add(
-        LerpInfo(
-          isStatic: isStatic,
-          type: targetClass.displayName,
-        ),
-      );
-    }
-
-    return lerps.firstOrNull;
   }
 }
 

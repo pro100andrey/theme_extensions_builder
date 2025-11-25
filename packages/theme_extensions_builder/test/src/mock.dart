@@ -93,8 +93,8 @@ class BorderSide {
     return a.style == b.style && a.color == b.color;
   }
 
-   // ignore: prefer_constructors_over_static_methods
-   static BorderSide merge(BorderSide a, BorderSide b) {
+  // ignore: prefer_constructors_over_static_methods
+  static BorderSide merge(BorderSide a, BorderSide b) {
     assert(canMerge(a, b), 'BorderSides cannot be merged');
     final aIsNone = a.style == BorderStyle.none && a.width == 0.0;
     final bIsNone = b.style == BorderStyle.none && b.width == 0.0;
@@ -121,6 +121,4 @@ class BorderSide {
     width: 0,
     style: BorderStyle.none,
   );
-
- 
 }

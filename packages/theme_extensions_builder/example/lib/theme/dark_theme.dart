@@ -14,6 +14,8 @@ ThemeData get darkTheme => ThemeData(
       primaryColor: Colors.teal,
       backgroundColor: Colors.black,
       layoutMode: .expanded,
+      borderSide: BorderSide.none,
+      optionalBorderSide: null,
     ),
     CardThemeExtension(
       borderRadius: const .all(.circular(16)),

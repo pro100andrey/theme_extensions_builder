@@ -7,13 +7,30 @@ readonly COLOR_BLUE="\033[1;34m"
 readonly COLOR_GREEN="\033[1;32m"
 readonly COLOR_RED="\033[1;31m"
 readonly COLOR_YELLOW="\033[1;33m"
+readonly COLOR_CYAN="\033[1;36m"
 readonly COLOR_RESET="\033[0m"
+readonly STYLE_BOLD="\033[1m"
 
 # Root directory of the project
 readonly PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 function log() {
-	echo -e "${COLOR_YELLOW} • ${COLOR_RESET} $1"
+	echo -e "${COLOR_CYAN} • ${COLOR_RESET} $1"
+}
+
+function log_info() {
+	local title=$1
+	local message=${2:-""}
+	echo ""
+	echo -e "[${STYLE_BOLD}${COLOR_CYAN}$title]${COLOR_RESET} $message"
+	echo ""
+}
+
+function line() {
+	local length=$1
+	local line_char=${2:-"-"}
+	local line=$(printf '%*s' "$length" '' | tr ' ' "$line_char")
+	echo -e "${COLOR_BLUE}${line}${COLOR_RESET}"
 }
 
 function log_success() {
@@ -83,6 +100,24 @@ function dart_test() {
 	fi
 }
 
+function build_runner() {
+	local package_path=$1
+
+	if ! grep -q "build_runner" "$package_path/pubspec.yaml"; then
+		log "No build_runner dependency found in $package_path, skipping build_runner step"
+		return 0
+	fi
+
+	log "Running 'dart run build_runner build' in $package_path"
+	if (cd "$package_path" && dart run build_runner build --delete-conflicting-outputs); then
+		log_success "build_runner completed for $package_path"
+		return 0
+	else
+		log_error "build_runner failed for $package_path"
+		return 1
+	fi
+}
+
 function dart_fix() {
 	local package_path=$1
 	log "Running 'dart fix' in $package_path"
@@ -99,10 +134,8 @@ function process_package() {
 	local dir=$1
 	local package_name=$(basename "$dir")
 
-	echo ""
-	log "========================================="
-	log "Processing package: $package_name"
-	log "========================================="
+	log_info "Processing package:" "$package_name"
+
 
 	local steps=(
 		"pub_update"
@@ -110,6 +143,7 @@ function process_package() {
 		"dart_fix"
 		"dart_analyze"
 		"dart_test"
+		"build_runner"
 	)
 
 	for step in "${steps[@]}"; do
@@ -148,7 +182,8 @@ function main() {
 		fi
 	done
 
-	log "========================================="
+	echo ""
+
 	if [[ ${#failed_packages[@]} -eq 0 ]]; then
 		log_success "All packages processed successfully! Ready to push."
 		return 0

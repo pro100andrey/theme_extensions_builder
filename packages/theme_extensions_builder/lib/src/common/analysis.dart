@@ -52,9 +52,9 @@ LerpInfo? lerpInfo({required FieldElement element}) {
                     .take(1)
                     .any((e) => e.type.nullabilitySuffix.name != 'none');
 
-          return (
+          return LerpInfo(
             isStatic: isStatic,
-            displayType: type.getDisplayString(),
+            type: type.getDisplayString(),
           );
         }
       }
@@ -91,7 +91,7 @@ MergeInfo? mergeInfo({required FieldElement element}) {
       typeElement.allSupertypes.any(
         (e) => themeGenChecker.hasAnnotationOfExact(e.element),
       )) {
-    return (isStatic: false);
+    return const MergeInfo(isStatic: false);
   }
 
   final types = [
@@ -110,13 +110,13 @@ MergeInfo? mergeInfo({required FieldElement element}) {
           FormalParameterElement(type: final t1),
           FormalParameterElement(type: final t2),
         ] when isStatic && t1.getDisplayString() == t2.getDisplayString()) {
-          return (isStatic: isStatic);
+          return MergeInfo(isStatic: isStatic);
         }
 
         if (method.children case [
           FormalParameterElement(),
         ] when !isStatic) {
-          return (isStatic: isStatic);
+          return MergeInfo(isStatic: isStatic);
         }
       }
     }

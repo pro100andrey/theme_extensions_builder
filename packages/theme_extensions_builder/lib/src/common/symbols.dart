@@ -1,12 +1,54 @@
-typedef LerpInfo = ({
-  bool isStatic,
-  String displayType,
-});
+/// A class that represents information about lerp method.
+final class LerpInfo {
+  const LerpInfo({
+    required this.isStatic,
+    required this.type,
+  });
 
-typedef MergeInfo = ({bool isStatic});
+  /// Whether the lerp method is static.
+  final bool isStatic;
 
-/// It's a class that represents a field
-class FieldSymbol {
+  /// The display type of the class that contains the lerp method.
+  final String type;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is LerpInfo &&
+        other.isStatic == isStatic &&
+        other.type == type;
+  }
+
+  @override
+  int get hashCode => isStatic.hashCode ^ type.hashCode;
+}
+
+/// A class that represents information about merge method.
+final class MergeInfo {
+  const MergeInfo({
+    required this.isStatic,
+  });
+
+  /// Whether the merge method is static.
+  final bool isStatic;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    return other is MergeInfo && other.isStatic == isStatic;
+  }
+
+  @override
+  int get hashCode => isStatic.hashCode;
+}
+
+/// A class that represents information about a field.
+final class FieldSymbol {
   const FieldSymbol({
     required this.name,
     required this.type,

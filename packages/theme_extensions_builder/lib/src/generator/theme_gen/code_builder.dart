@@ -227,8 +227,10 @@ Method staticLerp(ThemeGenConfig config) {
       for (final field in fields) {
         switch (field) {
           // When the field has a static lerp method
-          case FieldSymbol(lerpInfo: (isStatic: true, :final displayType)):
-            final expression = displayType.ref.property('lerp').call([
+          case FieldSymbol(
+            lerpInfo: LerpInfo(isStatic: true, :final type),
+          ):
+            final expression = type.ref.property('lerp').call([
               'a'.ref.prop(field.name, nullSafe: true),
               'b'.ref.prop(field.name, nullSafe: true),
               't'.ref,
@@ -239,7 +241,7 @@ Method staticLerp(ThemeGenConfig config) {
                 : expression.nullChecked;
 
           // When the field has a non-static lerp method
-          case FieldSymbol(lerpInfo: (isStatic: false, displayType: _)):
+          case FieldSymbol(lerpInfo: LerpInfo(isStatic: false)):
             final expression = 'a'.ref
                 .nullSafeProperty(field.name)
                 .prop('lerp', nullSafe: field.isNullable)

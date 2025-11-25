@@ -1,3 +1,4 @@
+/// A placeholder for Flutter's ThemeExtension class
 abstract class ThemeExtension<T extends ThemeExtension<T>> {
   /// Enable const constructor for subclasses.
   const ThemeExtension();
@@ -17,6 +18,23 @@ abstract class ThemeExtension<T extends ThemeExtension<T>> {
 }
 
 // ignore: avoid_classes_with_only_static_members
-final class Color {
+abstract class Color {
   static Color? lerp(Color? x, Color? y, double t) => null;
+}
+
+/// A placeholder for Flutter's BuildContext
+abstract class BuildContext {}
+
+// A placeholder for Flutter's Theme class
+abstract class Theme {
+  const Theme(this.context);
+
+  factory Theme.of(BuildContext context) {
+    final _ = context;
+    throw UnimplementedError();
+  }
+
+  final BuildContext context;
+
+  T? extension<T extends ThemeExtension<T>>() => null;
 }

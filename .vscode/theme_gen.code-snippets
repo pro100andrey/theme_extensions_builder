@@ -1,0 +1,94 @@
+{
+    "Theme extension file": {
+        "scope": "dart",
+        "prefix": [
+            "theme-extensions-file"
+        ],
+        "body": [
+            "import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';",
+            "",
+            "part '${TM_FILENAME_BASE}.g.theme.dart';",
+            "",
+            "@themeExtensions",
+            "final class ${1:${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/}}Extension extends ThemeExtension<${1}Extension> with _$${1}Extension {",
+            "  const ${1}Extension({",
+            "    required this.${2:property},",
+            "  });",
+            "",
+            "  final ${3:String} ${2:property};",
+            "}",
+            ""
+        ],
+        "description": "Template for the theme extension file."
+    },
+    "Theme extension": {
+        "scope": "dart",
+        "prefix": [
+            "theme-extensions"
+        ],
+        "body": [
+            "@themeExtensions",
+            "final class ${1:Name}Extension extends ThemeExtension<${1}Extension> with _$${1}Extension {",
+            "  const ${1}Extension({",
+            "    required this.${2:property},",
+            "  });",
+            "",
+            "  final ${3:String} ${2:property};",
+            "}",
+            ""
+        ],
+        "description": "Template for the theme extension."
+    },
+    "Theme gen file": {
+        "scope": "dart",
+        "prefix": [
+            "theme-gen-file"
+        ],
+        "body": [
+            "import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';",
+            "",
+            "part '${TM_FILENAME_BASE}.g.theme.dart';",
+            "",
+            "@themeGen",
+            "final class ${1:${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/}} with _$${1} {",
+            "  const ${1}({",
+            "    required this.${2:property},",
+            "  });",
+            "",
+            "  final ${3:String} ${2:property};",
+            "  ",
+            "  static ${1}? lerp(",
+            "    ${1}? a,",
+            "    ${1}? b,",
+            "    double t,",
+            "  ) => _$${1}.lerp(a, b, t);",
+            "}",
+            ""
+        ],
+        "description": "Template for the theme gen file."
+    },
+    "Theme gen": {
+        "scope": "dart",
+        "prefix": [
+            "theme-gen"
+        ],
+        "body": [
+            "@themeGen",
+            "final class ${1:Name}Theme with _$${1}Theme {",
+            "  const ${1}Theme({",
+            "    required this.${2:property},",
+            "  });",
+            "",
+            "  final ${3:String} ${2:property};",
+            "  ",
+            "  static ${1:Name}Theme? lerp(",
+            "    ${1:Name}Theme? a,",
+            "    ${1:Name}Theme? b,",
+            "    double t,",
+            "  ) => _$${1}Theme.lerp(a, b, t);",
+            "}",
+            ""
+        ],
+        "description": "Template for the theme gen."
+    }
+}

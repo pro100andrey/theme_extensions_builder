@@ -50,12 +50,14 @@ class ThemeExtensionsCodeBuilder {
       trailingCommas: TrailingCommas.automate,
     );
 
-    final buffer = StringBuffer(mix.accept(emitter).toString());
-    if (config.buildContextExtension) {
-      buffer.write(contextExtension(config).accept(emitter).toString());
-    }
+    final library = Library(
+      (b) => b.body.addAll([
+        mix,
+        if (config.buildContextExtension) contextExtension(config),
+      ]),
+    );
 
-    final rawCode = buffer.toString();
+    final rawCode = library.accept(emitter).toString();
     final formattedCode = formatter.format(rawCode);
 
     return formattedCode;

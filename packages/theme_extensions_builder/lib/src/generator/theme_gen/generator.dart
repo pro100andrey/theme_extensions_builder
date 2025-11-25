@@ -5,8 +5,8 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../../config/config.dart';
 import '../../common/visitor.dart';
+import '../../config/config.dart';
 import 'code_builder.dart';
 
 /// It's a Dart code generator that generates code for the `@ThemeGen`

@@ -52,6 +52,7 @@ class SimpleThemeGen with _$SimpleThemeGen {
     this.name,
     this.theme,
     this.baseThemeOptional,
+    this.decoration,
   });
 
   final double size;
@@ -59,6 +60,7 @@ class SimpleThemeGen with _$SimpleThemeGen {
   final SimpleThemeGen? theme;
   final BaseTheme baseTheme;
   final BaseTheme? baseThemeOptional;
+  final BoxDecoration? decoration;
 
   static SimpleThemeGen? lerp(
     SimpleThemeGen? a,

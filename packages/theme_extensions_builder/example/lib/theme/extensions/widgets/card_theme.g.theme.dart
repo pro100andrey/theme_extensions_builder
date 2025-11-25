@@ -216,7 +216,8 @@ mixin _$SimpleThemeGen {
       theme: SimpleThemeGen.lerp(a?.theme, b?.theme, t),
       baseTheme: (a?.baseTheme.lerp(b?.baseTheme, t) as BaseTheme),
       baseThemeOptional:
-          (a?.baseThemeOptional?.lerp(b?.baseThemeOptional, t) as BaseTheme),
+          (a?.baseThemeOptional?.lerp(b?.baseThemeOptional, t) as BaseTheme?),
+      decoration: BoxDecoration.lerp(a?.decoration, b?.decoration, t),
     );
   }
 
@@ -226,6 +227,7 @@ mixin _$SimpleThemeGen {
     SimpleThemeGen? theme,
     BaseTheme? baseTheme,
     BaseTheme? baseThemeOptional,
+    BoxDecoration? decoration,
   }) {
     final _this = (this as SimpleThemeGen);
 
@@ -235,6 +237,7 @@ mixin _$SimpleThemeGen {
       theme: theme ?? _this.theme,
       baseTheme: baseTheme ?? _this.baseTheme,
       baseThemeOptional: baseThemeOptional ?? _this.baseThemeOptional,
+      decoration: decoration ?? _this.decoration,
     );
   }
 
@@ -252,9 +255,10 @@ mixin _$SimpleThemeGen {
     return copyWith(
       size: other.size,
       name: other.name,
-      theme: other.theme,
+      theme: _this.theme?.merge(other.theme) ?? other.theme,
       baseTheme: other.baseTheme,
       baseThemeOptional: other.baseThemeOptional,
+      decoration: other.decoration,
     );
   }
 
@@ -275,7 +279,8 @@ mixin _$SimpleThemeGen {
         _other.name == _this.name &&
         _other.theme == _this.theme &&
         _other.baseTheme == _this.baseTheme &&
-        _other.baseThemeOptional == _this.baseThemeOptional;
+        _other.baseThemeOptional == _this.baseThemeOptional &&
+        _other.decoration == _this.decoration;
   }
 
   @override
@@ -289,6 +294,7 @@ mixin _$SimpleThemeGen {
       _this.theme,
       _this.baseTheme,
       _this.baseThemeOptional,
+      _this.decoration,
     );
   }
 }

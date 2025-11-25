@@ -160,7 +160,11 @@ mixin _$SimpleThemeGen {
       return other;
     }
 
-    return copyWith(size: other.size, name: other.name, theme: other.theme);
+    return copyWith(
+      size: other.size,
+      name: other.name,
+      theme: _this.theme?.merge(other.theme) ?? other.theme,
+    );
   }
 
   @override

@@ -41,7 +41,9 @@ class ThemeGenCodeBuilder {
       trailingCommas: TrailingCommas.automate,
     );
 
-    final rawCode = mix.accept(emitter).toString();
+    final mixinLibrary = Library((b) => b.body.addAll([mix]));
+
+    final rawCode = mixinLibrary.accept(emitter).toString();
     final formattedCode = formatter.format(rawCode);
 
     return formattedCode;

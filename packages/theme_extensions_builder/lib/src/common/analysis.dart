@@ -54,7 +54,6 @@ LerpInfo? lerpInfo({required FieldElement element}) {
 
           return (
             isStatic: isStatic,
-
             displayType: type.getDisplayString(),
           );
         }
@@ -88,7 +87,10 @@ MergeInfo? mergeInfo({required FieldElement element}) {
   // impossible to get information about the merge method during the build
   // phase.
   const themeGenChecker = TypeChecker.typeNamed(ThemeGen);
-  if (themeGenChecker.hasAnnotationOfExact(element)) {
+  if (themeGenChecker.hasAnnotationOfExact(typeElement) ||
+      typeElement.allSupertypes.any(
+        (e) => themeGenChecker.hasAnnotationOfExact(e.element),
+      )) {
     return (isStatic: false);
   }
 

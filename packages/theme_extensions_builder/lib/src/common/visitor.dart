@@ -19,7 +19,7 @@ class ThemeClassVisitor extends BaseClassVisitor {
     }
 
     if (!element.isSynthetic) {
-      final symbol = FieldSymbol(element);
+      final symbol = FieldSymbol.from(element);
       fields.add(symbol);
     }
   }

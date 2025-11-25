@@ -106,7 +106,7 @@ Method copyWith(ThemeExtensionsConfig config) {
             (p) => p
               ..name = field.name
               ..named = true
-              ..type = field.type.typeRef(optional: true),
+              ..type = field.baseType.typeRef(optional: true),
           ),
         ),
       )
@@ -152,14 +152,12 @@ Method lerpMethod(ThemeExtensionsConfig config) {
         final args = <String, Expression>{};
 
         for (final field in fields) {
-          switch (field.lerpInfo) {
+          switch (field) {
             // Lerp class with static lerp method
-            case LerpInfo(
-              isStatic: true,
-
-              :final returnTypeIsNullable,
+            case FieldSymbol(
+              lerp: StaticLerpMethod(:final returnTypeIsNullable),
             ):
-              final expression = field.type.ref.prop('lerp').call([
+              final expression = field.baseType.ref.prop('lerp').call([
                 '_this'.ref.property(field.name),
                 'other'.ref.property(field.name),
                 't'.ref,
@@ -170,12 +168,12 @@ Method lerpMethod(ThemeExtensionsConfig config) {
                   : expression.nullChecked;
 
             // Lerp class with instance lerp method
-            case FieldSymbol(lerpInfo: LerpInfo(isStatic: false)):
+            case FieldSymbol(lerp: InstanceLerpMethod()):
               final expression = '_this'.ref
                   .property(field.name)
                   .prop('lerp', nullSafe: field.isNullable)
                   .call(['other'.ref.property(field.name), 't'.ref])
-                  .asA(field.type.typeRef(optional: field.isNullable));
+                  .asA(field.baseType.typeRef(optional: field.isNullable));
 
               args[field.name] = expression;
 

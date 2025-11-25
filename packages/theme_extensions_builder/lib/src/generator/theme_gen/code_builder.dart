@@ -104,7 +104,7 @@ Method copyWith(ThemeGenConfig config) {
             (p) => p
               ..name = field.name
               ..named = true
-              ..type = field.type.typeRef(optional: true),
+              ..type = field.baseType.typeRef(optional: true),
           ),
         ),
       )
@@ -139,31 +139,31 @@ Method merge(ThemeGenConfig config) {
     )
     ..statements.add(const Code(''));
 
-  final namedArguments =  fields.map((field) {
+  final namedArguments = fields.map((field) {
     final thisRefProperty = '_this'.ref.property(field.name);
     final otherRefProperty = 'other'.ref.property(field.name);
 
     final key = field.name;
-    final value = switch (field.mergeInfo) {
-      MergeInfoNone() => otherRefProperty,
-      MergeInfoStatic() when field.isNullable =>
+    final value = switch (field.merge) {
+      NoMergeMethod() => otherRefProperty,
+      StaticMergeMethod() when field.isNullable =>
         thisRefProperty
             .notEqualTo(literalNull)
             .and(otherRefProperty.notEqualTo(literalNull))
             .conditional(
-              field.type.ref.property('merge').call([
+              field.baseType.ref.property('merge').call([
                 thisRefProperty.nullChecked,
                 otherRefProperty.nullChecked,
               ]),
               otherRefProperty,
             ),
 
-      MergeInfoStatic() when !field.isNullable =>
-        field.type.ref.property('merge').call([
+      StaticMergeMethod() when !field.isNullable =>
+        field.baseType.ref.property('merge').call([
           thisRefProperty,
           otherRefProperty,
         ]),
-      MergeInfoInstance() =>
+      InstanceMergeMethod() =>
         field.isNullable
             ? otherRefProperty
                   .nullSafeProperty('merge')
@@ -227,10 +227,8 @@ Method staticLerp(ThemeGenConfig config) {
       for (final field in fields) {
         switch (field) {
           // When the field has a static lerp method
-          case FieldSymbol(
-            lerpInfo: LerpInfo(isStatic: true),
-          ):
-            final expression = field.type.ref.property('lerp').call([
+          case FieldSymbol(lerp: StaticLerpMethod()):
+            final expression = field.baseType.ref.property('lerp').call([
               'a'.ref.prop(field.name, nullSafe: true),
               'b'.ref.prop(field.name, nullSafe: true),
               't'.ref,
@@ -241,12 +239,12 @@ Method staticLerp(ThemeGenConfig config) {
                 : expression.nullChecked;
 
           // When the field has a non-static lerp method
-          case FieldSymbol(lerpInfo: LerpInfo(isStatic: false)):
+          case FieldSymbol(lerp: InstanceLerpMethod()):
             final expression = 'a'.ref
                 .nullSafeProperty(field.name)
                 .prop('lerp', nullSafe: field.isNullable)
                 .call(['b'.ref.prop(field.name, nullSafe: true), 't'.ref])
-                .asA(field.type.typeRef(optional: field.isNullable));
+                .asA(field.baseType.typeRef(optional: field.isNullable));
 
             args[field.name] = expression;
 

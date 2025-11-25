@@ -11,10 +11,8 @@ part of 'empty_theme.dart';
 
 mixin _$EmptyThemeExtension on ThemeExtension<EmptyThemeExtension> {
   @override
-  ThemeExtension<EmptyThemeExtension> copyWith({String? property}) {
-    final _this = (this as EmptyThemeExtension);
-
-    return EmptyThemeExtension(property: property ?? _this.property);
+  ThemeExtension<EmptyThemeExtension> copyWith() {
+    return const EmptyThemeExtension();
   }
 
   @override
@@ -26,11 +24,7 @@ mixin _$EmptyThemeExtension on ThemeExtension<EmptyThemeExtension> {
       return this;
     }
 
-    final _this = (this as EmptyThemeExtension);
-
-    return EmptyThemeExtension(
-      property: t < 0.5 ? _this.property : other.property,
-    );
+    return const EmptyThemeExtension();
   }
 
   @override
@@ -43,17 +37,12 @@ mixin _$EmptyThemeExtension on ThemeExtension<EmptyThemeExtension> {
       return false;
     }
 
-    final _this = (this as EmptyThemeExtension);
-    final _other = (other as EmptyThemeExtension);
-
-    return _other.property == _this.property;
+    return true;
   }
 
   @override
   int get hashCode {
-    final _this = (this as EmptyThemeExtension);
-
-    return Object.hash(runtimeType, _this.property);
+    return runtimeType.hashCode;
   }
 }
 

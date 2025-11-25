@@ -152,18 +152,20 @@ Method lerpMethod(ThemeExtensionsConfig config) {
         final args = <String, Expression>{};
 
         for (final field in fields) {
-          switch (field) {
+          switch (field.lerpInfo) {
             // Lerp class with static lerp method
-            case FieldSymbol(
-              lerpInfo: LerpInfo(isStatic: true, :final type),
+            case LerpInfo(
+              isStatic: true,
+
+              :final returnTypeIsNullable,
             ):
-              final expression = type.ref.property('lerp').call([
+              final expression = field.type.ref.prop('lerp').call([
                 '_this'.ref.property(field.name),
                 'other'.ref.property(field.name),
                 't'.ref,
               ]);
 
-              args[field.name] = field.isNullable
+              args[field.name] = field.isNullable || !returnTypeIsNullable
                   ? expression
                   : expression.nullChecked;
 

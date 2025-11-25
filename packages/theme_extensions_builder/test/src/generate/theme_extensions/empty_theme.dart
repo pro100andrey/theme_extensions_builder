@@ -7,9 +7,5 @@ part 'empty_theme.g.theme.dart';
 @themeExtensions
 final class EmptyThemeExtension extends ThemeExtension<EmptyThemeExtension>
     with _$EmptyThemeExtension {
-  const EmptyThemeExtension({
-    required this.property,
-  });
-
-  final String property;
+  const EmptyThemeExtension();
 }

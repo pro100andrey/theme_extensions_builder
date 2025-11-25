@@ -1,94 +1,129 @@
-/// A class that represents information about lerp method.
-final class LerpInfo {
-  const LerpInfo({
-    required this.isStatic,
-    required this.type,
-  });
+import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:source_gen/source_gen.dart';
+import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
+extension type const LerpInfo._(MethodElement element) {
   /// Whether the lerp method is static.
-  final bool isStatic;
+  bool get isStatic => element.isStatic;
 
-  /// The display type of the class that contains the lerp method.
-  final String type;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    return other is LerpInfo &&
-        other.isStatic == isStatic &&
-        other.type == type;
-  }
-
-  @override
-  int get hashCode => isStatic.hashCode ^ type.hashCode;
+  /// Whether the lerp method returns a nullable type.
+  bool get returnTypeIsNullable =>
+      element.returnType.nullabilitySuffix == .question;
 }
 
-/// A class that represents information about merge method.
-final class MergeInfo {
-  const MergeInfo({
-    required this.isStatic,
-  });
+sealed class MergeInfo {
+  const MergeInfo();
 
-  /// Whether the merge method is static.
-  final bool isStatic;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other is MergeInfo && other.isStatic == isStatic;
-  }
-
-  @override
-  int get hashCode => isStatic.hashCode;
+  bool get isStatic => this is MergeInfoStatic;
+  bool get isInstance => this is MergeInfoInstance;
+  bool get isNone => this is MergeInfoNone;
 }
 
-/// A class that represents information about a field.
-final class FieldSymbol {
-  const FieldSymbol({
-    required this.name,
-    required this.type,
-    required this.lerpInfo,
-    required this.isNullable,
-    required this.mergeInfo,
-  });
+final class MergeInfoNone extends MergeInfo {
+  const MergeInfoNone();
+}
 
-  final String name;
-  final String type;
-  final LerpInfo? lerpInfo;
-  final MergeInfo? mergeInfo;
-  final bool isNullable;
+final class MergeInfoStatic extends MergeInfo {
+  const MergeInfoStatic();
+}
 
-  bool get hasLerp => lerpInfo != null;
-  bool get hasMerge => mergeInfo != null;
+final class MergeInfoInstance extends MergeInfo {
+  const MergeInfoInstance();
+}
 
-  bool get isDouble => type == 'double';
+extension type FieldSymbol(FieldElement element) {
+  /// The name of the field.
+  String get name => element.displayName;
+
+  /// The type of the field.
+  DartType get _type => element.type;
+
+  /// The display type of the field.
+  String get displayType => _type.getDisplayString();
+
+  /// The type of the field without nullability suffix.
+  String get type =>
+      isNullable ? displayType.replaceFirst('?', '') : displayType;
+
+  /// Whether the field is nullable.
+  bool get isNullable => _type.nullabilitySuffix == .question;
+
+  bool get isDouble => _type.isDartCoreDouble;
+
   bool get isDuration => type == 'Duration';
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
+  LerpInfo? get lerpInfo {
+    final typeElement = _type.element;
+
+    if (typeElement is! InterfaceElement) {
+      return null;
     }
 
-    return other is FieldSymbol &&
-        other.name == name &&
-        other.type == type &&
-        other.lerpInfo == lerpInfo &&
-        other.isNullable == isNullable &&
-        other.mergeInfo == mergeInfo;
+    final method = typeElement.getMethod('lerp');
+    if (method == null || !method.isPublic) {
+      return null;
+    }
+
+    // Check if the last parameter 't' is double
+    if (!method.formalParameters.last.type.isDartCoreDouble) {
+      return null;
+    }
+
+    return LerpInfo._(method);
   }
 
-  @override
-  int get hashCode => Object.hash(
-    name,
-    type,
-    lerpInfo,
-    isNullable,
-    mergeInfo,
-  );
+  MergeInfo get mergeInfo => _mergeInfo(_type);
+}
+
+MergeInfo _mergeInfo(DartType type) {
+  final typeElement = type.element;
+
+  if (typeElement is! ClassElement) {
+    return const MergeInfoNone();
+  }
+
+  // Check if element or its supertypes have @ThemeGen annotation.
+  // Using the annotation implies that the merge method exists, as it is
+  // impossible to get information about the merge method during the build
+  // phase.
+  const themeGenChecker = TypeChecker.typeNamed(ThemeGen);
+  if (themeGenChecker.hasAnnotationOfExact(typeElement)) {
+    return const MergeInfoStatic();
+  }
+
+  final method = typeElement.getMethod('merge');
+  if (method == null || !method.isPublic) {
+    return const MergeInfoNone();
+  }
+
+  final types = [
+    typeElement,
+    ...typeElement.allSupertypes
+        .where((e) => !e.isDartCoreObject)
+        .map((e) => e.element),
+  ];
+
+  for (final type in types) {
+    for (final method in type.methods) {
+      if (method case MethodElement(displayName: 'merge', isPublic: true)) {
+        final isStatic = method.isStatic;
+
+        if (method.formalParameters case [
+          FormalParameterElement(type: final t1),
+          FormalParameterElement(type: final t2),
+        ] when isStatic && t1.getDisplayString() == t2.getDisplayString()) {
+          return const MergeInfoStatic();
+        }
+
+        if (method.children case [
+          FormalParameterElement(),
+        ] when !isStatic) {
+          return const MergeInfoInstance();
+        }
+      }
+    }
+  }
+
+  throw StateError('Merge method not found');
 }

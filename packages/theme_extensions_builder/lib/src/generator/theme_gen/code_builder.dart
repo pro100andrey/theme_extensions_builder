@@ -137,55 +137,55 @@ Method merge(ThemeGenConfig config) {
         ['other'.ref.returned.statement],
       ),
     )
-    ..statements.add(const Code(''))
-    ..addExpression(
-      'copyWith'.ref.call([], {
-        for (final field in fields)
-          field.name: field.hasMerge
-              ? () {
-                  if (field.mergeInfo!.isStatic && field.isNullable) {
-                    final prop = '_this'.ref
-                        .property(field.name)
-                        .notEqualTo(literalNull)
-                        .and(
-                          'other'.ref
-                              .property(field.name)
-                              .notEqualTo(literalNull),
-                        )
-                        .conditional(
-                          field.type.ref.property('merge').call([
-                            '_this'.ref.property(field.name).nullChecked,
-                            'other'.ref.property(field.name).nullChecked,
-                          ]),
-                          'other'.ref.property(field.name),
-                        );
+    ..statements.add(const Code(''));
 
-                    return prop;
-                  } else if (field.mergeInfo!.isStatic && !field.isNullable) {
-                    return field.type.ref.property('merge').call([
-                      '_this'.ref.property(field.name),
-                      'other'.ref.property(field.name),
-                    ]);
-                  } else {
-                    var prop = '_this'.ref.property(field.name);
-                    prop = field.isNullable
-                        ? prop.nullSafeProperty('merge')
-                        : prop.property('merge');
+  final namedArguments =  fields.map((field) {
+    final thisRefProperty = '_this'.ref.property(field.name);
+    final otherRefProperty = 'other'.ref.property(field.name);
 
-                    prop = prop.call(['other'.ref.property(field.name)]);
+    final key = field.name;
+    final value = switch (field.mergeInfo) {
+      MergeInfoNone() => otherRefProperty,
+      MergeInfoStatic() when field.isNullable =>
+        thisRefProperty
+            .notEqualTo(literalNull)
+            .and(otherRefProperty.notEqualTo(literalNull))
+            .conditional(
+              field.type.ref.property('merge').call([
+                thisRefProperty.nullChecked,
+                otherRefProperty.nullChecked,
+              ]),
+              otherRefProperty,
+            ),
 
-                    if (field.isNullable) {
-                      prop = prop.ifNullThen(
-                        'other'.ref.property(field.name),
-                      );
-                    }
+      MergeInfoStatic() when !field.isNullable =>
+        field.type.ref.property('merge').call([
+          thisRefProperty,
+          otherRefProperty,
+        ]),
+      MergeInfoInstance() =>
+        field.isNullable
+            ? otherRefProperty
+                  .nullSafeProperty('merge')
+                  .call([otherRefProperty])
+                  .ifNullThen(otherRefProperty)
+            : thisRefProperty.property('merge').call([otherRefProperty]),
+      _ => throw StateError(
+        'Unsupported merge info for field ${field.name}',
+      ),
+    };
 
-                    return prop;
-                  }
-                }()
-              : 'other'.ref.property(field.name),
-      }).returned,
-    );
+    return MapEntry(key, value);
+  });
+
+  body.addExpression(
+    'copyWith'.ref
+        .call(
+          [],
+          Map.fromEntries(namedArguments),
+        )
+        .returned,
+  );
 
   final result = Method((m) {
     m
@@ -228,9 +228,9 @@ Method staticLerp(ThemeGenConfig config) {
         switch (field) {
           // When the field has a static lerp method
           case FieldSymbol(
-            lerpInfo: LerpInfo(isStatic: true, :final type),
+            lerpInfo: LerpInfo(isStatic: true),
           ):
-            final expression = type.ref.property('lerp').call([
+            final expression = field.type.ref.property('lerp').call([
               'a'.ref.prop(field.name, nullSafe: true),
               'b'.ref.prop(field.name, nullSafe: true),
               't'.ref,

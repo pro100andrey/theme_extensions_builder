@@ -8,9 +8,11 @@ part 'merge_case_theme.g.theme.dart';
 final class MergeCaseTheme with _$MergeCaseTheme {
   const MergeCaseTheme({
     required this.borderSide,
+    required this.hasBorder,
   });
 
   final BorderSide borderSide;
+  final bool hasBorder;
 
   static MergeCaseTheme? lerp(
     MergeCaseTheme? a,

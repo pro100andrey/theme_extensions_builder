@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
+
 /// A placeholder for Flutter's ThemeExtension class
 abstract class ThemeExtension<T extends ThemeExtension<T>> {
   /// Enable const constructor for subclasses.
@@ -121,4 +123,39 @@ class BorderSide {
     width: 0,
     style: BorderStyle.none,
   );
+
+  // ignore: prefer_constructors_over_static_methods
+  static BorderSide lerp(BorderSide a, BorderSide b, double t) {
+    if (identical(a, b)) {
+      return a;
+    }
+
+    if (t == 0.0) {
+      return a;
+    }
+
+    if (t == 1.0) {
+      return b;
+    }
+
+    final width = lerpDouble$(a.width, b.width, t)!;
+    if (width < 0.0) {
+      return BorderSide.none;
+    }
+
+    if (a.style == b.style && a.strokeAlign == b.strokeAlign) {
+      return BorderSide(
+        color: Color.lerp(a.color, b.color, t)!,
+        width: width,
+        style: a.style,
+        strokeAlign: a.strokeAlign, 
+      );
+    }
+
+    return BorderSide(
+      color: Color.lerp(a.color, b.color, t)!,
+      width: width,
+      strokeAlign: a.strokeAlign,
+    );
+  }
 }

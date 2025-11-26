@@ -17,13 +17,25 @@ mixin _$MergeCaseTheme {
       return null;
     }
 
-    return MergeCaseTheme(borderSide: t < 0.5 ? a?.borderSide : b?.borderSide);
+    return MergeCaseTheme(
+      borderSide: BorderSide.lerp(
+        a?.borderSide ?? b!.borderSide,
+        b?.borderSide ?? a!.borderSide,
+        t,
+      ),
+      hasBorder:
+          (t < 0.5 ? a?.hasBorder : b?.hasBorder) ??
+          (t < 0.5 ? b!.hasBorder : a!.hasBorder),
+    );
   }
 
-  MergeCaseTheme copyWith({BorderSide? borderSide}) {
+  MergeCaseTheme copyWith({BorderSide? borderSide, bool? hasBorder}) {
     final _this = (this as MergeCaseTheme);
 
-    return MergeCaseTheme(borderSide: borderSide ?? _this.borderSide);
+    return MergeCaseTheme(
+      borderSide: borderSide ?? _this.borderSide,
+      hasBorder: hasBorder ?? _this.hasBorder,
+    );
   }
 
   MergeCaseTheme merge(MergeCaseTheme? other) {
@@ -39,6 +51,7 @@ mixin _$MergeCaseTheme {
 
     return copyWith(
       borderSide: BorderSide.merge(_this.borderSide, other.borderSide),
+      hasBorder: other.hasBorder,
     );
   }
 
@@ -55,13 +68,14 @@ mixin _$MergeCaseTheme {
     final _this = (this as MergeCaseTheme);
     final _other = (other as MergeCaseTheme);
 
-    return _other.borderSide == _this.borderSide;
+    return _other.borderSide == _this.borderSide &&
+        _other.hasBorder == _this.hasBorder;
   }
 
   @override
   int get hashCode {
     final _this = (this as MergeCaseTheme);
 
-    return Object.hash(runtimeType, _this.borderSide);
+    return Object.hash(runtimeType, _this.borderSide, _this.hasBorder);
   }
 }

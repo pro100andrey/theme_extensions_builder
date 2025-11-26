@@ -11,7 +11,7 @@
                 "clean"
             ],
             "options": {
-                "cwd": "packages/theme_extensions_builder/example"
+                "cwd": "packages/theme_extensions_builder/test"
             },
             "group": "build",
             "presentation": {
@@ -36,7 +36,7 @@
                 "--dart-jit-vm-arg=--disable-service-auth-codes"
             ],
             "options": {
-                "cwd": "packages/theme_extensions_builder/example"
+                "cwd": "packages/theme_extensions_builder/test"
             },
             "dependsOn": "example: run build_runner clean",
             "group": "build",

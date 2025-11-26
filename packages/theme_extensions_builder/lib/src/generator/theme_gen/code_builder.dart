@@ -228,38 +228,56 @@ Method staticLerp(ThemeGenConfig config) {
         switch (field) {
           // When the field has a static lerp method
           case FieldSymbol(lerp: StaticLerpMethod(:final isNullableSignature)):
-            // final expression = field.baseType.ref.property('lerp').call([
-            //   'a'.ref.prop(field.name, nullSafe: true),
-            //   'b'.ref.prop(field.name, nullSafe: true),
-            //   't'.ref,
-            // ]);
+            if (!isNullableSignature && field.isNullable) {
+              args[field.name] = 'a'.ref
+                  .prop(field.name, nullSafe: true)
+                  .equalTo(literalNull)
+                  .or(
+                    'b'.ref
+                        .prop(field.name, nullSafe: true)
+                        .equalTo(literalNull),
+                  )
+                  .conditional(
+                    literalNull,
+                    field.baseType.ref.prop('lerp').call([
+                      'a'.ref.prop(field.name, nullSafe: true).nullChecked,
+                      'b'.ref.prop(field.name, nullSafe: true).nullChecked,
+                      't'.ref,
+                    ]),
+                  );
+              continue;
+            }
 
-            final expression = !isNullableSignature && field.isNullable
-                ? 'a'.ref
-                      .prop(field.name, nullSafe: true)
-                      .equalTo(literalNull)
-                      .or(
-                        'b'.ref
-                            .prop(field.name, nullSafe: true)
-                            .equalTo(literalNull),
-                      )
-                      .conditional(
-                        literalNull,
-                        field.baseType.ref.prop('lerp').call([
-                          'a'.ref.prop(field.name, nullSafe: true).nullChecked,
-                          'b'.ref.prop(field.name, nullSafe: true).nullChecked,
-                          't'.ref,
-                        ]),
-                      )
-                : field.baseType.ref.prop('lerp').call([
-                    'a'.ref.prop(field.name, nullSafe: true),
-                    'b'.ref.prop(field.name, nullSafe: true),
-                    't'.ref,
-                  ]);
+            if (!isNullableSignature && !field.isNullable) {
+              args[field.name] = field.baseType.ref.prop('lerp').call([
+                'a'.ref
+                    .prop(field.name, nullSafe: true)
+                    .ifNullThen('b'.ref.nullChecked.property(field.name)),
+                'b'.ref
+                    .prop(field.name, nullSafe: true)
+                    .ifNullThen('a'.ref.nullChecked.property(field.name)),
+                't'.ref,
+              ]);
+              continue;
+            }
 
-            args[field.name] = field.isNullable
-                ? expression
-                : expression.nullChecked;
+            if (field.isNullable) {
+              args[field.name] = field.baseType.ref.prop('lerp').call([
+                'a'.ref.prop(field.name, nullSafe: true),
+                'b'.ref.prop(field.name, nullSafe: true),
+                't'.ref,
+              ]);
+              continue;
+            }
+
+            if (!field.isNullable) {
+              args[field.name] = field.baseType.ref.prop('lerp').call([
+                'a'.ref.prop(field.name, nullSafe: true).nullChecked,
+                'b'.ref.prop(field.name, nullSafe: true).nullChecked,
+                't'.ref,
+              ]);
+              continue;
+            }
 
           // When the field has a non-static lerp method
           case FieldSymbol(lerp: InstanceLerpMethod()):
@@ -309,6 +327,16 @@ Method staticLerp(ThemeGenConfig config) {
                 .conditional(
                   'a'.ref.prop(field.name, nullSafe: true),
                   'b'.ref.prop(field.name, nullSafe: true),
+                )
+                .parenthesized
+                .ifNullThen(
+                  't'.ref
+                      .lessThan(literalNum(0.5))
+                      .conditional(
+                        'b'.ref.nullChecked.property(field.name),
+                        'a'.ref.nullChecked.property(field.name),
+                      )
+                      .parenthesized,
                 );
         }
       }

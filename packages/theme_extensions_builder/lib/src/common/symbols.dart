@@ -16,40 +16,36 @@ final class Arg {
 }
 
 sealed class LerpMethod {
-  const LerpMethod({required this.returnTypeIsNullable});
-  final bool returnTypeIsNullable;
+  const LerpMethod();
 }
 
 final class StaticLerpMethod extends LerpMethod {
   const StaticLerpMethod({
-    required super.returnTypeIsNullable,
+    required this.optionalResult,
     required this.args,
   });
 
   final List<Arg> args;
+  final bool optionalResult;
 
   bool get isNullableSignature =>
-      returnTypeIsNullable && a0.isNullable && a1.isNullable;
-
-  Arg get a0 => args[0];
-  Arg get a1 => args[1];
-  Arg get a2 => args[2];
+      optionalResult && args[0].isNullable && args[1].isNullable;
 }
 
 final class InstanceLerpMethod extends LerpMethod {
   const InstanceLerpMethod({
-    required super.returnTypeIsNullable,
+    required this.optionalResult,
     required this.args,
   });
 
   final List<Arg> args;
+  final bool optionalResult;
 
-  Arg get a0 => args[0];
-  Arg get a1 => args[1];
+  bool get isNullableSignature => optionalResult && args[0].isNullable;
 }
 
 final class NoLerpMethod extends LerpMethod {
-  const NoLerpMethod() : super(returnTypeIsNullable: false);
+  const NoLerpMethod();
 }
 
 sealed class MergeMethod {
@@ -74,7 +70,7 @@ final class FieldSymbol {
   FieldSymbol._({
     required this.name,
     required this.baseType,
-    required this.isNullable,
+    required this.optional,
     required this.isDouble,
     required this.isDuration,
     required this.merge,
@@ -88,7 +84,7 @@ final class FieldSymbol {
   final String baseType;
 
   /// True if the field type is nullable.
-  final bool isNullable;
+  final bool optional;
 
   /// True if the field type is double.
   final bool isDouble;
@@ -115,7 +111,7 @@ FieldSymbol _fieldSymbol(FieldElement element) {
   return FieldSymbol._(
     name: name,
     baseType: baseType,
-    isNullable: isNullable,
+    optional: isNullable,
     isDouble: isDouble,
     isDuration: isDuration,
     merge: _mergeInfo(elementType),
@@ -147,7 +143,7 @@ LerpMethod _lerpInfo(DartType type) {
           p3.type.isDartCoreDouble &&
           p1.type.baseType == p2.type.baseType) {
     return StaticLerpMethod(
-      returnTypeIsNullable: method.returnType.hasNullableSuffix,
+      optionalResult: method.returnType.hasNullableSuffix,
       args: _mapArgumentsSymbols(params),
     );
   } else if (params case [final p1, final p2]
@@ -159,7 +155,7 @@ LerpMethod _lerpInfo(DartType type) {
           p2.type.isDartCoreDouble &&
           p1.type.baseType == type.baseType) {
     return InstanceLerpMethod(
-      returnTypeIsNullable: method.returnType.hasNullableSuffix,
+      optionalResult: method.returnType.hasNullableSuffix,
       args: _mapArgumentsSymbols(params),
     );
   }

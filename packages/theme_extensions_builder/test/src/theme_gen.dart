@@ -11,8 +11,20 @@ mixin _$EmptyThemeGen {
   bool get canMerge => true;
 
   static EmptyThemeGen? lerp(EmptyThemeGen? a, EmptyThemeGen? b, double t) {
+    if (identical(a, b)) {
+      return a;
+    }
+
     if (a == null && b == null) {
       return null;
+    }
+
+    if (a == null) {
+      return t == 1.0 ? b : null;
+    }
+
+    if (b == null) {
+      return t == 0.0 ? a : null;
     }
 
     return EmptyThemeGen();
@@ -25,7 +37,7 @@ mixin _$EmptyThemeGen {
   EmptyThemeGen merge(EmptyThemeGen? other) {
     final _this = (this as EmptyThemeGen);
 
-    if (other == null) {
+    if (other == null || identical(_this, other)) {
       return _this;
     }
 
@@ -70,8 +82,20 @@ mixin _$EmptyThemeGenWithConst {
     EmptyThemeGenWithConst? b,
     double t,
   ) {
+    if (identical(a, b)) {
+      return a;
+    }
+
     if (a == null && b == null) {
       return null;
+    }
+
+    if (a == null) {
+      return t == 1.0 ? b : null;
+    }
+
+    if (b == null) {
+      return t == 0.0 ? a : null;
     }
 
     return const EmptyThemeGenWithConst();
@@ -84,7 +108,7 @@ mixin _$EmptyThemeGenWithConst {
   EmptyThemeGenWithConst merge(EmptyThemeGenWithConst? other) {
     final _this = (this as EmptyThemeGenWithConst);
 
-    if (other == null) {
+    if (other == null || identical(_this, other)) {
       return _this;
     }
 
@@ -124,14 +148,26 @@ mixin _$SimpleThemeGen {
   bool get canMerge => true;
 
   static SimpleThemeGen? lerp(SimpleThemeGen? a, SimpleThemeGen? b, double t) {
+    if (identical(a, b)) {
+      return a;
+    }
+
     if (a == null && b == null) {
       return null;
     }
 
+    if (a == null) {
+      return t == 1.0 ? b : null;
+    }
+
+    if (b == null) {
+      return t == 0.0 ? a : null;
+    }
+
     return SimpleThemeGen(
-      size: lerpDouble$(a?.size, b?.size, t)!,
-      name: (t < 0.5 ? a?.name : b?.name) ?? (t < 0.5 ? b!.name : a!.name),
-      theme: (t < 0.5 ? a?.theme : b?.theme) ?? (t < 0.5 ? b!.theme : a!.theme),
+      size: lerpDouble$(a.size, b.size, t)!,
+      name: t < 0.5 ? a.name : b.name,
+      theme: t < 0.5 ? a.theme : b.theme,
     );
   }
 
@@ -152,7 +188,7 @@ mixin _$SimpleThemeGen {
   SimpleThemeGen merge(SimpleThemeGen? other) {
     final _this = (this as SimpleThemeGen);
 
-    if (other == null) {
+    if (other == null || identical(_this, other)) {
       return _this;
     }
 

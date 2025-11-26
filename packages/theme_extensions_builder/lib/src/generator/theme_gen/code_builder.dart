@@ -126,7 +126,10 @@ Method merge(ThemeGenConfig config) {
     ..statements.add(const Code(''))
     ..statements.add(
       ifCode(
-        'other'.ref.equalTo(literalNull).code,
+        'other'.ref
+            .equalTo(literalNull)
+            .or('identical'.ref.call(['_this'.ref, 'other'.ref]))
+            .code,
         ['_this'.ref.returned.statement],
       ),
     )
@@ -146,7 +149,7 @@ Method merge(ThemeGenConfig config) {
     final key = field.name;
     final value = switch (field.merge) {
       NoMergeMethod() => otherRefProperty,
-      StaticMergeMethod() when field.isNullable =>
+      StaticMergeMethod() when field.optional =>
         thisRefProperty
             .notEqualTo(literalNull)
             .and(otherRefProperty.notEqualTo(literalNull))
@@ -158,13 +161,13 @@ Method merge(ThemeGenConfig config) {
               otherRefProperty,
             ),
 
-      StaticMergeMethod() when !field.isNullable =>
+      StaticMergeMethod() when !field.optional =>
         field.baseType.ref.property('merge').call([
           thisRefProperty,
           otherRefProperty,
         ]),
       InstanceMergeMethod() =>
-        field.isNullable
+        field.optional
             ? otherRefProperty
                   .nullSafeProperty('merge')
                   .call([otherRefProperty])
@@ -212,136 +215,170 @@ Method merge(ThemeGenConfig config) {
 Method staticLerp(ThemeGenConfig config) {
   final body = BlockBuilder();
   final fields = config.fields;
+  final a = 'a'.ref;
+  final b = 'b'.ref;
+  final t = 't'.ref;
 
   body
     ..statements.add(
       ifCode(
-        'a'.ref.equalTo(literalNull).and('b'.ref.equalTo(literalNull)).code,
+        'identical'.ref([a, b]).code,
+        [a.returned.statement],
+      ),
+    )
+    ..statements.add(const Code(''))
+    ..statements.add(
+      ifCode(
+        a.equalTo(literalNull).and(b.equalTo(literalNull)).code,
         [literalNull.returned.statement],
       ),
     )
     ..statements.add(const Code(''))
+    ..statements.add(
+      ifCode(
+        a.equalTo(literalNull).code,
+        [
+          t
+              .equalTo(literalNum(1.0))
+              .conditional(b, literalNull)
+              .returned
+              .statement,
+        ],
+      ),
+    )
+    ..statements.add(const Code(''))
+    ..statements.add(
+      ifCode(
+        b.equalTo(literalNull).code,
+        [
+          t
+              .equalTo(literalNum(0.0))
+              .conditional(a, literalNull)
+              .returned
+              .statement,
+        ],
+      ),
+    )
+    ..statements.add(const Code(''))
     ..addExpression(() {
-      final args = <String, Expression>{};
+      final argsResult = <String, Expression>{};
 
       for (final field in fields) {
-        switch (field) {
-          // When the field has a static lerp method
-          case FieldSymbol(lerp: StaticLerpMethod(:final isNullableSignature)):
-            if (!isNullableSignature && field.isNullable) {
-              args[field.name] = 'a'.ref
-                  .prop(field.name, nullSafe: true)
-                  .equalTo(literalNull)
-                  .or(
-                    'b'.ref
-                        .prop(field.name, nullSafe: true)
-                        .equalTo(literalNull),
-                  )
-                  .conditional(
-                    literalNull,
-                    field.baseType.ref.prop('lerp').call([
-                      'a'.ref.prop(field.name, nullSafe: true).nullChecked,
-                      'b'.ref.prop(field.name, nullSafe: true).nullChecked,
-                      't'.ref,
-                    ]),
-                  );
-              continue;
-            }
+        final aProp = a.prop(field.name);
+        final bProp = b.prop(field.name);
+        final lerp = field.baseType.ref.prop('lerp');
 
-            if (!isNullableSignature && !field.isNullable) {
-              args[field.name] = field.baseType.ref.prop('lerp').call([
-                'a'.ref
-                    .prop(field.name, nullSafe: true)
-                    .ifNullThen('b'.ref.nullChecked.property(field.name)),
-                'b'.ref
-                    .prop(field.name, nullSafe: true)
-                    .ifNullThen('a'.ref.nullChecked.property(field.name)),
-                't'.ref,
-              ]);
-              continue;
-            }
+        // Non-nullable field with non-nullable lerp signature
+        if (field.lerp case StaticLerpMethod(
+          isNullableSignature: false,
+        ) when !field.optional) {
+          // value: Class.lerp(a.field, b.field, t)
+          argsResult[field.name] = lerp([aProp, bProp, t]);
 
-            if (field.isNullable) {
-              args[field.name] = field.baseType.ref.prop('lerp').call([
-                'a'.ref.prop(field.name, nullSafe: true),
-                'b'.ref.prop(field.name, nullSafe: true),
-                't'.ref,
-              ]);
-              continue;
-            }
-
-            if (!field.isNullable) {
-              args[field.name] = field.baseType.ref.prop('lerp').call([
-                'a'.ref.prop(field.name, nullSafe: true).nullChecked,
-                'b'.ref.prop(field.name, nullSafe: true).nullChecked,
-                't'.ref,
-              ]);
-              continue;
-            }
-
-          // When the field has a non-static lerp method
-          case FieldSymbol(lerp: InstanceLerpMethod()):
-            final expression = 'a'.ref
-                .nullSafeProperty(field.name)
-                .prop('lerp', nullSafe: field.isNullable)
-                .call(['b'.ref.prop(field.name, nullSafe: true), 't'.ref])
-                .asA(field.baseType.typeRef(optional: field.isNullable));
-
-            args[field.name] = expression;
-
-          // When the field is of type double
-          case FieldSymbol(isDouble: true):
-            final expression = r'lerpDouble$'.ref.call([
-              'a'.ref.prop(field.name, nullSafe: true),
-              'b'.ref.prop(field.name, nullSafe: true),
-              't'.ref,
-            ]);
-
-            args[field.name] = field.isNullable
-                ? expression
-                : expression.nullChecked;
-
-          // When the field is of type Duration
-          case FieldSymbol(isDuration: true):
-            final expression = r'lerpDuration$'.ref.call([
-              'a'.ref.prop(field.name, nullSafe: true),
-              'b'.ref.prop(field.name, nullSafe: true),
-              't'.ref,
-            ]);
-
-            args[field.name] = field.isNullable
-                ? expression
-                : expression.nullChecked;
-
-          // Default case: use a simple conditional expression
-          case _:
-            if (field.name == 'canMerge') {
-              args[field.name] = 'b'.ref
-                  .prop(field.name, nullSafe: true)
-                  .ifNullThen(literalTrue);
-              continue;
-            }
-
-            args[field.name] = 't'.ref
-                .lessThan(literalNum(0.5))
-                .conditional(
-                  'a'.ref.prop(field.name, nullSafe: true),
-                  'b'.ref.prop(field.name, nullSafe: true),
-                )
-                .parenthesized
-                .ifNullThen(
-                  't'.ref
-                      .lessThan(literalNum(0.5))
-                      .conditional(
-                        'b'.ref.nullChecked.property(field.name),
-                        'a'.ref.nullChecked.property(field.name),
-                      )
-                      .parenthesized,
-                );
+          continue;
         }
+
+        // Nullable field with non-nullable lerp signature
+        if (field.lerp case StaticLerpMethod(
+          isNullableSignature: false,
+        ) when field.optional) {
+          final expression = aProp
+              .equalTo(literalNull)
+              .conditional(
+                bProp,
+                bProp
+                    .equalTo(literalNull)
+                    .conditional(
+                      aProp,
+                      lerp([aProp.nullChecked, bProp.nullChecked, t]),
+                    ),
+              );
+
+          argsResult[field.name] = expression;
+
+          continue;
+        }
+
+        // Non-nullable field with non-nullable lerp signature
+        if (field.lerp case StaticLerpMethod(
+          isNullableSignature: false,
+        ) when !field.optional) {
+          final expression = lerp([
+            aProp.nullSafe.nullChecked,
+            bProp.nullSafe.nullChecked,
+            t,
+          ]);
+
+          argsResult[field.name] = expression;
+          continue;
+        }
+
+        // Nullable field with nullable lerp signature
+        if (field.lerp case StaticLerpMethod(
+          optionalResult: false,
+        ) when field.optional) {
+          final expression = lerp([aProp.nullSafe, bProp.nullSafe, t]);
+          argsResult[field.name] = expression;
+          continue;
+        }
+
+        // Instance lerp method
+        if (field.lerp case InstanceLerpMethod()) {
+          final expression = aProp.nullSafe
+              .prop('lerp')
+              .withNullSafety(field.optional)
+              .call([bProp.nullSafe, t])
+              .asA(field.baseType.typeRef(optional: field.optional));
+
+          argsResult[field.name] = expression;
+          continue;
+        }
+
+        // When the field is of type double
+        if (field case FieldSymbol(
+          isDouble: true,
+        ) when field.lerp is NoLerpMethod) {
+          final expression = r'lerpDouble$'.ref([
+            aProp,
+            bProp,
+            t,
+          ]);
+
+          argsResult[field.name] = field.optional
+              ? expression
+              : expression.nullChecked;
+
+          continue;
+        }
+
+        // When the field is of type Duration
+        if (field case FieldSymbol(
+          isDuration: true,
+        ) when field.lerp is NoLerpMethod) {
+          final expression = r'lerpDuration$'.ref.call([
+            aProp,
+            bProp,
+            t,
+          ]);
+
+          argsResult[field.name] = field.optional
+              ? expression
+              : expression.nullChecked;
+
+          continue;
+        }
+
+        if (field.name == 'canMerge') {
+          argsResult[field.name] = bProp.nullSafe.ifNullThen(literalTrue);
+          continue;
+        }
+
+        argsResult[field.name] = t
+            .lessThan(literalNum(0.5))
+            .conditional(aProp, bProp);
       }
 
-      return _buildConstructorCall(config, args: args).returned;
+      return _buildConstructorCall(config, args: argsResult).returned;
     }());
 
   final result = Method((m) {
@@ -352,17 +389,17 @@ Method staticLerp(ThemeGenConfig config) {
       ..requiredParameters.addAll([
         Parameter(
           (p) => p
-            ..name = 'a'
+            ..name = a.symbol
             ..type = config.className.typeRef(optional: true),
         ),
         Parameter(
           (p) => p
-            ..name = 'b'
+            ..name = b.symbol
             ..type = config.className.typeRef(optional: true),
         ),
         Parameter(
           (p) => p
-            ..name = 't'
+            ..name = t.symbol
             ..type = 'double'.ref,
         ),
       ])

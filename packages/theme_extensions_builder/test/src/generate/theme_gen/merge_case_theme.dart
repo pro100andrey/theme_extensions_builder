@@ -9,10 +9,18 @@ final class MergeCaseTheme with _$MergeCaseTheme {
   const MergeCaseTheme({
     required this.borderSide,
     required this.hasBorder,
+    this.borderSideOptional,
+    this.isOptional,
+    this.doubleValue = 0.0,
+    this.doubleValueOptional,
   });
 
   final BorderSide borderSide;
+  final BorderSide? borderSideOptional;
   final bool hasBorder;
+  final bool? isOptional;
+  final double doubleValue;
+  final double? doubleValueOptional;
 
   static MergeCaseTheme? lerp(
     MergeCaseTheme? a,

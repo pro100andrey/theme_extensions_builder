@@ -47,6 +47,22 @@ Code ifCode(
 }
 
 extension ExpressionExtensions on Expression {
-  Expression prop(String name, {bool nullSafe = false}) =>
-      nullSafe ? nullSafeProperty(name) : property(name);
+  BinaryExpression prop(String name) => property(name) as BinaryExpression;
+}
+
+extension BinaryExpressionExtensions on BinaryExpression {
+  // ignore: avoid_positional_boolean_parameters
+  BinaryExpression withNullSafety([bool enable = true]) {
+    if (!enable) {
+      return this;
+    }
+
+    final re = right as LiteralExpression;
+    final le = left as Reference;
+
+    return CodeExpression(Code(le.symbol!)).nullSafeProperty(re.literal)
+        as BinaryExpression;
+  }
+
+  BinaryExpression get nullSafe => withNullSafety();
 }

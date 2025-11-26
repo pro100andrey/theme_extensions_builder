@@ -13,8 +13,20 @@ mixin _$EmptyTheme {
   bool get canMerge => true;
 
   static EmptyTheme? lerp(EmptyTheme? a, EmptyTheme? b, double t) {
+    if (identical(a, b)) {
+      return a;
+    }
+
     if (a == null && b == null) {
       return null;
+    }
+
+    if (a == null) {
+      return t == 1.0 ? b : null;
+    }
+
+    if (b == null) {
+      return t == 0.0 ? a : null;
     }
 
     return const EmptyTheme();
@@ -27,7 +39,7 @@ mixin _$EmptyTheme {
   EmptyTheme merge(EmptyTheme? other) {
     final _this = (this as EmptyTheme);
 
-    if (other == null) {
+    if (other == null || identical(_this, other)) {
       return _this;
     }
 

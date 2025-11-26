@@ -162,7 +162,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
                 :final isNullableSignature,
               ),
             ):
-              final expression = !isNullableSignature && field.isNullable
+              final expression = !isNullableSignature && field.optional
                   ? thisPropertyRef
                         .equalTo(literalNull)
                         .or(otherPropertyRef.equalTo(literalNull))
@@ -180,7 +180,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
                       't'.ref,
                     ]);
 
-              args[field.name] = field.isNullable || !isNullableSignature
+              args[field.name] = field.optional || !isNullableSignature
                   ? expression
                   : expression.nullChecked;
 
@@ -188,9 +188,10 @@ Method lerpMethod(ThemeExtensionsConfig config) {
             case FieldSymbol(lerp: InstanceLerpMethod()):
               final expression = '_this'.ref
                   .property(field.name)
-                  .prop('lerp', nullSafe: field.isNullable)
+                  .prop('lerp')
+                  .withNullSafety(field.optional)
                   .call(['other'.ref.property(field.name), 't'.ref])
-                  .asA(field.baseType.typeRef(optional: field.isNullable));
+                  .asA(field.baseType.typeRef(optional: field.optional));
 
               args[field.name] = expression;
 
@@ -202,7 +203,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
                 't'.ref,
               ]);
 
-              args[field.name] = field.isNullable
+              args[field.name] = field.optional
                   ? expression
                   : expression.nullChecked;
 
@@ -214,7 +215,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
                 't'.ref,
               ]);
 
-              args[field.name] = field.isNullable
+              args[field.name] = field.optional
                   ? expression
                   : expression.nullChecked;
 

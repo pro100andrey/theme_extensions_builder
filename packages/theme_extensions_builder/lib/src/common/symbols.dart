@@ -138,7 +138,7 @@ LerpMethod _lerpInfo(DartType type) {
           p1.type.baseType == p2.type.baseType) {
     return StaticLerpMethod(
       returnTypeIsNullable: method.returnType.hasNullableSuffix,
-      args: params.map(_mapArgumentSymbol).toList(growable: false),
+      args: _mapArgumentsSymbols(params),
     );
   } else if (params case [final p1, final p2]
       // Check for instance lerp method:
@@ -150,12 +150,16 @@ LerpMethod _lerpInfo(DartType type) {
           p1.type.baseType == type.baseType) {
     return InstanceLerpMethod(
       returnTypeIsNullable: method.returnType.hasNullableSuffix,
-      args: params.map(_mapArgumentSymbol).toList(growable: false),
+      args: _mapArgumentsSymbols(params),
     );
   }
 
   throw StateError('Lerp method has invalid signature');
 }
+
+/// Maps a list of [parameters] to a list of [Arg] symbols.
+List<Arg> _mapArgumentsSymbols(List<FormalParameterElement> parameters) =>
+    parameters.map(_mapArgumentSymbol).toList(growable: false);
 
 /// Creates an [Arg] from the given [parameter].
 Arg _mapArgumentSymbol(FormalParameterElement parameter) {
@@ -191,32 +195,22 @@ MergeMethod _mergeInfo(DartType type) {
     return const NoMergeMethod();
   }
 
-  final types = [
-    typeElement,
-    ...typeElement.allSupertypes
-        .where((e) => !e.isDartCoreObject)
-        .map((e) => e.element),
-  ];
+  final params = method.formalParameters;
 
-  for (final type in types) {
-    for (final method in type.methods) {
-      if (method case MethodElement(displayName: 'merge', isPublic: true)) {
-        final isStatic = method.isStatic;
+  if (params case [final p1, final p2]
+      // Check for static merge method
+      // - should have two parameters
+      // - both parameters should have the same type as the class type
+      when method.isStatic && p1.type.baseType == p2.type.baseType) {
+    return const StaticMergeMethod();
+  }
 
-        if (method.formalParameters case [
-          FormalParameterElement(type: final t1),
-          FormalParameterElement(type: final t2),
-        ] when isStatic && t1.getDisplayString() == t2.getDisplayString()) {
-          return const StaticMergeMethod();
-        }
-
-        if (method.children case [
-          FormalParameterElement(),
-        ] when !isStatic) {
-          return const InstanceMergeMethod();
-        }
-      }
-    }
+  if (params case [final p1]
+      // Check for instance merge method:
+      // - should have only one parameter
+      // - parameter type should match the class type
+      when !method.isStatic && p1.type.baseType == type.baseType) {
+    return const InstanceMergeMethod();
   }
 
   throw StateError('Merge method not found');

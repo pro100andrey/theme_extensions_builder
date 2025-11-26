@@ -13,6 +13,9 @@ final class Arg {
   final String name;
   final String type;
   final bool isNullable;
+
+  @override
+  String toString() => 'Arg(name: $name, type: $type, isNullable: $isNullable)';
 }
 
 sealed class LerpMethod {
@@ -30,6 +33,10 @@ final class StaticLerpMethod extends LerpMethod {
 
   bool get isNullableSignature =>
       optionalResult && args[0].isNullable && args[1].isNullable;
+
+  @override
+  String toString() =>
+      'StaticLerpMethod(optionalResult: $optionalResult, args: $args)';
 }
 
 final class InstanceLerpMethod extends LerpMethod {
@@ -42,26 +49,45 @@ final class InstanceLerpMethod extends LerpMethod {
   final bool optionalResult;
 
   bool get isNullableSignature => optionalResult && args[0].isNullable;
+
+  @override
+  String toString() =>
+      'InstanceLerpMethod(optionalResult: $optionalResult, args: $args)';
 }
 
 final class NoLerpMethod extends LerpMethod {
   const NoLerpMethod();
+
+  @override
+  String toString() => 'NoLerpMethod()';
 }
 
 sealed class MergeMethod {
   const MergeMethod();
+
+  @override
+  String toString() => 'MergeMethod()';
 }
 
 final class NoMergeMethod extends MergeMethod {
   const NoMergeMethod();
+
+  @override
+  String toString() => 'NoMergeMethod()';
 }
 
 final class StaticMergeMethod extends MergeMethod {
   const StaticMergeMethod();
+
+  @override
+  String toString() => 'StaticMergeMethod()';
 }
 
 final class InstanceMergeMethod extends MergeMethod {
   const InstanceMergeMethod();
+
+  @override
+  String toString() => 'InstanceMergeMethod()';
 }
 
 final class FieldSymbol {
@@ -75,6 +101,7 @@ final class FieldSymbol {
     required this.isDuration,
     required this.merge,
     required this.lerp,
+    required this.isStatic,
   });
 
   /// The name of the field.
@@ -97,6 +124,20 @@ final class FieldSymbol {
 
   /// Information about the lerp method for the field type.
   final LerpMethod lerp;
+
+  /// True if the field is static.
+  final bool isStatic;
+
+  @override
+  String toString() =>
+      'FieldSymbol(name: $name, '
+      'baseType: $baseType, '
+      'optional: $optional, '
+      'isDouble: $isDouble, '
+      'isDuration: $isDuration, '
+      'isStatic: $isStatic, '
+      'merge: $merge, '
+      'lerp: $lerp)';
 }
 
 /// Creates a [FieldSymbol] from the given [element].
@@ -114,6 +155,7 @@ FieldSymbol _fieldSymbol(FieldElement element) {
     optional: isNullable,
     isDouble: isDouble,
     isDuration: isDuration,
+    isStatic: element.isStatic,
     merge: _mergeInfo(elementType),
     lerp: _lerpInfo(elementType),
   );
@@ -193,7 +235,7 @@ MergeMethod _mergeInfo(DartType type) {
   // phase.
   const themeGenChecker = TypeChecker.typeNamed(ThemeGen);
   if (themeGenChecker.hasAnnotationOfExact(typeElement)) {
-    return const StaticMergeMethod();
+    return const InstanceMergeMethod();
   }
 
   final method = typeElement.getMethod('merge');
@@ -227,7 +269,7 @@ extension DartTypeExtension on DartType {
   String get baseType {
     final displayString = getDisplayString();
     final result = nullabilitySuffix == .question
-        ? displayString.replaceFirst('?', '')
+        ? displayString.replaceFirst(RegExp(r'\?$'), '')
         : displayString;
 
     return result;

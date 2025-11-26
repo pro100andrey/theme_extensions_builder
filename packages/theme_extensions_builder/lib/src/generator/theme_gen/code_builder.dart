@@ -67,7 +67,7 @@ Method canMerge(ThemeGenConfig config) {
 /// Generates a `copyWith` method for the theme class.
 Method copyWith(ThemeGenConfig config) {
   final body = BlockBuilder();
-  final fields = config.fields;
+  final fields = config.supportedFields;
   final isEmpty = fields.isEmpty;
 
   if (!isEmpty) {
@@ -115,64 +115,64 @@ Method copyWith(ThemeGenConfig config) {
 /// Generates a `merge` method for the theme class.
 Method merge(ThemeGenConfig config) {
   final body = BlockBuilder();
-  final fields = config.fields;
+  final fields = config.supportedFields;
+  final thisRef = '_this'.ref;
+  final otherRef = 'other'.ref;
 
   body
     ..addExpression(
-      declareFinal('_this').assign(
+      declareFinal(thisRef.symbol).assign(
         'this'.ref.asA(config.className.ref),
       ),
     )
     ..statements.add(const Code(''))
     ..statements.add(
       ifCode(
-        'other'.ref
+        otherRef
             .equalTo(literalNull)
-            .or('identical'.ref.call(['_this'.ref, 'other'.ref]))
+            .or('identical'.ref([thisRef, otherRef]))
             .code,
-        ['_this'.ref.returned.statement],
+        [thisRef.returned.statement],
       ),
     )
     ..statements.add(const Code(''))
     ..statements.add(
       ifCode(
-        'other'.ref.negate().property('canMerge').code,
-        ['other'.ref.returned.statement],
+        otherRef.negate().property('canMerge').code,
+        [otherRef.returned.statement],
       ),
     )
     ..statements.add(const Code(''));
 
   final namedArguments = fields.map((field) {
-    final thisRefProperty = '_this'.ref.property(field.name);
-    final otherRefProperty = 'other'.ref.property(field.name);
+    final thisProp = thisRef.prop(field.name);
+    final otherProp = otherRef.prop(field.name);
+
+    final staticMerge = field.baseType.ref.property('merge');
+    final instanceMerge = thisProp.prop('merge');
 
     final key = field.name;
     final value = switch (field.merge) {
-      NoMergeMethod() => otherRefProperty,
+      NoMergeMethod() => otherProp,
       StaticMergeMethod() when field.optional =>
-        thisRefProperty
+        thisProp
             .notEqualTo(literalNull)
-            .and(otherRefProperty.notEqualTo(literalNull))
+            .and(otherProp.notEqualTo(literalNull))
             .conditional(
-              field.baseType.ref.property('merge').call([
-                thisRefProperty.nullChecked,
-                otherRefProperty.nullChecked,
-              ]),
-              otherRefProperty,
+              staticMerge([thisProp.nullChecked, otherProp.nullChecked]),
+              otherProp,
             ),
 
-      StaticMergeMethod() when !field.optional =>
-        field.baseType.ref.property('merge').call([
-          thisRefProperty,
-          otherRefProperty,
-        ]),
+      StaticMergeMethod() when !field.optional => staticMerge([
+        thisProp,
+        otherProp,
+      ]),
       InstanceMergeMethod() =>
         field.optional
-            ? otherRefProperty
-                  .nullSafeProperty('merge')
-                  .call([otherRefProperty])
-                  .ifNullThen(otherRefProperty)
-            : thisRefProperty.property('merge').call([otherRefProperty]),
+            ? thisProp
+                  .nullSafeProperty('merge')([otherProp])
+                  .ifNullThen(otherProp)
+            : instanceMerge([otherProp]),
       _ => throw StateError(
         'Unsupported merge info for field ${field.name}',
       ),
@@ -214,7 +214,7 @@ Method merge(ThemeGenConfig config) {
 /// `double` and `Duration` fields.
 Method staticLerp(ThemeGenConfig config) {
   final body = BlockBuilder();
-  final fields = config.fields;
+  final fields = config.supportedFields;
   final a = 'a'.ref;
   final b = 'b'.ref;
   final t = 't'.ref;
@@ -315,9 +315,9 @@ Method staticLerp(ThemeGenConfig config) {
 
         // Nullable field with nullable lerp signature
         if (field.lerp case StaticLerpMethod(
-          optionalResult: false,
+          isNullableSignature: true,
         ) when field.optional) {
-          final expression = lerp([aProp.nullSafe, bProp.nullSafe, t]);
+          final expression = lerp([aProp, bProp, t]);
           argsResult[field.name] = expression;
           continue;
         }
@@ -412,7 +412,7 @@ Method staticLerp(ThemeGenConfig config) {
 /// Generates the equality operator `==` for the theme class.
 Method equalOperator(ThemeGenConfig config) {
   final body = BlockBuilder();
-  final fields = config.fields;
+  final fields = config.supportedFields;
 
   body
     ..statements.add(
@@ -476,7 +476,7 @@ Method equalOperator(ThemeGenConfig config) {
 /// Generates the `hashCode` getter for the theme class.
 Method hashMethod(ThemeGenConfig config) {
   final body = BlockBuilder();
-  final fields = config.fields;
+  final fields = config.supportedFields;
 
   if (fields.isNotEmpty) {
     body

@@ -57,10 +57,10 @@ extension BinaryExpressionExtensions on BinaryExpression {
       return this;
     }
 
-    final re = right as LiteralExpression;
-    final le = left as Reference;
+    final lSymbol = (left as Reference).symbol!;
+    final rSymbol = (right as LiteralExpression).literal;
 
-    return CodeExpression(Code(le.symbol!)).nullSafeProperty(re.literal)
+    return CodeExpression(Code(lSymbol)).nullSafeProperty(rSymbol)
         as BinaryExpression;
   }
 

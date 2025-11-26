@@ -69,7 +69,7 @@ class ThemeExtensionsCodeBuilder {
 /// Allows creating a copy of the theme extension with some fields replaced.
 Method copyWith(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
-  final fields = config.fields;
+  final fields = config.supportedFields;
   final classNameRef = config.className.ref;
   final isEmpty = fields.isEmpty;
 
@@ -123,7 +123,7 @@ Method copyWith(ThemeExtensionsConfig config) {
 /// - Default conditional interpolation for other types.
 Method lerpMethod(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
-  final fields = config.fields;
+  final fields = config.supportedFields;
   final isEmpty = fields.isEmpty;
 
   body
@@ -261,7 +261,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
 /// Generates the equality operator `==` for the theme extension.
 Method equalOperator(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
-  final fields = config.fields;
+  final fields = config.supportedFields;
 
   body
     ..statements.add(
@@ -325,7 +325,7 @@ Method equalOperator(ThemeExtensionsConfig config) {
 /// Generates the `hashCode` getter for the theme extension.
 Method hashMethod(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
-  final fields = config.fields;
+  final fields = config.supportedFields;
 
   if (fields.isNotEmpty) {
     body

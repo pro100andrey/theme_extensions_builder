@@ -199,9 +199,7 @@ mixin _$SimpleThemeGen {
     return copyWith(
       size: other.size,
       name: other.name,
-      theme: _this.theme != null && other.theme != null
-          ? EmptyThemeGenWithConst.merge(_this.theme!, other.theme!)
-          : other.theme,
+      theme: _this.theme?.merge(other.theme) ?? other.theme,
     );
   }
 

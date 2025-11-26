@@ -227,12 +227,35 @@ Method staticLerp(ThemeGenConfig config) {
       for (final field in fields) {
         switch (field) {
           // When the field has a static lerp method
-          case FieldSymbol(lerp: StaticLerpMethod()):
-            final expression = field.baseType.ref.property('lerp').call([
-              'a'.ref.prop(field.name, nullSafe: true),
-              'b'.ref.prop(field.name, nullSafe: true),
-              't'.ref,
-            ]);
+          case FieldSymbol(lerp: StaticLerpMethod(:final isNullableSignature)):
+            // final expression = field.baseType.ref.property('lerp').call([
+            //   'a'.ref.prop(field.name, nullSafe: true),
+            //   'b'.ref.prop(field.name, nullSafe: true),
+            //   't'.ref,
+            // ]);
+
+            final expression = !isNullableSignature && field.isNullable
+                ? 'a'.ref
+                      .prop(field.name, nullSafe: true)
+                      .equalTo(literalNull)
+                      .or(
+                        'b'.ref
+                            .prop(field.name, nullSafe: true)
+                            .equalTo(literalNull),
+                      )
+                      .conditional(
+                        literalNull,
+                        field.baseType.ref.prop('lerp').call([
+                          'a'.ref.prop(field.name, nullSafe: true).nullChecked,
+                          'b'.ref.prop(field.name, nullSafe: true).nullChecked,
+                          't'.ref,
+                        ]),
+                      )
+                : field.baseType.ref.prop('lerp').call([
+                    'a'.ref.prop(field.name, nullSafe: true),
+                    'b'.ref.prop(field.name, nullSafe: true),
+                    't'.ref,
+                  ]);
 
             args[field.name] = field.isNullable
                 ? expression

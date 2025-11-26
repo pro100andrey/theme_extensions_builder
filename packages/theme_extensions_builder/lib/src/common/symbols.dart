@@ -27,6 +27,13 @@ final class StaticLerpMethod extends LerpMethod {
   });
 
   final List<Arg> args;
+
+  bool get isNullableSignature =>
+      returnTypeIsNullable && a0.isNullable && a1.isNullable;
+
+  Arg get a0 => args[0];
+  Arg get a1 => args[1];
+  Arg get a2 => args[2];
 }
 
 final class InstanceLerpMethod extends LerpMethod {
@@ -36,6 +43,9 @@ final class InstanceLerpMethod extends LerpMethod {
   });
 
   final List<Arg> args;
+
+  Arg get a0 => args[0];
+  Arg get a1 => args[1];
 }
 
 final class NoLerpMethod extends LerpMethod {

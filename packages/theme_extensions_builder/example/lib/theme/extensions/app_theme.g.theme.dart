@@ -49,11 +49,14 @@ mixin _$AppThemeExtension on ThemeExtension<AppThemeExtension> {
       )!,
       layoutMode: t < 0.5 ? _this.layoutMode : other.layoutMode,
       borderSide: BorderSide.lerp(_this.borderSide, other.borderSide, t),
-      optionalBorderSide: BorderSide.lerp(
-        _this.optionalBorderSide,
-        other.optionalBorderSide,
-        t,
-      ),
+      optionalBorderSide:
+          _this.optionalBorderSide == null || other.optionalBorderSide == null
+          ? null
+          : BorderSide.lerp(
+              _this.optionalBorderSide!,
+              other.optionalBorderSide!,
+              t,
+            ),
     );
   }
 

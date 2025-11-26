@@ -152,18 +152,35 @@ Method lerpMethod(ThemeExtensionsConfig config) {
         final args = <String, Expression>{};
 
         for (final field in fields) {
+          final thisPropertyRef = '_this'.ref.property(field.name);
+          final otherPropertyRef = 'other'.ref.property(field.name);
+
           switch (field) {
             // Lerp class with static lerp method
             case FieldSymbol(
-              lerp: StaticLerpMethod(:final returnTypeIsNullable),
+              lerp: StaticLerpMethod(
+                :final isNullableSignature,
+              ),
             ):
-              final expression = field.baseType.ref.prop('lerp').call([
-                '_this'.ref.property(field.name),
-                'other'.ref.property(field.name),
-                't'.ref,
-              ]);
+              final expression = !isNullableSignature && field.isNullable
+                  ? thisPropertyRef
+                        .equalTo(literalNull)
+                        .or(otherPropertyRef.equalTo(literalNull))
+                        .conditional(
+                          literalNull,
+                          field.baseType.ref.prop('lerp').call([
+                            thisPropertyRef.nullChecked,
+                            otherPropertyRef.nullChecked,
+                            't'.ref,
+                          ]),
+                        )
+                  : field.baseType.ref.prop('lerp').call([
+                      '_this'.ref.property(field.name),
+                      'other'.ref.property(field.name),
+                      't'.ref,
+                    ]);
 
-              args[field.name] = field.isNullable || !returnTypeIsNullable
+              args[field.name] = field.isNullable || !isNullableSignature
                   ? expression
                   : expression.nullChecked;
 

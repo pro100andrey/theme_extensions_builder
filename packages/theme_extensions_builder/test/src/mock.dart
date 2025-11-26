@@ -148,7 +148,7 @@ class BorderSide {
         color: Color.lerp(a.color, b.color, t)!,
         width: width,
         style: a.style,
-        strokeAlign: a.strokeAlign, 
+        strokeAlign: a.strokeAlign,
       );
     }
 

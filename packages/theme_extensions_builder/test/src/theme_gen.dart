@@ -130,8 +130,8 @@ mixin _$SimpleThemeGen {
 
     return SimpleThemeGen(
       size: lerpDouble$(a?.size, b?.size, t)!,
-      name: t < 0.5 ? a?.name : b?.name,
-      theme: t < 0.5 ? a?.theme : b?.theme,
+      name: (t < 0.5 ? a?.name : b?.name) ?? (t < 0.5 ? b!.name : a!.name),
+      theme: (t < 0.5 ? a?.theme : b?.theme) ?? (t < 0.5 ? b!.theme : a!.theme),
     );
   }
 
@@ -163,7 +163,9 @@ mixin _$SimpleThemeGen {
     return copyWith(
       size: other.size,
       name: other.name,
-      theme: _this.theme?.merge(other.theme) ?? other.theme,
+      theme: _this.theme != null && other.theme != null
+          ? EmptyThemeGenWithConst.merge(_this.theme!, other.theme!)
+          : other.theme,
     );
   }
 

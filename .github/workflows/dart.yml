@@ -1,11 +1,11 @@
 name: Dart CI
 
 on:
-  workflow_dispatch:  # Only manual trigger
-  # push:
-  #   branches: [ "main" ]
-  # pull_request:
-  #   branches: [ "main" ]
+  # workflow_dispatch:  # Only manual trigger
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   test:

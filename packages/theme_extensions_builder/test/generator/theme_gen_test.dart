@@ -19,7 +19,7 @@ Future<void> main() async {
   );
 
   final allOptionalFieldsReader = await libraryReader(
-    'test/lib/theme_gen',
+    'test/lib',
     'all_optional_fields.dart',
   );
 

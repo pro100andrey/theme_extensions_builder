@@ -13,7 +13,7 @@ List<String> getMixinsNames({required ClassElement element}) {
   }
 
   ClassDeclaration? classDeclaration;
-  
+
   outerLoop:
   for (final unit in library.units) {
     for (final decl in unit.unit.declarations) {

@@ -3,11 +3,13 @@ import 'package:test/test.dart';
 import 'package:theme_extensions_builder/src/generator/theme_extensions/generator.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
+import 'utils/library_reader.dart';
+
 Future<void> main() async {
   initializeBuildLogTracking();
 
-  final emptyThemeReader = await initializeLibraryReaderForDirectory(
-    'test/src/theme_extensions',
+  final emptyThemeReader = await libraryReader(
+    'test/lib',
     'empty_theme_extension.dart',
   );
 

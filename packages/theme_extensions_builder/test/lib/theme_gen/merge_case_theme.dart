@@ -1,14 +1,11 @@
-// dart format width=80
-// coverage:ignore-file
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, unused_element
+import 'package:source_gen_test/source_gen_test.dart';
+import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-part of 'merge_case_theme.dart';
+import '../mock.dart';
 
-// **************************************************************************
-// ThemeGenGenerator
-// **************************************************************************
+part 'merge_case_theme.g.theme.dart';
 
+@ShouldGenerate(r'''
 mixin _$MergeCaseTheme {
   bool get canMerge => true;
 
@@ -44,6 +41,7 @@ mixin _$MergeCaseTheme {
         b.doubleValueOptional,
         t,
       ),
+      duration: lerpDuration$(a.duration, b.duration, t)!,
     );
   }
 
@@ -54,6 +52,7 @@ mixin _$MergeCaseTheme {
     bool? isOptional,
     double? doubleValue,
     double? doubleValueOptional,
+    Duration? duration,
   }) {
     final _this = (this as MergeCaseTheme);
 
@@ -64,6 +63,7 @@ mixin _$MergeCaseTheme {
       isOptional: isOptional ?? _this.isOptional,
       doubleValue: doubleValue ?? _this.doubleValue,
       doubleValueOptional: doubleValueOptional ?? _this.doubleValueOptional,
+      duration: duration ?? _this.duration,
     );
   }
 
@@ -91,6 +91,7 @@ mixin _$MergeCaseTheme {
       isOptional: other.isOptional,
       doubleValue: other.doubleValue,
       doubleValueOptional: other.doubleValueOptional,
+      duration: other.duration,
     );
   }
 
@@ -112,7 +113,8 @@ mixin _$MergeCaseTheme {
         _other.hasBorder == _this.hasBorder &&
         _other.isOptional == _this.isOptional &&
         _other.doubleValue == _this.doubleValue &&
-        _other.doubleValueOptional == _this.doubleValueOptional;
+        _other.doubleValueOptional == _this.doubleValueOptional &&
+        _other.duration == _this.duration;
   }
 
   @override
@@ -127,6 +129,34 @@ mixin _$MergeCaseTheme {
       _this.isOptional,
       _this.doubleValue,
       _this.doubleValueOptional,
+      _this.duration,
     );
   }
+}
+''')
+@themeGen
+final class MergeCaseTheme with _$MergeCaseTheme {
+  const MergeCaseTheme({
+    required this.borderSide,
+    required this.hasBorder,
+    required this.borderSideOptional,
+    required this.isOptional,
+    required this.doubleValue,
+    required this.doubleValueOptional,
+    required this.duration,
+  });
+
+  final BorderSide borderSide;
+  final BorderSide? borderSideOptional;
+  final bool hasBorder;
+  final bool? isOptional;
+  final double doubleValue;
+  final double? doubleValueOptional;
+  final Duration duration;
+
+  static MergeCaseTheme? lerp(
+    MergeCaseTheme? a,
+    MergeCaseTheme? b,
+    double t,
+  ) => _$MergeCaseTheme.lerp(a, b, t);
 }

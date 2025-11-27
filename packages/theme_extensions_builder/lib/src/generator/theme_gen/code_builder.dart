@@ -69,11 +69,12 @@ Method copyWith(ThemeGenConfig config) {
   final body = BlockBuilder();
   final fields = config.supportedFields;
   final isEmpty = fields.isEmpty;
+  final thisRef = '_this'.ref;
 
   if (!isEmpty) {
     body
       ..addExpression(
-        declareFinal('_this').assign(
+        declareFinal(thisRef.symbol).assign(
           'this'.ref.asA(config.className.ref),
         ),
       )
@@ -88,7 +89,7 @@ Method copyWith(ThemeGenConfig config) {
           : {
               for (final field in fields)
                 field.name: field.name.ref.ifNullThen(
-                  '_this'.ref.property(field.name),
+                  thisRef.prop(field.name),
                 ),
             },
     ).returned,
@@ -138,7 +139,7 @@ Method merge(ThemeGenConfig config) {
     ..statements.add(const Code(''))
     ..statements.add(
       ifCode(
-        otherRef.negate().property('canMerge').code,
+        otherRef.negate().prop('canMerge').code,
         [otherRef.returned.statement],
       ),
     )
@@ -148,7 +149,7 @@ Method merge(ThemeGenConfig config) {
     final thisProp = thisRef.prop(field.name);
     final otherProp = otherRef.prop(field.name);
 
-    final staticMerge = field.baseType.ref.property('merge');
+    final staticMerge = field.baseType.ref.prop('merge');
     final instanceMerge = thisProp.prop('merge');
 
     final key = field.name;
@@ -369,7 +370,7 @@ Method staticLerp(ThemeGenConfig config) {
         }
 
         if (field.name == 'canMerge') {
-          argsResult[field.name] = bProp.nullSafe.ifNullThen(literalTrue);
+          argsResult[field.name] = bProp;
           continue;
         }
 

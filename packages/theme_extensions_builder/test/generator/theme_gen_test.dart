@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 import 'package:theme_extensions_builder/src/generator/theme_gen/generator.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import 'utils/library_reader.dart';
+import '../utils/library_reader.dart';
 
 Future<void> main() async {
   initializeBuildLogTracking();
@@ -18,6 +18,11 @@ Future<void> main() async {
     'merge_case_theme.dart',
   );
 
+  final allOptionalFieldsReader = await libraryReader(
+    'test/lib/theme_gen',
+    'all_optional_fields.dart',
+  );
+
   group('ThemeGenGenerator', () {
     testAnnotatedElements<ThemeGen>(
       emptyThemeReader,
@@ -26,6 +31,11 @@ Future<void> main() async {
 
     testAnnotatedElements<ThemeGen>(
       mergeCaseThemeReader,
+      ThemeGenGenerator(),
+    );
+
+    testAnnotatedElements<ThemeGen>(
+      allOptionalFieldsReader,
       ThemeGenGenerator(),
     );
   });

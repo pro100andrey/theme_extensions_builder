@@ -81,9 +81,7 @@ Method copyWith(ThemeGenConfig config) => Method((method) {
       if (fields.isNotEmpty) {
         body
           ..addExpression(
-            declareFinal('_this').assign(
-              'this'.ref.asA(config.className.ref),
-            ),
+            declareFinal('_this').assign('this'.ref.asA(config.className.ref)),
           )
           ..addEmptyLine();
       }
@@ -145,7 +143,6 @@ Method merge(ThemeGenConfig config) {
     final staticMerge = field.baseType.ref.prop('merge');
     final instanceMerge = thisProp.prop('merge');
 
-    final key = field.name;
     final value = switch (field.merge) {
       NoMergeMethod() => otherProp,
       StaticMergeMethod() when field.optional =>
@@ -161,6 +158,7 @@ Method merge(ThemeGenConfig config) {
         thisProp,
         otherProp,
       ]),
+
       InstanceMergeMethod() =>
         field.optional
             ? thisProp
@@ -172,7 +170,7 @@ Method merge(ThemeGenConfig config) {
       ),
     };
 
-    return MapEntry(key, value);
+    return MapEntry(field.name, value);
   });
 
   body.addExpression(

@@ -4,16 +4,16 @@ import 'package:theme_extensions_builder/src/generator/theme_extensions/generato
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 Future<void> main() async {
-  final reader = await initializeLibraryReaderForDirectory(
-    'test/src',
-    'theme_extensions.dart',
-  );
-
   initializeBuildLogTracking();
+
+  final emptyThemeReader = await initializeLibraryReaderForDirectory(
+    'test/src/theme_extensions',
+    'empty_theme_extension.dart',
+  );
 
   group('ThemeExtensionsGenerator', () {
     testAnnotatedElements<ThemeExtensions>(
-      reader,
+      emptyThemeReader,
       ThemeExtensionsGenerator(),
     );
   });

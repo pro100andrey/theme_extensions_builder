@@ -1,14 +1,11 @@
-// dart format width=80
-// coverage:ignore-file
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, unused_element
+import 'package:source_gen_test/source_gen_test.dart';
+import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-part of 'empty_theme.dart';
+import '../mock.dart';
 
-// **************************************************************************
-// ThemeExtensionsGenerator
-// **************************************************************************
+part 'empty_theme_extension.g.theme.dart';
 
+@ShouldGenerate(r'''
 mixin _$EmptyThemeExtension on ThemeExtension<EmptyThemeExtension> {
   @override
   ThemeExtension<EmptyThemeExtension> copyWith() {
@@ -49,4 +46,10 @@ mixin _$EmptyThemeExtension on ThemeExtension<EmptyThemeExtension> {
 extension EmptyThemeExtensionBuildContext on BuildContext {
   EmptyThemeExtension get emptyTheme =>
       Theme.of(this).extension<EmptyThemeExtension>()!;
+}
+''')
+@themeExtensions
+final class EmptyThemeExtension extends ThemeExtension<EmptyThemeExtension>
+    with _$EmptyThemeExtension {
+  const EmptyThemeExtension();
 }

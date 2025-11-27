@@ -12,18 +12,19 @@ List<String> getMixinsNames({required ClassElement element}) {
     throw StateError('Could not get parsed library for element');
   }
 
-  final compilationUnit = library.units.single.unit;
-
-  final classDeclaration = compilationUnit.declarations.firstWhere(
-    (decl) =>
-        decl is ClassDeclaration && decl.name.lexeme == element.displayName,
-  );
-
-  if (classDeclaration is! ClassDeclaration) {
-    throw StateError('Class declaration not found ');
+  ClassDeclaration? classDeclaration;
+  
+  outerLoop:
+  for (final unit in library.units) {
+    for (final decl in unit.unit.declarations) {
+      if (decl is ClassDeclaration && decl.name.lexeme == element.displayName) {
+        classDeclaration = decl;
+        break outerLoop;
+      }
+    }
   }
 
-  final withClause = classDeclaration.withClause;
+  final withClause = classDeclaration?.withClause;
 
   if (withClause == null) {
     throw StateError(

@@ -4,16 +4,26 @@ import 'package:theme_extensions_builder/src/generator/theme_gen/generator.dart'
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 Future<void> main() async {
-  final reader = await initializeLibraryReaderForDirectory(
-    'test/src',
-    'theme_gen.dart',
+  initializeBuildLogTracking();
+
+  final emptyThemeReader = await initializeLibraryReaderForDirectory(
+    'test/src/theme_gen',
+    'empty_theme.dart',
   );
 
-  initializeBuildLogTracking();
+  final mergeCaseThemeReader = await initializeLibraryReaderForDirectory(
+    'test/src/theme_gen',
+    'merge_case_theme.dart',
+  );
 
   group('ThemeGenGenerator', () {
     testAnnotatedElements<ThemeGen>(
-      reader,
+      emptyThemeReader,
+      ThemeGenGenerator(),
+    );
+
+    testAnnotatedElements<ThemeGen>(
+      mergeCaseThemeReader,
       ThemeGenGenerator(),
     );
   });

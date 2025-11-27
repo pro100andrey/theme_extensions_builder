@@ -1,9 +1,16 @@
 import 'package:code_builder/code_builder.dart';
 import 'package:meta/meta.dart';
 
+const _emptyLine = Code('');
+
 extension type const Ref._(Reference ref) implements Reference {
   @redeclare
   String get symbol => ref.symbol!;
+}
+
+extension BlockBuilderExtensions on BlockBuilder {
+  /// Adds an empty line to the block.
+  void addEmptyLine() => statements.add(_emptyLine);
 }
 
 extension StringRef on String {

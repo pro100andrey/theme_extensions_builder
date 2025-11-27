@@ -78,7 +78,7 @@ Method copyWith(ThemeGenConfig config) {
           'this'.ref.asA(config.className.ref),
         ),
       )
-      ..statements.add(const Code(''));
+      ..addEmptyLine();
   }
 
   body.addExpression(
@@ -126,7 +126,7 @@ Method merge(ThemeGenConfig config) {
         'this'.ref.asA(config.className.ref),
       ),
     )
-    ..statements.add(const Code(''))
+    ..addEmptyLine()
     ..statements.add(
       ifCode(
         otherRef
@@ -136,14 +136,14 @@ Method merge(ThemeGenConfig config) {
         [thisRef.returned.statement],
       ),
     )
-    ..statements.add(const Code(''))
+    ..addEmptyLine()
     ..statements.add(
       ifCode(
         otherRef.negate().prop('canMerge').code,
         [otherRef.returned.statement],
       ),
     )
-    ..statements.add(const Code(''));
+    ..addEmptyLine();
 
   final namedArguments = fields.map((field) {
     final thisProp = thisRef.prop(field.name);
@@ -227,14 +227,14 @@ Method staticLerp(ThemeGenConfig config) {
         [a.returned.statement],
       ),
     )
-    ..statements.add(const Code(''))
+    ..addEmptyLine()
     ..statements.add(
       ifCode(
         a.equalTo(literalNull).and(b.equalTo(literalNull)).code,
         [literalNull.returned.statement],
       ),
     )
-    ..statements.add(const Code(''))
+    ..addEmptyLine()
     ..statements.add(
       ifCode(
         a.equalTo(literalNull).code,
@@ -247,7 +247,7 @@ Method staticLerp(ThemeGenConfig config) {
         ],
       ),
     )
-    ..statements.add(const Code(''))
+    ..addEmptyLine()
     ..statements.add(
       ifCode(
         b.equalTo(literalNull).code,
@@ -260,7 +260,7 @@ Method staticLerp(ThemeGenConfig config) {
         ],
       ),
     )
-    ..statements.add(const Code(''))
+    ..addEmptyLine()
     ..addExpression(() {
       final argsResult = <String, Expression>{};
 
@@ -422,14 +422,14 @@ Method equalOperator(ThemeGenConfig config) {
         [literalTrue.returned.statement],
       ),
     )
-    ..statements.add(const Code(''))
+    ..addEmptyLine()
     ..statements.add(
       ifCode(
         'other'.ref.property('runtimeType').notEqualTo('runtimeType'.ref).code,
         [literalFalse.returned.statement],
       ),
     )
-    ..statements.add(const Code(''));
+    ..addEmptyLine();
 
   if (fields.isNotEmpty) {
     body
@@ -439,7 +439,7 @@ Method equalOperator(ThemeGenConfig config) {
       ..addExpression(
         declareFinal('_other').assign('other'.ref.asA(config.className.ref)),
       )
-      ..statements.add(const Code(''))
+      ..addEmptyLine()
       ..addExpression(
         fields
             .map(
@@ -486,7 +486,7 @@ Method hashMethod(ThemeGenConfig config) {
           'this'.ref.asA(config.className.ref),
         ),
       )
-      ..statements.add(const Code(''));
+      ..addEmptyLine();
   }
 
   switch (fields.length) {

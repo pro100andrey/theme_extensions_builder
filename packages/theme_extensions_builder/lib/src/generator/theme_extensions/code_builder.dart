@@ -78,7 +78,7 @@ Method copyWith(ThemeExtensionsConfig config) {
       ..addExpression(
         declareFinal('_this'.ref.symbol).assign('this'.ref.asA(classNameRef)),
       )
-      ..statements.add(const Code(''));
+      ..addEmptyLine();
   }
 
   body.addExpression(
@@ -133,7 +133,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
         ['this'.ref.returned.statement],
       ),
     )
-    ..statements.add(const Code(''));
+    ..addEmptyLine();
 
   if (!isEmpty) {
     body
@@ -142,7 +142,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
           'this'.ref.asA(config.className.ref),
         ),
       )
-      ..statements.add(const Code(''));
+      ..addEmptyLine();
   }
 
   body.addExpression(
@@ -270,14 +270,14 @@ Method equalOperator(ThemeExtensionsConfig config) {
         [literalTrue.returned.statement],
       ),
     )
-    ..statements.add(const Code(''))
+    ..addEmptyLine()
     ..statements.add(
       ifCode(
         'other'.ref.property('runtimeType').notEqualTo('runtimeType'.ref).code,
         [literalFalse.returned.statement],
       ),
     )
-    ..statements.add(const Code(''));
+    ..addEmptyLine();
 
   if (fields.isNotEmpty) {
     body
@@ -287,7 +287,7 @@ Method equalOperator(ThemeExtensionsConfig config) {
       ..addExpression(
         declareFinal('_other').assign('other'.ref.asA(config.className.ref)),
       )
-      ..statements.add(const Code(''))
+      ..addEmptyLine()
       ..addExpression(
         fields
             .map(
@@ -334,7 +334,7 @@ Method hashMethod(ThemeExtensionsConfig config) {
           'this'.ref.asA(config.className.ref),
         ),
       )
-      ..statements.add(const Code(''));
+      ..addEmptyLine();
   }
 
   switch (fields.length) {

@@ -27,6 +27,7 @@ class ThemeGenCodeBuilder {
         ]);
     });
 
+    // Set up the Dart code emitter and formatter
     final emitter = DartEmitter(
       allocator: Allocator.simplePrefixing(),
       useNullSafetySyntax: true,
@@ -39,6 +40,7 @@ class ThemeGenCodeBuilder {
       trailingCommas: TrailingCommas.automate,
     );
 
+    // Generate the Dart code for the mixin and format it
     final mixinLibrary = Library((lib) => lib.body.addAll([mix]));
     final rawCode = mixinLibrary.accept(emitter).toString();
     final formattedCode = formatter.format(rawCode);
@@ -58,10 +60,10 @@ Method canMerge(ThemeGenConfig config) => Method((m) {
 });
 
 /// Generates a `copyWith` method for the theme class.
-Method copyWith(ThemeGenConfig config) => Method((method) {
+Method copyWith(ThemeGenConfig config) => Method((m) {
   final fields = config.filteredFields;
 
-  method
+  m
     ..name = 'copyWith'
     ..returns = config.className.ref
     ..optionalParameters.addAll(
@@ -74,27 +76,30 @@ Method copyWith(ThemeGenConfig config) => Method((method) {
         ),
       ),
     )
-    ..body = Block((body) {
+    ..body = Block((b) {
+      // If there are fields, create a _this variable for easier access
       if (fields.isNotEmpty) {
-        body
+        b
           ..addExpression(
             declareFinal('_this').assign('this'.ref.asA(config.className.ref)),
           )
           ..addEmptyLine();
       }
 
-      body.addExpression(
+      final args = <String, Expression>{};
+      for (final field in fields) {
+        args[field.name] = field.name.ref.ifNullThen(
+          '_this'.ref.prop(field.name),
+        );
+      }
+
+      b.addExpression(
         (fields.isEmpty && config.constConstructor
                 ? InvokeExpression.constOf
                 : InvokeExpression.newOf)(
               config.className.ref,
               [],
-              {
-                for (final field in fields)
-                  field.name: field.name.ref.ifNullThen(
-                    '_this'.ref.prop(field.name),
-                  ),
-              },
+              args,
               [],
               config.constructor,
             )
@@ -104,28 +109,29 @@ Method copyWith(ThemeGenConfig config) => Method((method) {
 });
 
 /// Generates a `merge` method for the theme class.
-Method merge(ThemeGenConfig config) => Method((method) {
-  final fields = config.filteredFields;
-  final classType = config.className.typeRef(optional: true);
-
-  method
+Method merge(ThemeGenConfig config) => Method((m) {
+  m
     ..name = 'merge'
     ..returns = config.className.ref
     ..requiredParameters.add(
       Parameter(
         (p) => p
           ..name = 'other'
-          ..type = classType,
+          ..type = config.className.typeRef(optional: true),
       ),
     )
-    ..body = Block((body) {
-      body
+    ..body = Block((b) {
+      final fields = config.filteredFields;
+
+      b
+        // Create a _this variable for easier access to the current instance
         ..addExpression(
           declareFinal('_this'.ref.symbol).assign(
             'this'.ref.asA(config.className.ref),
           ),
         )
         ..addEmptyLine()
+        // Return `_this` if other is null or identical to `_this`
         ..statements.add(
           ifCode(
             'other'.ref
@@ -136,6 +142,7 @@ Method merge(ThemeGenConfig config) => Method((method) {
           ),
         )
         ..addEmptyLine()
+        // Return `other` if it cannot be merged
         ..statements.add(
           ifCode(
             'other'.ref.negate().prop('canMerge').code,
@@ -152,11 +159,16 @@ Method merge(ThemeGenConfig config) => Method((method) {
         final staticMerge = field.baseType.ref.prop('merge');
         final instanceMerge = thisProp.prop('merge');
 
+        // Handle different merge strategies based on field configuration
+
+        // No merge method, just take the other property
+        // `property: other.property`
         if (field.merge case NoMergeMethod()) {
           args[field.name] = otherProp;
           continue;
         }
 
+        // Static merge method with optional field
         if (field.merge case StaticMergeMethod() when field.optional) {
           args[field.name] = thisProp
               .notEqualTo(literalNull)
@@ -168,24 +180,30 @@ Method merge(ThemeGenConfig config) => Method((method) {
           continue;
         }
 
+        // Static merge method with non-optional field
         if (field.merge case StaticMergeMethod() when !field.optional) {
           args[field.name] = staticMerge([thisProp, otherProp]);
           continue;
         }
 
-        if (field.merge case InstanceMergeMethod()) {
-          args[field.name] = field.optional
-              ? thisProp
-                    .nullSafeProperty('merge')([otherProp])
-                    .ifNullThen(otherProp)
-              : instanceMerge([otherProp]);
+        // Instance merge method with optional field
+        if (field.merge case InstanceMergeMethod() when field.optional) {
+          args[field.name] = thisProp
+              .nullSafeProperty('merge')([otherProp])
+              .ifNullThen(otherProp);
+          continue;
+        }
+
+        // Instance merge method with non-optional field
+        if (field.merge case InstanceMergeMethod() when !field.optional) {
+          args[field.name] = instanceMerge([otherProp]);
           continue;
         }
 
         throw StateError('Unsupported merge info for field ${field.name}');
       }
 
-      body.addExpression('copyWith'.ref([], args).returned);
+      b.addExpression('copyWith'.ref([], args).returned);
     });
 });
 
@@ -194,10 +212,10 @@ Method merge(ThemeGenConfig config) => Method((method) {
 ///
 /// Supports fields with custom static or instance `lerp` methods, as well as
 /// `double` and `Duration` fields.
-Method staticLerp(ThemeGenConfig config) => Method((method) {
+Method staticLerp(ThemeGenConfig config) => Method((m) {
   final classType = config.className.typeRef(optional: true);
 
-  method
+  m
     ..name = 'lerp'
     ..static = true
     ..returns = classType
@@ -218,10 +236,10 @@ Method staticLerp(ThemeGenConfig config) => Method((method) {
           ..type = 'double'.ref,
       ),
     ])
-    ..body = Block((body) {
+    ..body = Block((b) {
       final fields = config.filteredFields;
 
-      body
+      b
         ..statements.add(
           ifCode('identical'.ref(['a'.ref, 'b'.ref]).code, [
             'a'.ref.returned.statement,
@@ -380,7 +398,7 @@ Method staticLerp(ThemeGenConfig config) => Method((method) {
             .conditional(aProp, bProp);
       }
 
-      body.addExpression(
+      b.addExpression(
         (argsResult.isEmpty && config.constConstructor
                 ? InvokeExpression.constOf
                 : InvokeExpression.newOf)(
@@ -396,111 +414,107 @@ Method staticLerp(ThemeGenConfig config) => Method((method) {
 });
 
 /// Generates the equality operator `==` for the theme class.
-Method equalOperator(ThemeGenConfig config) {
-  final fields = config.filteredFields;
-  final body = BlockBuilder()
-    ..statements.add(
-      ifCode(
-        'identical'.ref(['this'.ref, 'other'.ref]).code,
-        [literalTrue.returned.statement],
+Method equalOperator(ThemeGenConfig config) => Method((m) {
+  m
+    ..name = 'operator =='
+    ..annotations.add('override'.ref)
+    ..returns = 'bool'.ref
+    ..requiredParameters.add(
+      Parameter(
+        (p) => p
+          ..name = 'other'
+          ..type = 'Object'.ref,
       ),
     )
-    ..addEmptyLine()
-    ..statements.add(
-      ifCode(
-        'other'.ref.prop('runtimeType').notEqualTo('runtimeType'.ref).code,
-        [literalFalse.returned.statement],
-      ),
-    )
-    ..addEmptyLine();
+    ..body = Block((b) {
+      final fields = config.filteredFields;
 
-  if (fields.isNotEmpty) {
-    body
-      ..addExpression(
-        declareFinal('_this').assign('this'.ref.asA(config.className.ref)),
-      )
-      ..addExpression(
-        declareFinal('_other').assign('other'.ref.asA(config.className.ref)),
-      )
-      ..addEmptyLine()
-      ..addExpression(
-        fields
-            .map(
-              (field) => '_other'.ref
-                  .prop(field.name)
-                  .equalTo('_this'.ref.prop(field.name)),
-            )
-            .reduce((a, b) => a.and(b))
-            .returned,
-      );
-  } else {
-    body.addExpression(literalTrue.returned);
-  }
+      b
+        ..statements.add(
+          ifCode(
+            'identical'.ref(['this'.ref, 'other'.ref]).code,
+            [literalTrue.returned.statement],
+          ),
+        )
+        ..addEmptyLine()
+        ..statements.add(
+          ifCode(
+            'other'.ref.prop('runtimeType').notEqualTo('runtimeType'.ref).code,
+            [literalFalse.returned.statement],
+          ),
+        )
+        ..addEmptyLine();
 
-  final result = Method((m) {
-    m
-      ..name = 'operator =='
-      ..annotations.add('override'.ref)
-      ..returns = 'bool'.ref
-      ..requiredParameters.add(
-        Parameter(
-          (p) => p
-            ..name = 'other'
-            ..type = 'Object'.ref,
-        ),
-      )
-      ..body = body.build();
-  });
-
-  return result;
-}
+      if (fields.isNotEmpty) {
+        b
+          ..addExpression(
+            declareFinal(
+              '_this',
+            ).assign('this'.ref.asA(config.className.ref)),
+          )
+          ..addExpression(
+            declareFinal(
+              '_other',
+            ).assign('other'.ref.asA(config.className.ref)),
+          )
+          ..addEmptyLine()
+          ..addExpression(
+            fields
+                .map(
+                  (field) => '_other'.ref
+                      .prop(field.name)
+                      .equalTo('_this'.ref.prop(field.name)),
+                )
+                .reduce((a, b) => a.and(b))
+                .returned,
+          );
+      } else {
+        b.addExpression(literalTrue.returned);
+      }
+    });
+});
 
 /// Generates the `hashCode` getter for the theme class.
-Method hashMethod(ThemeGenConfig config) {
-  final body = BlockBuilder();
-  final fields = config.filteredFields;
+Method hashMethod(ThemeGenConfig config) => Method((m) {
+  m
+    ..name = 'hashCode'
+    ..annotations.add('override'.ref)
+    ..returns = 'int'.ref
+    ..type = MethodType.getter
+    ..body = Block((b) {
+      final fields = config.filteredFields;
 
-  if (fields.isNotEmpty) {
-    body
-      ..addExpression(
-        declareFinal('_this').assign('this'.ref.asA(config.className.ref)),
-      )
-      ..addEmptyLine();
-  }
+      if (fields.isNotEmpty) {
+        b
+          ..addExpression(
+            declareFinal('_this').assign('this'.ref.asA(config.className.ref)),
+          )
+          ..addEmptyLine();
+      }
 
-  switch (fields.length) {
-    case 0:
-      body.addExpression('runtimeType'.ref.prop('hashCode').returned);
-    case <= 19:
-      body.addExpression(
-        'Object'.ref
-            .prop('hash')([
-              'runtimeType'.ref,
-              for (final field in fields) '_this'.ref.prop(field.name),
-            ])
-            .returned,
-      );
-    case _:
-      body.addExpression(
-        'Object'.ref
-            .prop('hashAll')([
-              literalList([
-                'runtimeType'.ref,
-                for (final field in fields) '_this'.ref.prop(field.name),
-              ]),
-            ])
-            .returned,
-      );
-  }
-
-  final result = Method((m) {
-    m
-      ..name = 'hashCode'
-      ..annotations.add('override'.ref)
-      ..returns = 'int'.ref
-      ..type = MethodType.getter
-      ..body = body.build();
-  });
-
-  return result;
-}
+      switch (fields.length) {
+        case 0:
+          b.addExpression('runtimeType'.ref.prop('hashCode').returned);
+        case <= 19:
+          b.addExpression(
+            'Object'.ref
+                .prop('hash')([
+                  'runtimeType'.ref,
+                  for (final field in fields) '_this'.ref.prop(field.name),
+                ])
+                .returned,
+          );
+        case _:
+          b.addExpression(
+            'Object'.ref
+                .prop('hashAll')([
+                  literalList([
+                    'runtimeType'.ref,
+                    for (final field in fields) '_this'.ref.prop(field.name),
+                  ]),
+                ])
+                .returned,
+          );
+      }
+    });
+});

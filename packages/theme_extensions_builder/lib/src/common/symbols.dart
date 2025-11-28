@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:source_gen/source_gen.dart';
@@ -157,19 +159,24 @@ FieldSymbol _fieldSymbol(FieldElement element) {
     isDuration: isDuration,
     isStatic: element.isStatic,
     merge: _mergeInfo(elementType),
-    lerp: _lerpInfo(elementType),
+    lerp: _lerpInfo(elementType, element),
   );
 }
 
 /// Gets information about the lerp method for the given [type].
-LerpMethod _lerpInfo(DartType type) {
+LerpMethod _lerpInfo(DartType type, FieldElement fieldElement) {
   final typeElement = type.element;
 
-  if (typeElement is! ClassElement) {
+  if (typeElement is! InterfaceElement) {
+    print(
+      'Type element is not a class: '
+      '${typeElement.runtimeType} for field ${fieldElement.name}',
+    );
     return const NoLerpMethod();
   }
 
-  final method = typeElement.getMethod('lerp');
+  final method = _lookupMethod(typeElement, 'lerp');
+
   if (method == null) {
     return const NoLerpMethod();
   }
@@ -183,7 +190,8 @@ LerpMethod _lerpInfo(DartType type) {
       // - third parameter should be double
       when method.isStatic &&
           p3.type.isDartCoreDouble &&
-          p1.type.baseType == p2.type.baseType) {
+          _checkSubtype(p1, type) &&
+          _checkSubtype(p2, type)) {
     return StaticLerpMethod(
       optionalResult: method.returnType.hasNullableSuffix,
       args: _mapArgumentsSymbols(params),
@@ -195,14 +203,50 @@ LerpMethod _lerpInfo(DartType type) {
       // - second parameter should be double
       when !method.isStatic &&
           p2.type.isDartCoreDouble &&
-          p1.type.baseType == type.baseType) {
+          _checkSubtype(p1, type)) {
     return InstanceLerpMethod(
       optionalResult: method.returnType.hasNullableSuffix,
       args: _mapArgumentsSymbols(params),
     );
   }
 
-  throw StateError('Lerp method has invalid signature');
+  throw StateError(
+    'Lerp method has invalid signature for type '
+    '${type.getDisplayString()} of field ${fieldElement.name} '
+    'method: ${method.displayName} isStatic: ${method.isStatic} ',
+  );
+}
+
+bool _checkSubtype(
+  FormalParameterElement param,
+  DartType type,
+) {
+  final typeElement = type.element;
+  if (typeElement is! InterfaceElement) {
+    return false;
+  }
+
+  final paramTypeElement = param.type.element;
+  if (paramTypeElement is! InterfaceElement) {
+    return false;
+  }
+
+  final supertypeInstance = type.asInstanceOf(paramTypeElement);
+  if (supertypeInstance == null) {
+    return false;
+  }
+
+  final typeSystem = typeElement.library.typeSystem;
+  final nonNullType = typeSystem.promoteToNonNull(type);
+
+  final result = typeSystem.isSubtypeOf(nonNullType, supertypeInstance);
+
+  print(
+    'Checking subtype: '
+    '${nonNullType.getDisplayString()} '
+    'is subtype of ${supertypeInstance.getDisplayString()} : $result',
+  );
+  return result;
 }
 
 /// Maps a list of [parameters] to a list of [Arg] symbols.
@@ -222,10 +266,29 @@ Arg _mapArgumentSymbol(FormalParameterElement parameter) {
   );
 }
 
+/// Looks up a method with the given [name] in the [typeElement].
+/// If the method is not found directly on the type, it looks up
+/// inherited methods as well.
+MethodElement? _lookupMethod(
+  InterfaceElement typeElement,
+  String name,
+) {
+  final method = typeElement.getMethod(name);
+
+  if (method != null) {
+    return method;
+  }
+
+  return typeElement.lookUpInheritedMethod(
+    methodName: name,
+    library: typeElement.library,
+  );
+}
+
 MergeMethod _mergeInfo(DartType type) {
   final typeElement = type.element;
 
-  if (typeElement is! ClassElement) {
+  if (typeElement is! InterfaceElement) {
     return const NoMergeMethod();
   }
 
@@ -238,8 +301,8 @@ MergeMethod _mergeInfo(DartType type) {
     return const InstanceMergeMethod();
   }
 
-  final method = typeElement.getMethod('merge');
-  if (method == null || !method.isPublic) {
+  final method = _lookupMethod(typeElement, 'merge');
+  if (method == null) {
     return const NoMergeMethod();
   }
 

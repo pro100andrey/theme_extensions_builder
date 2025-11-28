@@ -46,7 +46,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
     for (final supertype in allSupertypes) {
       final superElement = supertype.element;
 
-      if (superElement is ClassElement && !supertype.isDartCoreObject) {
+      if (!supertype.isDartCoreObject) {
         superElement.visitChildren(classVisitor);
       }
     }

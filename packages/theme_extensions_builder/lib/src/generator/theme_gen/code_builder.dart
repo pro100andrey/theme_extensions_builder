@@ -240,12 +240,14 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
       final fields = config.filteredFields;
 
       b
+        // If a and b are identical, return a
         ..statements.add(
           ifCode('identical'.ref(['a'.ref, 'b'.ref]).code, [
             'a'.ref.returned.statement,
           ]),
         )
         ..addEmptyLine()
+        // If both a and b are null, return null
         ..statements.add(
           ifCode(
             'a'.ref.equalTo(literalNull).and('b'.ref.equalTo(literalNull)).code,
@@ -253,6 +255,7 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
           ),
         )
         ..addEmptyLine()
+        // If a is null, return b if t is 1.0, else null
         ..statements.add(
           ifCode(
             'a'.ref.equalTo(literalNull).code,
@@ -266,6 +269,7 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
           ),
         )
         ..addEmptyLine()
+        // If b is null, return a if t is 0.0, else null
         ..statements.add(
           ifCode(
             'b'.ref.equalTo(literalNull).code,
@@ -287,6 +291,8 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         final bProp = 'b'.ref.prop(field.name);
         final lerp = field.baseType.ref.prop('lerp');
 
+        // Handle different lerp strategies based on field configuration
+
         // Non-nullable field with non-nullable lerp signature
         if (field.lerp case StaticLerpMethod(
           isNullableSignature: false,
@@ -297,11 +303,25 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
           continue;
         }
 
+        // Non-nullable field with nullable lerp signature
+        if (field.lerp case StaticLerpMethod(
+          isNullableSignature: true,
+        ) when !field.optional) {
+          // value: Class.lerp(a.field, b.field, t)!
+          argsResult[field.name] = lerp([aProp, bProp, 't'.ref]).nullChecked;
+          continue;
+        }
+
         // Nullable field with non-nullable lerp signature
         if (field.lerp case StaticLerpMethod(
           isNullableSignature: false,
         ) when field.optional) {
-          final expression = aProp
+          // value: a.field == null
+          //     ? b.field
+          //     : b.field == null
+          //         ? a.field
+          //         : Class.lerp(a.field!, b.field!, t)
+          argsResult[field.name] = aProp
               .equalTo(literalNull)
               .conditional(
                 bProp,
@@ -313,22 +333,6 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
                     ),
               );
 
-          argsResult[field.name] = expression;
-
-          continue;
-        }
-
-        // Non-nullable field with non-nullable lerp signature
-        if (field.lerp case StaticLerpMethod(
-          isNullableSignature: false,
-        ) when !field.optional) {
-          final expression = lerp([
-            aProp.nullSafe.nullChecked,
-            bProp.nullSafe.nullChecked,
-            't'.ref,
-          ]);
-
-          argsResult[field.name] = expression;
           continue;
         }
 
@@ -336,19 +340,33 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         if (field.lerp case StaticLerpMethod(
           isNullableSignature: true,
         ) when field.optional) {
-          final expression = lerp([aProp, bProp, 't'.ref]);
-          argsResult[field.name] = expression;
+          // value: Class.lerp(a.field, b.field, t)
+          argsResult[field.name] = lerp([aProp, bProp, 't'.ref]);
+
           continue;
         }
 
-        // Instance lerp method
-        if (field.lerp case InstanceLerpMethod()) {
-          final expression = aProp.nullSafe
+        // Instance lerp method with optional result
+        if (field.lerp case InstanceLerpMethod(
+          optionalResult: true,
+        ) when field.optional) {
+          // value: a.field.lerp(b.field, t)
+          argsResult[field.name] = aProp.nullSafe
               .prop('lerp')
               .withNullSafety(field.optional)([bProp.nullSafe, 't'.ref])
               .asA(field.baseType.typeRef(optional: field.optional));
 
-          argsResult[field.name] = expression;
+          continue;
+        }
+        // Instance lerp method with non-optional result
+        if (field.lerp case InstanceLerpMethod(
+          optionalResult: false,
+        ) when !field.optional) {
+          // value: a.field.lerp(b.field, t)
+          argsResult[field.name] = aProp
+              .prop('lerp')([bProp, 't'.ref])
+              .asA(field.baseType.typeRef());
+
           continue;
         }
 

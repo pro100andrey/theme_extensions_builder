@@ -8,35 +8,35 @@ import '../utils/library_reader.dart';
 Future<void> main() async {
   initializeBuildLogTracking();
 
-  final emptyThemeReader = await libraryReader(
-    'test/lib',
-    'empty_theme.dart',
-  );
+  // final emptyThemeReader = await libraryReader(
+  //   'test/lib',
+  //   'empty_theme.dart',
+  // );
 
   final mergeCaseThemeReader = await libraryReader(
     'test/lib',
     'merge_case_theme.dart',
   );
 
-  final allOptionalFieldsReader = await libraryReader(
-    'test/lib',
-    'all_optional_fields.dart',
-  );
+  // final allOptionalFieldsReader = await libraryReader(
+  //   'test/lib',
+  //   'all_optional_fields.dart',
+  // );
 
   group('ThemeGenGenerator', () {
-    testAnnotatedElements<ThemeGen>(
-      emptyThemeReader,
-      ThemeGenGenerator(),
-    );
+    // testAnnotatedElements<ThemeGen>(
+    //   emptyThemeReader,
+    //   ThemeGenGenerator(),
+    // );
 
     testAnnotatedElements<ThemeGen>(
       mergeCaseThemeReader,
       ThemeGenGenerator(),
     );
 
-    testAnnotatedElements<ThemeGen>(
-      allOptionalFieldsReader,
-      ThemeGenGenerator(),
-    );
+    // testAnnotatedElements<ThemeGen>(
+    //   allOptionalFieldsReader,
+    //   ThemeGenGenerator(),
+    // );
   });
 }

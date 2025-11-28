@@ -15,18 +15,16 @@ class ThemeGenCodeBuilder {
   /// `lerp`, equality operators, and hashCode.
   String generate(ThemeGenConfig config) {
     final mix = Mixin((m) {
-      final name = '_\$${config.className}';
-
-      m.name = name;
-
-      m.methods.addAll([
-        canMerge(config),
-        staticLerp(config),
-        copyWith(config),
-        merge(config),
-        equalOperator(config),
-        hashMethod(config),
-      ]);
+      m
+        ..name = '_\$${config.className}'
+        ..methods.addAll([
+          canMerge(config),
+          staticLerp(config),
+          copyWith(config),
+          merge(config),
+          equalOperator(config),
+          hashMethod(config),
+        ]);
     });
 
     final emitter = DartEmitter(
@@ -41,8 +39,7 @@ class ThemeGenCodeBuilder {
       trailingCommas: TrailingCommas.automate,
     );
 
-    final mixinLibrary = Library((b) => b.body.addAll([mix]));
-
+    final mixinLibrary = Library((lib) => lib.body.addAll([mix]));
     final rawCode = mixinLibrary.accept(emitter).toString();
     final formattedCode = formatter.format(rawCode);
 
@@ -62,7 +59,7 @@ Method canMerge(ThemeGenConfig config) => Method((m) {
 
 /// Generates a `copyWith` method for the theme class.
 Method copyWith(ThemeGenConfig config) => Method((method) {
-  final fields = config.supportedFields;
+  final fields = config.filteredFields;
 
   method
     ..name = 'copyWith'
@@ -108,74 +105,7 @@ Method copyWith(ThemeGenConfig config) => Method((method) {
 
 /// Generates a `merge` method for the theme class.
 Method merge(ThemeGenConfig config) {
-  final body = BlockBuilder();
-  final fields = config.supportedFields;
-
-  body
-    ..addExpression(
-      declareFinal('_this'.ref.symbol).assign(
-        'this'.ref.asA(config.className.ref),
-      ),
-    )
-    ..addEmptyLine()
-    ..statements.add(
-      ifCode(
-        'other'.ref
-            .equalTo(literalNull)
-            .or('identical'.ref(['_this'.ref, 'other'.ref]))
-            .code,
-        ['_this'.ref.returned.statement],
-      ),
-    )
-    ..addEmptyLine()
-    ..statements.add(
-      ifCode(
-        'other'.ref.negate().prop('canMerge').code,
-        ['other'.ref.returned.statement],
-      ),
-    )
-    ..addEmptyLine();
-
-  final namedArguments = fields.map((field) {
-    final thisProp = '_this'.ref.prop(field.name);
-    final otherProp = 'other'.ref.prop(field.name);
-
-    final staticMerge = field.baseType.ref.prop('merge');
-    final instanceMerge = thisProp.prop('merge');
-
-    final value = switch (field.merge) {
-      NoMergeMethod() => otherProp,
-      StaticMergeMethod() when field.optional =>
-        thisProp
-            .notEqualTo(literalNull)
-            .and(otherProp.notEqualTo(literalNull))
-            .conditional(
-              staticMerge([thisProp.nullChecked, otherProp.nullChecked]),
-              otherProp,
-            ),
-
-      StaticMergeMethod() when !field.optional => staticMerge([
-        thisProp,
-        otherProp,
-      ]),
-
-      InstanceMergeMethod() =>
-        field.optional
-            ? thisProp
-                  .nullSafeProperty('merge')([otherProp])
-                  .ifNullThen(otherProp)
-            : instanceMerge([otherProp]),
-      _ => throw StateError(
-        'Unsupported merge info for field ${field.name}',
-      ),
-    };
-
-    return MapEntry(field.name, value);
-  });
-
-  body.addExpression(
-    'copyWith'.ref([], Map.fromEntries(namedArguments)).returned,
-  );
+  final fields = config.filteredFields;
 
   final result = Method((m) {
     m
@@ -188,7 +118,75 @@ Method merge(ThemeGenConfig config) {
             ..type = config.className.typeRef(optional: true),
         ),
       )
-      ..body = body.build();
+      ..body = Block((body) {
+        body
+          ..addExpression(
+            declareFinal('_this'.ref.symbol).assign(
+              'this'.ref.asA(config.className.ref),
+            ),
+          )
+          ..addEmptyLine()
+          ..statements.add(
+            ifCode(
+              'other'.ref
+                  .equalTo(literalNull)
+                  .or('identical'.ref(['_this'.ref, 'other'.ref]))
+                  .code,
+              ['_this'.ref.returned.statement],
+            ),
+          )
+          ..addEmptyLine()
+          ..statements.add(
+            ifCode(
+              'other'.ref.negate().prop('canMerge').code,
+              ['other'.ref.returned.statement],
+            ),
+          )
+          ..addEmptyLine();
+
+        final args = <String, Expression>{};
+        for (final field in fields) {
+          final thisProp = '_this'.ref.prop(field.name);
+          final otherProp = 'other'.ref.prop(field.name);
+
+          final staticMerge = field.baseType.ref.prop('merge');
+          final instanceMerge = thisProp.prop('merge');
+
+          if (field.merge case NoMergeMethod()) {
+            args[field.name] = otherProp;
+            continue;
+          }
+
+          if (field.merge case StaticMergeMethod() when field.optional) {
+            args[field.name] = thisProp
+                .notEqualTo(literalNull)
+                .and(otherProp.notEqualTo(literalNull))
+                .conditional(
+                  staticMerge([thisProp.nullChecked, otherProp.nullChecked]),
+                  otherProp,
+                );
+            continue;
+          }
+
+          if (field.merge case StaticMergeMethod() when !field.optional) {
+            args[field.name] = staticMerge([thisProp, otherProp]);
+            continue;
+          }
+
+          if (field.merge case InstanceMergeMethod()) {
+            args[field.name] = field.optional
+                ? thisProp
+                      .nullSafeProperty('merge')([otherProp])
+                      .ifNullThen(otherProp)
+                : instanceMerge([otherProp]);
+            continue;
+          }
+
+          throw StateError('Unsupported merge info for field ${field.name}');
+        }
+
+        body.addExpression('copyWith'.ref([], args).returned);
+      });
   });
 
   return result;
@@ -201,7 +199,7 @@ Method merge(ThemeGenConfig config) {
 /// `double` and `Duration` fields.
 Method staticLerp(ThemeGenConfig config) {
   final body = BlockBuilder();
-  final fields = config.supportedFields;
+  final fields = config.filteredFields;
 
   body
     ..statements.add(
@@ -402,7 +400,7 @@ Method staticLerp(ThemeGenConfig config) {
 
 /// Generates the equality operator `==` for the theme class.
 Method equalOperator(ThemeGenConfig config) {
-  final fields = config.supportedFields;
+  final fields = config.filteredFields;
   final body = BlockBuilder()
     ..statements.add(
       ifCode(
@@ -463,7 +461,7 @@ Method equalOperator(ThemeGenConfig config) {
 /// Generates the `hashCode` getter for the theme class.
 Method hashMethod(ThemeGenConfig config) {
   final body = BlockBuilder();
-  final fields = config.supportedFields;
+  final fields = config.filteredFields;
 
   if (fields.isNotEmpty) {
     body

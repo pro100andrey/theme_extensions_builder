@@ -12,7 +12,7 @@ sealed class BaseConfig {
   final List<FieldSymbol> fields;
 
   /// The fields that are supported for generation (non-static fields).
-  Iterable<FieldSymbol> get supportedFields =>
+  Iterable<FieldSymbol> get filteredFields =>
       fields.where((field) => !field.isStatic);
 
   /// The name of the class to be generated.

@@ -104,144 +104,164 @@ Method copyWith(ThemeGenConfig config) => Method((method) {
 });
 
 /// Generates a `merge` method for the theme class.
-Method merge(ThemeGenConfig config) {
+Method merge(ThemeGenConfig config) => Method((method) {
   final fields = config.filteredFields;
+  final classType = config.className.typeRef(optional: true);
 
-  final result = Method((m) {
-    m
-      ..name = 'merge'
-      ..returns = config.className.ref
-      ..requiredParameters.add(
-        Parameter(
-          (p) => p
-            ..name = 'other'
-            ..type = config.className.typeRef(optional: true),
-        ),
-      )
-      ..body = Block((body) {
-        body
-          ..addExpression(
-            declareFinal('_this'.ref.symbol).assign(
-              'this'.ref.asA(config.className.ref),
-            ),
-          )
-          ..addEmptyLine()
-          ..statements.add(
-            ifCode(
-              'other'.ref
-                  .equalTo(literalNull)
-                  .or('identical'.ref(['_this'.ref, 'other'.ref]))
-                  .code,
-              ['_this'.ref.returned.statement],
-            ),
-          )
-          ..addEmptyLine()
-          ..statements.add(
-            ifCode(
-              'other'.ref.negate().prop('canMerge').code,
-              ['other'.ref.returned.statement],
-            ),
-          )
-          ..addEmptyLine();
+  method
+    ..name = 'merge'
+    ..returns = config.className.ref
+    ..requiredParameters.add(
+      Parameter(
+        (p) => p
+          ..name = 'other'
+          ..type = classType,
+      ),
+    )
+    ..body = Block((body) {
+      body
+        ..addExpression(
+          declareFinal('_this'.ref.symbol).assign(
+            'this'.ref.asA(config.className.ref),
+          ),
+        )
+        ..addEmptyLine()
+        ..statements.add(
+          ifCode(
+            'other'.ref
+                .equalTo(literalNull)
+                .or('identical'.ref(['_this'.ref, 'other'.ref]))
+                .code,
+            ['_this'.ref.returned.statement],
+          ),
+        )
+        ..addEmptyLine()
+        ..statements.add(
+          ifCode(
+            'other'.ref.negate().prop('canMerge').code,
+            ['other'.ref.returned.statement],
+          ),
+        )
+        ..addEmptyLine();
 
-        final args = <String, Expression>{};
-        for (final field in fields) {
-          final thisProp = '_this'.ref.prop(field.name);
-          final otherProp = 'other'.ref.prop(field.name);
+      final args = <String, Expression>{};
+      for (final field in fields) {
+        final thisProp = '_this'.ref.prop(field.name);
+        final otherProp = 'other'.ref.prop(field.name);
 
-          final staticMerge = field.baseType.ref.prop('merge');
-          final instanceMerge = thisProp.prop('merge');
+        final staticMerge = field.baseType.ref.prop('merge');
+        final instanceMerge = thisProp.prop('merge');
 
-          if (field.merge case NoMergeMethod()) {
-            args[field.name] = otherProp;
-            continue;
-          }
-
-          if (field.merge case StaticMergeMethod() when field.optional) {
-            args[field.name] = thisProp
-                .notEqualTo(literalNull)
-                .and(otherProp.notEqualTo(literalNull))
-                .conditional(
-                  staticMerge([thisProp.nullChecked, otherProp.nullChecked]),
-                  otherProp,
-                );
-            continue;
-          }
-
-          if (field.merge case StaticMergeMethod() when !field.optional) {
-            args[field.name] = staticMerge([thisProp, otherProp]);
-            continue;
-          }
-
-          if (field.merge case InstanceMergeMethod()) {
-            args[field.name] = field.optional
-                ? thisProp
-                      .nullSafeProperty('merge')([otherProp])
-                      .ifNullThen(otherProp)
-                : instanceMerge([otherProp]);
-            continue;
-          }
-
-          throw StateError('Unsupported merge info for field ${field.name}');
+        if (field.merge case NoMergeMethod()) {
+          args[field.name] = otherProp;
+          continue;
         }
 
-        body.addExpression('copyWith'.ref([], args).returned);
-      });
-  });
+        if (field.merge case StaticMergeMethod() when field.optional) {
+          args[field.name] = thisProp
+              .notEqualTo(literalNull)
+              .and(otherProp.notEqualTo(literalNull))
+              .conditional(
+                staticMerge([thisProp.nullChecked, otherProp.nullChecked]),
+                otherProp,
+              );
+          continue;
+        }
 
-  return result;
-}
+        if (field.merge case StaticMergeMethod() when !field.optional) {
+          args[field.name] = staticMerge([thisProp, otherProp]);
+          continue;
+        }
+
+        if (field.merge case InstanceMergeMethod()) {
+          args[field.name] = field.optional
+              ? thisProp
+                    .nullSafeProperty('merge')([otherProp])
+                    .ifNullThen(otherProp)
+              : instanceMerge([otherProp]);
+          continue;
+        }
+
+        throw StateError('Unsupported merge info for field ${field.name}');
+      }
+
+      body.addExpression('copyWith'.ref([], args).returned);
+    });
+});
 
 /// Generates a static `lerp` method for interpolating between two theme
 /// instances.
 ///
 /// Supports fields with custom static or instance `lerp` methods, as well as
 /// `double` and `Duration` fields.
-Method staticLerp(ThemeGenConfig config) {
-  final body = BlockBuilder();
-  final fields = config.filteredFields;
+Method staticLerp(ThemeGenConfig config) => Method((method) {
+  final classType = config.className.typeRef(optional: true);
 
-  body
-    ..statements.add(
-      ifCode('identical'.ref(['a'.ref, 'b'.ref]).code, [
-        'a'.ref.returned.statement,
-      ]),
-    )
-    ..addEmptyLine()
-    ..statements.add(
-      ifCode(
-        'a'.ref.equalTo(literalNull).and('b'.ref.equalTo(literalNull)).code,
-        [literalNull.returned.statement],
+  method
+    ..name = 'lerp'
+    ..static = true
+    ..returns = classType
+    ..requiredParameters.addAll([
+      Parameter(
+        (p) => p
+          ..name = 'a'.ref.symbol
+          ..type = classType,
       ),
-    )
-    ..addEmptyLine()
-    ..statements.add(
-      ifCode(
-        'a'.ref.equalTo(literalNull).code,
-        [
-          't'.ref
-              .equalTo(literalNum(1.0))
-              .conditional('b'.ref, literalNull)
-              .returned
-              .statement,
-        ],
+      Parameter(
+        (p) => p
+          ..name = 'b'.ref.symbol
+          ..type = classType,
       ),
-    )
-    ..addEmptyLine()
-    ..statements.add(
-      ifCode(
-        'b'.ref.equalTo(literalNull).code,
-        [
-          't'.ref
-              .equalTo(literalNum(0.0))
-              .conditional('a'.ref, literalNull)
-              .returned
-              .statement,
-        ],
+      Parameter(
+        (p) => p
+          ..name = 't'.ref.symbol
+          ..type = 'double'.ref,
       ),
-    )
-    ..addEmptyLine()
-    ..addExpression(() {
+    ])
+    ..body = Block((body) {
+      final fields = config.filteredFields;
+
+      body
+        ..statements.add(
+          ifCode('identical'.ref(['a'.ref, 'b'.ref]).code, [
+            'a'.ref.returned.statement,
+          ]),
+        )
+        ..addEmptyLine()
+        ..statements.add(
+          ifCode(
+            'a'.ref.equalTo(literalNull).and('b'.ref.equalTo(literalNull)).code,
+            [literalNull.returned.statement],
+          ),
+        )
+        ..addEmptyLine()
+        ..statements.add(
+          ifCode(
+            'a'.ref.equalTo(literalNull).code,
+            [
+              't'.ref
+                  .equalTo(literalNum(1.0))
+                  .conditional('b'.ref, literalNull)
+                  .returned
+                  .statement,
+            ],
+          ),
+        )
+        ..addEmptyLine()
+        ..statements.add(
+          ifCode(
+            'b'.ref.equalTo(literalNull).code,
+            [
+              't'.ref
+                  .equalTo(literalNum(0.0))
+                  .conditional('a'.ref, literalNull)
+                  .returned
+                  .statement,
+            ],
+          ),
+        )
+        ..addEmptyLine();
+
       final argsResult = <String, Expression>{};
 
       for (final field in fields) {
@@ -348,55 +368,32 @@ Method staticLerp(ThemeGenConfig config) {
           continue;
         }
 
+        // Special case for canMerge field
         if (field.name == 'canMerge') {
           argsResult[field.name] = bProp;
           continue;
         }
-
+        // Fallback to a simple conditional expression:
+        // t < 0.5 ? a.field : b.field
         argsResult[field.name] = 't'.ref
             .lessThan(literalNum(0.5))
             .conditional(aProp, bProp);
       }
 
-      return (argsResult.isEmpty && config.constConstructor
-              ? InvokeExpression.constOf
-              : InvokeExpression.newOf)(
-            config.className.ref,
-            [],
-            argsResult,
-            [],
-            config.constructor,
-          )
-          .returned;
-    }());
-
-  final result = Method((m) {
-    m
-      ..name = 'lerp'
-      ..static = true
-      ..returns = config.className.typeRef(optional: true)
-      ..requiredParameters.addAll([
-        Parameter(
-          (p) => p
-            ..name = 'a'.ref.symbol
-            ..type = config.className.typeRef(optional: true),
-        ),
-        Parameter(
-          (p) => p
-            ..name = 'b'.ref.symbol
-            ..type = config.className.typeRef(optional: true),
-        ),
-        Parameter(
-          (p) => p
-            ..name = 't'.ref.symbol
-            ..type = 'double'.ref,
-        ),
-      ])
-      ..body = body.build();
-  });
-
-  return result;
-}
+      body.addExpression(
+        (argsResult.isEmpty && config.constConstructor
+                ? InvokeExpression.constOf
+                : InvokeExpression.newOf)(
+              config.className.ref,
+              [],
+              argsResult,
+              [],
+              config.constructor,
+            )
+            .returned,
+      );
+    });
+});
 
 /// Generates the equality operator `==` for the theme class.
 Method equalOperator(ThemeGenConfig config) {

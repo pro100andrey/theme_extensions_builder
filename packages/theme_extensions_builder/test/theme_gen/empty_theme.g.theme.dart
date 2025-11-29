@@ -17,10 +17,6 @@ mixin _$EmptyTheme {
       return a;
     }
 
-    if (a == null && b == null) {
-      return null;
-    }
-
     if (a == null) {
       return t == 1.0 ? b : null;
     }

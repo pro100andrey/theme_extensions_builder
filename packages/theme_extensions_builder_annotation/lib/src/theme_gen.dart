@@ -18,7 +18,7 @@ const themeGen = ThemeGen();
 @Target({TargetKind.classType})
 class ThemeGen {
   /// Creates a [ThemeGen] annotation.
-  const ThemeGen({this.constructor, this.hasMerge = true, this.hasLerp = true});
+  const ThemeGen({this.constructor});
 
   /// The name of the constructor to be used. If `null`, the default
   /// constructor will be used.
@@ -31,8 +31,4 @@ class ThemeGen {
   /// }
   /// ```
   final String? constructor;
-
-  final bool hasMerge;
-
-  final bool hasLerp;
 }

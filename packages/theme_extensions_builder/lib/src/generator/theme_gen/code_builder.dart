@@ -247,14 +247,6 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
           ]),
         )
         ..addEmptyLine()
-        // If both a and b are null, return null
-        ..statements.add(
-          ifCode(
-            'a'.ref.equalTo(literalNull).and('b'.ref.equalTo(literalNull)).code,
-            [literalNull.returned.statement],
-          ),
-        )
-        ..addEmptyLine()
         // If a is null, return b if t is 1.0, else null
         ..statements.add(
           ifCode(

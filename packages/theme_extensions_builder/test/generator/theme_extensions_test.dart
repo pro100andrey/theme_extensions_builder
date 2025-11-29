@@ -6,25 +6,29 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 Future<void> main() async {
   initializeBuildLogTracking();
 
-  final emptyThemeReader = await initializeLibraryReaderForDirectory(
+  final emptyReader = await initializeLibraryReaderForDirectory(
     'test/theme_extensions',
     'empty_theme_extension.dart',
   );
 
-  final allOptionalParametersReader = await initializeLibraryReaderForDirectory(
+  final complexReader = await initializeLibraryReaderForDirectory(
     'test/theme_extensions',
-    'all_optional_parameters.dart',
+    'complex_theme_extension.dart',
   );
 
   group('ThemeExtensionsGenerator', () {
-    testAnnotatedElements<ThemeExtensions>(
-      emptyThemeReader,
-      ThemeExtensionsGenerator(),
-    );
+    group('Empty', () {
+      testAnnotatedElements<ThemeExtensions>(
+        emptyReader,
+        ThemeExtensionsGenerator(),
+      );
+    });
 
-    testAnnotatedElements<ThemeExtensions>(
-      allOptionalParametersReader,
-      ThemeExtensionsGenerator(),
-    );
+    group('Complex', () {
+      testAnnotatedElements<ThemeExtensions>(
+        complexReader,
+        ThemeExtensionsGenerator(),
+      );
+    });
   });
 }

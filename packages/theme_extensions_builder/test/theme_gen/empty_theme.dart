@@ -3,6 +3,7 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 
 part 'empty_theme.g.theme.dart';
 
+/// Empty Theme - testing edge case with no fields
 @ShouldGenerateFile(
   'goldens/empty_theme.g.theme.dart',
   partOfCurrent: true,

@@ -5,6 +5,7 @@ import 'mock.dart';
 
 part 'empty_theme_extension.g.theme.dart';
 
+/// Empty ThemeExtension - testing edge case with no fields
 @ShouldGenerateFile(
   'goldens/empty_theme_extension.g.theme.dart',
   partOfCurrent: true,

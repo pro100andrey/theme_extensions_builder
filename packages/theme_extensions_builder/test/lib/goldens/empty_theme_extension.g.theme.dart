@@ -1,3 +1,5 @@
+part of '../empty_theme_extension.dart';
+
 mixin _$EmptyThemeExtension on ThemeExtension<EmptyThemeExtension> {
   @override
   ThemeExtension<EmptyThemeExtension> copyWith() {

@@ -1,9 +1,9 @@
 import 'package:source_gen_test/source_gen_test.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../mock.dart';
-import '../theme_extensions/empty_theme_extension.dart';
 import 'empty_theme.dart';
+import 'empty_theme_extension.dart';
+import 'mock.dart';
 
 part 'merge_case_theme.g.theme.dart';
 

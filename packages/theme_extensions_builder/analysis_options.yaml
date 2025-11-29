@@ -5,5 +5,5 @@ formatter:
 
 analyzer: 
   exclude: 
-    - test/lib/**/goldens/**.dart
+    - test/lib/goldens/**.dart
 

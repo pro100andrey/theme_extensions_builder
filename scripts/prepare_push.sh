@@ -123,8 +123,6 @@ function dart_test() {
 	fi
 }
 
-
-
 function dart_fix() {
 	local package_path=$1
 	log_begin "Running 'dart fix' in $package_path"
@@ -142,7 +140,6 @@ function process_package() {
 	local package_name=$(basename "$dir")
 
 	log_info "Processing" "$package_name"
-
 
 	local steps=(
 		"pub_update"

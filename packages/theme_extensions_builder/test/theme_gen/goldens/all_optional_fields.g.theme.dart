@@ -1,13 +1,4 @@
-// dart format width=80
-// coverage:ignore-file
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, unused_element
-
-part of 'all_optional_fields.dart';
-
-// **************************************************************************
-// ThemeGenGenerator
-// **************************************************************************
+part of '../all_optional_fields.dart';
 
 mixin _$AllOptionalFields {
   bool get canMerge => true;

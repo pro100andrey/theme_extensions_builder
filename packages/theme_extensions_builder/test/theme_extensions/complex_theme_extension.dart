@@ -20,51 +20,65 @@ part 'complex_theme_extension.g.theme.dart';
 )
 @ThemeExtensions(
   buildContextExtension: false,
+  contextAccessorName: 'noContextTheme',
   constructor: '_internal',
 )
 final class ComplexThemeExtensionNoContext
     extends ThemeExtension<ComplexThemeExtensionNoContext>
     with _$ComplexThemeExtensionNoContext {
   const ComplexThemeExtensionNoContext._internal({
-    required this.requiredInt,
-    required this.requiredDouble,
-    required this.requiredString,
-    required this.requiredBool,
-    required this.requiredDuration,
-    required this.requiredColor,
-    required this.requiredBorderSide,
-    required this.requiredTheme,
+    required this.count,
+    required this.ratio,
+    required this.title,
+    required this.isEnabled,
+    required this.duration,
+    required this.color,
+    required this.borderSide,
+    required this.theme,
 
     // ignore: unused_element_parameter
-    this.ignoredField,
+    this.ignoredField = 'ignored',
   });
 
   factory ComplexThemeExtensionNoContext.defaults() =>
       const ComplexThemeExtensionNoContext._internal(
-        requiredInt: 0,
-        requiredDouble: 0,
-        requiredString: '',
-        requiredBool: false,
-        requiredDuration: Duration.zero,
-        requiredColor: Color(0x00000000),
-        requiredBorderSide: BorderSide.none,
-        requiredTheme: EmptyTheme(),
+        count: 0,
+        ratio: 0,
+        title: '',
+        isEnabled: false,
+        duration: Duration.zero,
+        color: Color(0x00000000),
+        borderSide: BorderSide.none,
+        theme: EmptyTheme(),
         ignoredField: 'defaults',
       );
 
+  factory ComplexThemeExtensionNoContext.primary() =>
+      const ComplexThemeExtensionNoContext._internal(
+        count: 1,
+        ratio: 1,
+        title: 'Primary',
+        isEnabled: true,
+        duration: Duration(seconds: 1),
+        color: Color(0xFF0000FF),
+        borderSide: BorderSide(width: 2),
+        theme: EmptyTheme(),
+        ignoredField: 'primary',
+      );
+
   // Required non-nullable fields
-  final int requiredInt;
-  final double requiredDouble;
-  final String requiredString;
-  final bool requiredBool;
-  final Duration requiredDuration;
-  final Color requiredColor;
-  final BorderSide requiredBorderSide;
-  final EmptyTheme requiredTheme;
+  final int count;
+  final double ratio;
+  final String title;
+  final bool isEnabled;
+  final Duration duration;
+  final Color color;
+  final BorderSide borderSide;
+  final EmptyTheme theme;
 
   // Ignored field - should not be in generated code
   @ignore
-  final String? ignoredField;
+  final String ignoredField;
 }
 
 /// Complex ThemeExtension with custom context accessor name

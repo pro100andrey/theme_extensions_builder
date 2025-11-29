@@ -1,0 +1,140 @@
+// dart format width=80
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, unused_element
+
+part of 'empty_theme.dart';
+
+// **************************************************************************
+// ThemeGenGenerator
+// **************************************************************************
+
+mixin _$EmptyThemeWithConstConstructor {
+  bool get canMerge => true;
+
+  static EmptyThemeWithConstConstructor? lerp(
+    EmptyThemeWithConstConstructor? a,
+    EmptyThemeWithConstConstructor? b,
+    double t,
+  ) {
+    if (identical(a, b)) {
+      return a;
+    }
+
+    if (a == null && b == null) {
+      return null;
+    }
+
+    if (a == null) {
+      return t == 1.0 ? b : null;
+    }
+
+    if (b == null) {
+      return t == 0.0 ? a : null;
+    }
+
+    return const EmptyThemeWithConstConstructor();
+  }
+
+  EmptyThemeWithConstConstructor copyWith() {
+    return const EmptyThemeWithConstConstructor();
+  }
+
+  EmptyThemeWithConstConstructor merge(EmptyThemeWithConstConstructor? other) {
+    final _this = (this as EmptyThemeWithConstConstructor);
+
+    if (other == null || identical(_this, other)) {
+      return _this;
+    }
+
+    if (!other.canMerge) {
+      return other;
+    }
+
+    return copyWith();
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    return runtimeType.hashCode;
+  }
+}
+
+mixin _$EmptyThemeWithoutConstConstructor {
+  bool get canMerge => true;
+
+  static EmptyThemeWithoutConstConstructor? lerp(
+    EmptyThemeWithoutConstConstructor? a,
+    EmptyThemeWithoutConstConstructor? b,
+    double t,
+  ) {
+    if (identical(a, b)) {
+      return a;
+    }
+
+    if (a == null && b == null) {
+      return null;
+    }
+
+    if (a == null) {
+      return t == 1.0 ? b : null;
+    }
+
+    if (b == null) {
+      return t == 0.0 ? a : null;
+    }
+
+    return EmptyThemeWithoutConstConstructor();
+  }
+
+  EmptyThemeWithoutConstConstructor copyWith() {
+    return EmptyThemeWithoutConstConstructor();
+  }
+
+  EmptyThemeWithoutConstConstructor merge(
+    EmptyThemeWithoutConstConstructor? other,
+  ) {
+    final _this = (this as EmptyThemeWithoutConstConstructor);
+
+    if (other == null || identical(_this, other)) {
+      return _this;
+    }
+
+    if (!other.canMerge) {
+      return other;
+    }
+
+    return copyWith();
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    return runtimeType.hashCode;
+  }
+}

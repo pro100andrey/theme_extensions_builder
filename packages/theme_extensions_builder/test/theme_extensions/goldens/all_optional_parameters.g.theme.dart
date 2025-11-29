@@ -9,6 +9,7 @@ mixin _$AllOptionalParametersExtension
     String? title,
     bool? isActive,
     Duration? duration,
+    InvalidType? theme,
   }) {
     final _this = (this as AllOptionalParametersExtension);
 
@@ -18,6 +19,7 @@ mixin _$AllOptionalParametersExtension
       title: title ?? _this.title,
       isActive: isActive ?? _this.isActive,
       duration: duration ?? _this.duration,
+      theme: theme ?? _this.theme,
     );
   }
 
@@ -38,6 +40,7 @@ mixin _$AllOptionalParametersExtension
       title: t < 0.5 ? _this.title : other.title,
       isActive: t < 0.5 ? _this.isActive : other.isActive,
       duration: lerpDuration$(_this.duration, other.duration, t),
+      theme: t < 0.5 ? _this.theme : other.theme,
     );
   }
 
@@ -58,7 +61,8 @@ mixin _$AllOptionalParametersExtension
         _other.ratio == _this.ratio &&
         _other.title == _this.title &&
         _other.isActive == _this.isActive &&
-        _other.duration == _this.duration;
+        _other.duration == _this.duration &&
+        _other.theme == _this.theme;
   }
 
   @override
@@ -72,6 +76,7 @@ mixin _$AllOptionalParametersExtension
       _this.title,
       _this.isActive,
       _this.duration,
+      _this.theme,
     );
   }
 }

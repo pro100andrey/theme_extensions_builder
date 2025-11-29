@@ -3,8 +3,8 @@ targets:
     builders:
       theme_extensions_builder:
         generate_for:
-          - test/lib/theme_gen/**.dart
-          - test/lib/theme_extensions/**.dart
+          - test/theme_gen/**.dart
+          - test/theme_extensions/**.dart
 
 builders:
   theme_extensions_builder:

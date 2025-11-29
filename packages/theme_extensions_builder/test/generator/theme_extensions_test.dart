@@ -11,9 +11,19 @@ Future<void> main() async {
     'empty_theme_extension.dart',
   );
 
+  final allOptionalParametersReader = await initializeLibraryReaderForDirectory(
+    'test/theme_extensions',
+    'all_optional_parameters.dart',
+  );
+
   group('ThemeExtensionsGenerator', () {
     testAnnotatedElements<ThemeExtensions>(
       emptyThemeReader,
+      ThemeExtensionsGenerator(),
+    );
+
+    testAnnotatedElements<ThemeExtensions>(
+      allOptionalParametersReader,
       ThemeExtensionsGenerator(),
     );
   });

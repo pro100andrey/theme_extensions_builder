@@ -68,33 +68,8 @@ class ThemeExtensionsCodeBuilder {
 ///
 /// Allows creating a copy of the theme extension with some fields replaced.
 Method copyWith(ThemeExtensionsConfig config) {
-  final body = BlockBuilder();
-  final fields = config.filteredFields;
   final classNameRef = config.className.ref;
-  final isEmpty = fields.isEmpty;
-
-  if (!isEmpty) {
-    body
-      ..addExpression(
-        declareFinal('_this'.ref.symbol).assign('this'.ref.asA(classNameRef)),
-      )
-      ..addEmptyLine();
-  }
-
-  body.addExpression(
-    _buildConstructorCall(
-      config,
-      args: isEmpty
-          ? {}
-          : {
-              for (final field in fields)
-                field.name: field.name.ref.ifNullThen(
-                  '_this'.ref.property(field.name),
-                ),
-            },
-    ).returned,
-  );
-
+  final fields = config.filteredFields;
   return Method((m) {
     m
       ..name = 'copyWith'
@@ -110,7 +85,37 @@ Method copyWith(ThemeExtensionsConfig config) {
           ),
         ),
       )
-      ..body = body.build();
+      ..body = Block((b) {
+        if (fields.isNotEmpty) {
+          b
+            ..addExpression(
+              declareFinal(
+                '_this'.ref.symbol,
+              ).assign('this'.ref.asA(classNameRef)),
+            )
+            ..addEmptyLine();
+        }
+
+        final args = <String, Expression>{};
+        for (final field in fields) {
+          args[field.name] = field.name.ref.ifNullThen(
+            '_this'.ref.property(field.name),
+          );
+        }
+
+        b.addExpression(
+          (fields.isEmpty && config.constConstructor
+                  ? InvokeExpression.constOf
+                  : InvokeExpression.newOf)(
+                config.className.ref,
+                [],
+                args,
+                [],
+                config.constructor,
+              )
+              .returned,
+        );
+      });
   });
 }
 

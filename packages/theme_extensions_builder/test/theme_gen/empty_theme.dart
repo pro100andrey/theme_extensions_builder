@@ -21,3 +21,23 @@ final class EmptyTheme with _$EmptyTheme {
     double t,
   ) => _$EmptyTheme.lerp(a, b, t);
 }
+
+/// Empty Theme - testing edge case with no fields
+/// (non-const constructor)
+@ShouldGenerateFile(
+  'goldens/empty_theme_non_const.g.theme.dart',
+  partOfCurrent: true,
+)
+@themeGen
+final class EmptyThemeNonConst with _$EmptyThemeNonConst {
+  const EmptyThemeNonConst();
+
+  @override
+  bool get canMerge => true;
+
+  static EmptyThemeNonConst? lerp(
+    EmptyThemeNonConst? a,
+    EmptyThemeNonConst? b,
+    double t,
+  ) => _$EmptyThemeNonConst.lerp(a, b, t);
+}

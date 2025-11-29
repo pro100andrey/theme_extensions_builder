@@ -15,7 +15,7 @@ part 'complex_theme_extension.g.theme.dart';
 /// - Disabled BuildContext extension
 /// - Custom context accessor name
 @ShouldGenerateFile(
-  'goldens/complex_theme_extension.g.theme.dart',
+  'goldens/complex_theme_extension_no_context.g.theme.dart',
   partOfCurrent: true,
 )
 @ThemeExtensions(
@@ -34,18 +34,23 @@ final class ComplexThemeExtensionNoContext
     required this.requiredColor,
     required this.requiredBorderSide,
     required this.requiredTheme,
-    required this.optionalInt,
-    required this.optionalDouble,
-    required this.optionalString,
-    required this.optionalBool,
-    required this.optionalDuration,
-    required this.optionalColor,
-    required this.optionalBorderSide,
-    required this.optionalTheme,
 
     // ignore: unused_element_parameter
     this.ignoredField,
   });
+
+  factory ComplexThemeExtensionNoContext.defaults() =>
+      const ComplexThemeExtensionNoContext._internal(
+        requiredInt: 0,
+        requiredDouble: 0,
+        requiredString: '',
+        requiredBool: false,
+        requiredDuration: Duration.zero,
+        requiredColor: Color(0x00000000),
+        requiredBorderSide: BorderSide.none,
+        requiredTheme: EmptyTheme(),
+        ignoredField: 'defaults',
+      );
 
   // Required non-nullable fields
   final int requiredInt;
@@ -56,16 +61,6 @@ final class ComplexThemeExtensionNoContext
   final Color requiredColor;
   final BorderSide requiredBorderSide;
   final EmptyTheme requiredTheme;
-
-  // Optional nullable fields
-  final int? optionalInt;
-  final double? optionalDouble;
-  final String? optionalString;
-  final bool? optionalBool;
-  final Duration? optionalDuration;
-  final Color? optionalColor;
-  final BorderSide? optionalBorderSide;
-  final EmptyTheme? optionalTheme;
 
   // Ignored field - should not be in generated code
   @ignore
@@ -94,32 +89,54 @@ final class ComplexThemeExtensionCustomAccessor
   final double spacing;
 }
 
-/// ThemeExtension with mixed required and optional fields
+/// ThemeExtension with required and optional fields
 @ShouldGenerateFile(
-  'goldens/complex_theme_extension_mixed.g.theme.dart',
+  'goldens/complex_theme_extension.g.theme.dart',
   partOfCurrent: true,
 )
 @themeExtensions
-final class ComplexThemeExtensionMixed
-    extends ThemeExtension<ComplexThemeExtensionMixed>
-    with _$ComplexThemeExtensionMixed {
-  const ComplexThemeExtensionMixed({
-    required this.title,
-    required this.count,
-    required this.ratio,
-    required this.isActive,
-    required this.duration,
-    required this.theme,
+final class ComplexThemeExtension extends ThemeExtension<ComplexThemeExtension>
+    with _$ComplexThemeExtension {
+  const ComplexThemeExtension({
+    required this.requiredInt,
+    required this.requiredDouble,
+    required this.requiredString,
+    required this.requiredBool,
+    required this.requiredDuration,
+    required this.requiredColor,
+    required this.requiredBorderSide,
+    required this.requiredTheme,
+    required this.optionalInt,
+    required this.optionalString,
+    required this.optionalDouble,
+    required this.optionalBool,
+    required this.optionalDuration,
+    required this.optionalColor,
+    required this.optionalBorderSide,
+    required this.optionalTheme,
     // ignore: unused_element_parameter
     this.computedValue = 'computed',
   });
 
-  final String title;
-  final int? count;
-  final double ratio;
-  final bool? isActive;
-  final Duration duration;
-  final EmptyTheme? theme;
+  // Required non-nullable fields
+  final int requiredInt;
+  final double requiredDouble;
+  final String requiredString;
+  final bool requiredBool;
+  final Duration requiredDuration;
+  final Color requiredColor;
+  final BorderSide requiredBorderSide;
+  final EmptyTheme requiredTheme;
+
+  // Optional nullable fields
+  final int? optionalInt;
+  final double? optionalDouble;
+  final String? optionalString;
+  final bool? optionalBool;
+  final Duration? optionalDuration;
+  final Color? optionalColor;
+  final BorderSide? optionalBorderSide;
+  final EmptyTheme? optionalTheme;
 
   @ignore
   final String computedValue;

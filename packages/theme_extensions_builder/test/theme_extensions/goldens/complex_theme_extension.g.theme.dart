@@ -1,9 +1,8 @@
 part of '../complex_theme_extension.dart';
 
-mixin _$ComplexThemeExtensionNoContext
-    on ThemeExtension<ComplexThemeExtensionNoContext> {
+mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
   @override
-  ThemeExtension<ComplexThemeExtensionNoContext> copyWith({
+  ThemeExtension<ComplexThemeExtension> copyWith({
     int? requiredInt,
     double? requiredDouble,
     String? requiredString,
@@ -21,9 +20,9 @@ mixin _$ComplexThemeExtensionNoContext
     BorderSide? optionalBorderSide,
     InvalidType? optionalTheme,
   }) {
-    final _this = (this as ComplexThemeExtensionNoContext);
+    final _this = (this as ComplexThemeExtension);
 
-    return ComplexThemeExtensionNoContext._internal(
+    return ComplexThemeExtension(
       requiredInt: requiredInt ?? _this.requiredInt,
       requiredDouble: requiredDouble ?? _this.requiredDouble,
       requiredString: requiredString ?? _this.requiredString,
@@ -44,17 +43,17 @@ mixin _$ComplexThemeExtensionNoContext
   }
 
   @override
-  ThemeExtension<ComplexThemeExtensionNoContext> lerp(
-    ThemeExtension<ComplexThemeExtensionNoContext>? other,
+  ThemeExtension<ComplexThemeExtension> lerp(
+    ThemeExtension<ComplexThemeExtension>? other,
     double t,
   ) {
-    if (other is! ComplexThemeExtensionNoContext) {
+    if (other is! ComplexThemeExtension) {
       return this;
     }
 
-    final _this = (this as ComplexThemeExtensionNoContext);
+    final _this = (this as ComplexThemeExtension);
 
-    return ComplexThemeExtensionNoContext._internal(
+    return ComplexThemeExtension(
       requiredInt: t < 0.5 ? _this.requiredInt : other.requiredInt,
       requiredDouble: lerpDouble$(
         _this.requiredDouble,
@@ -111,8 +110,8 @@ mixin _$ComplexThemeExtensionNoContext
       return false;
     }
 
-    final _this = (this as ComplexThemeExtensionNoContext);
-    final _other = (other as ComplexThemeExtensionNoContext);
+    final _this = (this as ComplexThemeExtension);
+    final _other = (other as ComplexThemeExtension);
 
     return _other.requiredInt == _this.requiredInt &&
         _other.requiredDouble == _this.requiredDouble &&
@@ -134,7 +133,7 @@ mixin _$ComplexThemeExtensionNoContext
 
   @override
   int get hashCode {
-    final _this = (this as ComplexThemeExtensionNoContext);
+    final _this = (this as ComplexThemeExtension);
 
     return Object.hash(
       runtimeType,
@@ -156,4 +155,9 @@ mixin _$ComplexThemeExtensionNoContext
       _this.optionalTheme,
     );
   }
+}
+
+extension ComplexThemeExtensionBuildContext on BuildContext {
+  ComplexThemeExtension get complexTheme =>
+      Theme.of(this).extension<ComplexThemeExtension>()!;
 }

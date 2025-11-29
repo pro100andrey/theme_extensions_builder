@@ -21,14 +21,6 @@ mixin _$ComplexThemeExtensionNoContext
     Color? requiredColor,
     BorderSide? requiredBorderSide,
     EmptyTheme? requiredTheme,
-    int? optionalInt,
-    double? optionalDouble,
-    String? optionalString,
-    bool? optionalBool,
-    Duration? optionalDuration,
-    Color? optionalColor,
-    BorderSide? optionalBorderSide,
-    EmptyTheme? optionalTheme,
   }) {
     final _this = (this as ComplexThemeExtensionNoContext);
 
@@ -41,14 +33,6 @@ mixin _$ComplexThemeExtensionNoContext
       requiredColor: requiredColor ?? _this.requiredColor,
       requiredBorderSide: requiredBorderSide ?? _this.requiredBorderSide,
       requiredTheme: requiredTheme ?? _this.requiredTheme,
-      optionalInt: optionalInt ?? _this.optionalInt,
-      optionalDouble: optionalDouble ?? _this.optionalDouble,
-      optionalString: optionalString ?? _this.optionalString,
-      optionalBool: optionalBool ?? _this.optionalBool,
-      optionalDuration: optionalDuration ?? _this.optionalDuration,
-      optionalColor: optionalColor ?? _this.optionalColor,
-      optionalBorderSide: optionalBorderSide ?? _this.optionalBorderSide,
-      optionalTheme: optionalTheme ?? _this.optionalTheme,
     );
   }
 
@@ -88,33 +72,6 @@ mixin _$ComplexThemeExtensionNoContext
         other.requiredTheme,
         t,
       )!,
-      optionalInt: t < 0.5 ? _this.optionalInt : other.optionalInt,
-      optionalDouble: lerpDouble$(
-        _this.optionalDouble,
-        other.optionalDouble,
-        t,
-      ),
-      optionalString: t < 0.5 ? _this.optionalString : other.optionalString,
-      optionalBool: t < 0.5 ? _this.optionalBool : other.optionalBool,
-      optionalDuration: lerpDuration$(
-        _this.optionalDuration,
-        other.optionalDuration,
-        t,
-      ),
-      optionalColor: Color.lerp(_this.optionalColor, other.optionalColor, t),
-      optionalBorderSide:
-          _this.optionalBorderSide == null || other.optionalBorderSide == null
-          ? null
-          : BorderSide.lerp(
-              _this.optionalBorderSide!,
-              other.optionalBorderSide!,
-              t,
-            ),
-      optionalTheme: EmptyTheme.lerp(
-        _this.optionalTheme,
-        other.optionalTheme,
-        t,
-      ),
     );
   }
 
@@ -138,15 +95,7 @@ mixin _$ComplexThemeExtensionNoContext
         _other.requiredDuration == _this.requiredDuration &&
         _other.requiredColor == _this.requiredColor &&
         _other.requiredBorderSide == _this.requiredBorderSide &&
-        _other.requiredTheme == _this.requiredTheme &&
-        _other.optionalInt == _this.optionalInt &&
-        _other.optionalDouble == _this.optionalDouble &&
-        _other.optionalString == _this.optionalString &&
-        _other.optionalBool == _this.optionalBool &&
-        _other.optionalDuration == _this.optionalDuration &&
-        _other.optionalColor == _this.optionalColor &&
-        _other.optionalBorderSide == _this.optionalBorderSide &&
-        _other.optionalTheme == _this.optionalTheme;
+        _other.requiredTheme == _this.requiredTheme;
   }
 
   @override
@@ -163,14 +112,6 @@ mixin _$ComplexThemeExtensionNoContext
       _this.requiredColor,
       _this.requiredBorderSide,
       _this.requiredTheme,
-      _this.optionalInt,
-      _this.optionalDouble,
-      _this.optionalString,
-      _this.optionalBool,
-      _this.optionalDuration,
-      _this.optionalColor,
-      _this.optionalBorderSide,
-      _this.optionalTheme,
     );
   }
 }
@@ -246,47 +187,111 @@ extension ComplexThemeExtensionCustomAccessorBuildContext on BuildContext {
       Theme.of(this).extension<ComplexThemeExtensionCustomAccessor>()!;
 }
 
-mixin _$ComplexThemeExtensionMixed
-    on ThemeExtension<ComplexThemeExtensionMixed> {
+mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
   @override
-  ThemeExtension<ComplexThemeExtensionMixed> copyWith({
-    String? title,
-    int? count,
-    double? ratio,
-    bool? isActive,
-    Duration? duration,
-    EmptyTheme? theme,
+  ThemeExtension<ComplexThemeExtension> copyWith({
+    int? requiredInt,
+    double? requiredDouble,
+    String? requiredString,
+    bool? requiredBool,
+    Duration? requiredDuration,
+    Color? requiredColor,
+    BorderSide? requiredBorderSide,
+    EmptyTheme? requiredTheme,
+    int? optionalInt,
+    double? optionalDouble,
+    String? optionalString,
+    bool? optionalBool,
+    Duration? optionalDuration,
+    Color? optionalColor,
+    BorderSide? optionalBorderSide,
+    EmptyTheme? optionalTheme,
   }) {
-    final _this = (this as ComplexThemeExtensionMixed);
+    final _this = (this as ComplexThemeExtension);
 
-    return ComplexThemeExtensionMixed(
-      title: title ?? _this.title,
-      count: count ?? _this.count,
-      ratio: ratio ?? _this.ratio,
-      isActive: isActive ?? _this.isActive,
-      duration: duration ?? _this.duration,
-      theme: theme ?? _this.theme,
+    return ComplexThemeExtension(
+      requiredInt: requiredInt ?? _this.requiredInt,
+      requiredDouble: requiredDouble ?? _this.requiredDouble,
+      requiredString: requiredString ?? _this.requiredString,
+      requiredBool: requiredBool ?? _this.requiredBool,
+      requiredDuration: requiredDuration ?? _this.requiredDuration,
+      requiredColor: requiredColor ?? _this.requiredColor,
+      requiredBorderSide: requiredBorderSide ?? _this.requiredBorderSide,
+      requiredTheme: requiredTheme ?? _this.requiredTheme,
+      optionalInt: optionalInt ?? _this.optionalInt,
+      optionalDouble: optionalDouble ?? _this.optionalDouble,
+      optionalString: optionalString ?? _this.optionalString,
+      optionalBool: optionalBool ?? _this.optionalBool,
+      optionalDuration: optionalDuration ?? _this.optionalDuration,
+      optionalColor: optionalColor ?? _this.optionalColor,
+      optionalBorderSide: optionalBorderSide ?? _this.optionalBorderSide,
+      optionalTheme: optionalTheme ?? _this.optionalTheme,
     );
   }
 
   @override
-  ThemeExtension<ComplexThemeExtensionMixed> lerp(
-    ThemeExtension<ComplexThemeExtensionMixed>? other,
+  ThemeExtension<ComplexThemeExtension> lerp(
+    ThemeExtension<ComplexThemeExtension>? other,
     double t,
   ) {
-    if (other is! ComplexThemeExtensionMixed) {
+    if (other is! ComplexThemeExtension) {
       return this;
     }
 
-    final _this = (this as ComplexThemeExtensionMixed);
+    final _this = (this as ComplexThemeExtension);
 
-    return ComplexThemeExtensionMixed(
-      title: t < 0.5 ? _this.title : other.title,
-      count: t < 0.5 ? _this.count : other.count,
-      ratio: lerpDouble$(_this.ratio, other.ratio, t)!,
-      isActive: t < 0.5 ? _this.isActive : other.isActive,
-      duration: lerpDuration$(_this.duration, other.duration, t)!,
-      theme: EmptyTheme.lerp(_this.theme, other.theme, t),
+    return ComplexThemeExtension(
+      requiredInt: t < 0.5 ? _this.requiredInt : other.requiredInt,
+      requiredDouble: lerpDouble$(
+        _this.requiredDouble,
+        other.requiredDouble,
+        t,
+      )!,
+      requiredString: t < 0.5 ? _this.requiredString : other.requiredString,
+      requiredBool: t < 0.5 ? _this.requiredBool : other.requiredBool,
+      requiredDuration: lerpDuration$(
+        _this.requiredDuration,
+        other.requiredDuration,
+        t,
+      )!,
+      requiredColor: Color.lerp(_this.requiredColor, other.requiredColor, t)!,
+      requiredBorderSide: BorderSide.lerp(
+        _this.requiredBorderSide,
+        other.requiredBorderSide,
+        t,
+      ),
+      requiredTheme: EmptyTheme.lerp(
+        _this.requiredTheme,
+        other.requiredTheme,
+        t,
+      )!,
+      optionalInt: t < 0.5 ? _this.optionalInt : other.optionalInt,
+      optionalDouble: lerpDouble$(
+        _this.optionalDouble,
+        other.optionalDouble,
+        t,
+      ),
+      optionalString: t < 0.5 ? _this.optionalString : other.optionalString,
+      optionalBool: t < 0.5 ? _this.optionalBool : other.optionalBool,
+      optionalDuration: lerpDuration$(
+        _this.optionalDuration,
+        other.optionalDuration,
+        t,
+      ),
+      optionalColor: Color.lerp(_this.optionalColor, other.optionalColor, t),
+      optionalBorderSide:
+          _this.optionalBorderSide == null || other.optionalBorderSide == null
+          ? null
+          : BorderSide.lerp(
+              _this.optionalBorderSide!,
+              other.optionalBorderSide!,
+              t,
+            ),
+      optionalTheme: EmptyTheme.lerp(
+        _this.optionalTheme,
+        other.optionalTheme,
+        t,
+      ),
     );
   }
 
@@ -300,34 +305,54 @@ mixin _$ComplexThemeExtensionMixed
       return false;
     }
 
-    final _this = (this as ComplexThemeExtensionMixed);
-    final _other = (other as ComplexThemeExtensionMixed);
+    final _this = (this as ComplexThemeExtension);
+    final _other = (other as ComplexThemeExtension);
 
-    return _other.title == _this.title &&
-        _other.count == _this.count &&
-        _other.ratio == _this.ratio &&
-        _other.isActive == _this.isActive &&
-        _other.duration == _this.duration &&
-        _other.theme == _this.theme;
+    return _other.requiredInt == _this.requiredInt &&
+        _other.requiredDouble == _this.requiredDouble &&
+        _other.requiredString == _this.requiredString &&
+        _other.requiredBool == _this.requiredBool &&
+        _other.requiredDuration == _this.requiredDuration &&
+        _other.requiredColor == _this.requiredColor &&
+        _other.requiredBorderSide == _this.requiredBorderSide &&
+        _other.requiredTheme == _this.requiredTheme &&
+        _other.optionalInt == _this.optionalInt &&
+        _other.optionalDouble == _this.optionalDouble &&
+        _other.optionalString == _this.optionalString &&
+        _other.optionalBool == _this.optionalBool &&
+        _other.optionalDuration == _this.optionalDuration &&
+        _other.optionalColor == _this.optionalColor &&
+        _other.optionalBorderSide == _this.optionalBorderSide &&
+        _other.optionalTheme == _this.optionalTheme;
   }
 
   @override
   int get hashCode {
-    final _this = (this as ComplexThemeExtensionMixed);
+    final _this = (this as ComplexThemeExtension);
 
     return Object.hash(
       runtimeType,
-      _this.title,
-      _this.count,
-      _this.ratio,
-      _this.isActive,
-      _this.duration,
-      _this.theme,
+      _this.requiredInt,
+      _this.requiredDouble,
+      _this.requiredString,
+      _this.requiredBool,
+      _this.requiredDuration,
+      _this.requiredColor,
+      _this.requiredBorderSide,
+      _this.requiredTheme,
+      _this.optionalInt,
+      _this.optionalDouble,
+      _this.optionalString,
+      _this.optionalBool,
+      _this.optionalDuration,
+      _this.optionalColor,
+      _this.optionalBorderSide,
+      _this.optionalTheme,
     );
   }
 }
 
-extension ComplexThemeExtensionMixedBuildContext on BuildContext {
-  ComplexThemeExtensionMixed get complexThemeExtensionMixed =>
-      Theme.of(this).extension<ComplexThemeExtensionMixed>()!;
+extension ComplexThemeExtensionBuildContext on BuildContext {
+  ComplexThemeExtension get complexTheme =>
+      Theme.of(this).extension<ComplexThemeExtension>()!;
 }

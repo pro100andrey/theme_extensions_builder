@@ -15,3 +15,16 @@ final class EmptyThemeExtension extends ThemeExtension<EmptyThemeExtension>
     with _$EmptyThemeExtension {
   const EmptyThemeExtension();
 }
+
+/// Empty ThemeExtension - testing edge case with no fields
+/// (non-const constructor)
+@ShouldGenerateFile(
+  'goldens/empty_theme_extension_non_const.g.theme.dart',
+  partOfCurrent: true,
+)
+@themeExtensions
+final class EmptyThemeExtensionNonConst
+    extends ThemeExtension<EmptyThemeExtensionNonConst>
+    with _$EmptyThemeExtensionNonConst {
+  EmptyThemeExtensionNonConst();
+}

@@ -67,57 +67,55 @@ class ThemeExtensionsCodeBuilder {
 /// Generates the `copyWith` method for the theme extension.
 ///
 /// Allows creating a copy of the theme extension with some fields replaced.
-Method copyWith(ThemeExtensionsConfig config) {
-  final classNameRef = config.className.ref;
+Method copyWith(ThemeExtensionsConfig config) => Method((m) {
   final fields = config.filteredFields;
-  return Method((m) {
-    m
-      ..name = 'copyWith'
-      ..annotations.add('override'.ref)
-      ..returns = _buildThemeExtensionRef(config)
-      ..optionalParameters.addAll(
-        fields.map(
-          (field) => Parameter(
-            (p) => p
-              ..name = field.name
-              ..named = true
-              ..type = field.baseType.typeRef(optional: true),
-          ),
+  
+  m
+    ..name = 'copyWith'
+    ..annotations.add('override'.ref)
+    ..returns = _buildThemeExtensionRef(config)
+    ..optionalParameters.addAll(
+      fields.map(
+        (field) => Parameter(
+          (p) => p
+            ..name = field.name
+            ..named = true
+            ..type = field.baseType.typeRef(optional: true),
         ),
-      )
-      ..body = Block((b) {
-        if (fields.isNotEmpty) {
-          b
-            ..addExpression(
-              declareFinal(
-                '_this'.ref.symbol,
-              ).assign('this'.ref.asA(classNameRef)),
-            )
-            ..addEmptyLine();
-        }
+      ),
+    )
+    ..body = Block((b) {
+      if (fields.isNotEmpty) {
+        b
+          ..addExpression(
+            declareFinal(
+              '_this'.ref.symbol,
+            ).assign('this'.ref.asA(config.className.ref)),
+          )
+          ..addEmptyLine();
+      }
 
-        final args = <String, Expression>{};
-        for (final field in fields) {
-          args[field.name] = field.name.ref.ifNullThen(
-            '_this'.ref.property(field.name),
-          );
-        }
-
-        b.addExpression(
-          (fields.isEmpty && config.constConstructor
-                  ? InvokeExpression.constOf
-                  : InvokeExpression.newOf)(
-                config.className.ref,
-                [],
-                args,
-                [],
-                config.constructor,
-              )
-              .returned,
+      final args = <String, Expression>{};
+      for (final field in fields) {
+        args[field.name] = field.name.ref.ifNullThen(
+          '_this'.ref.property(field.name),
         );
-      });
-  });
-}
+      }
+
+      b.addExpression(
+        (fields.isEmpty && config.constConstructor
+                ? InvokeExpression.constOf
+                : InvokeExpression.newOf)(
+              config.className.ref,
+              [],
+              args,
+              [],
+              config.constructor,
+            )
+            .returned,
+      );
+    });
+});
 
 /// Generates the `lerp` (linear interpolation) method for the theme extension.
 ///

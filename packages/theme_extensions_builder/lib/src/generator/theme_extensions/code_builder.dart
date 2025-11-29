@@ -19,23 +19,20 @@ class ThemeExtensionsCodeBuilder {
   /// - optional BuildContext extension if `config.buildContextExtension` is
   /// true.
   String generate(ThemeExtensionsConfig config) {
-    final themeExtensionRef = TypeReference(
-      (t) => t
-        ..symbol = 'ThemeExtension'
-        ..types.add(config.className.ref),
-    );
-
     final mix = Mixin((m) {
       m
         ..name = config.themeExtensionMixinName
-        ..on = themeExtensionRef;
-
-      m.methods.addAll([
-        copyWith(config),
-        instanceLerpMethod(config),
-        equalOperator(config),
-        hashMethod(config),
-      ]);
+        ..on = TypeReference(
+          (t) => t
+            ..symbol = 'ThemeExtension'
+            ..types.add(config.className.ref),
+        )
+        ..methods.addAll([
+          copyWith(config),
+          instanceLerpMethod(config),
+          equalOperator(config),
+          hashMethod(config),
+        ]);
     });
 
     final emitter = DartEmitter(

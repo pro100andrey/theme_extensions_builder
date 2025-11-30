@@ -1,15 +1,33 @@
-/// Utility methods for the theme extensions builder.
+/// Utility functions for theme interpolation.
+///
+/// This library provides interpolation (lerp) functions used by the generated
+/// theme code to smoothly transition between theme values during animations.
 library;
 
 // ignore_for_file: parameter_assignments
 
-/// Linearly interpolate between two numbers, `a` and `b`, by an extrapolation
-/// factor `t`.
+/// Linearly interpolates between two numbers.
 ///
-/// When `a` and `b` are equal or both NaN, `a` is returned.  Otherwise,
-/// `a`, `b`, and `t` are required to be finite or null, and the result of `a +
-/// (b - a) * t` is returned, where nulls are defaulted to 0.0.
-
+/// Performs linear interpolation from [a] to [b] using the interpolation
+/// factor [t]. The [t] value typically ranges from 0.0 (returns [a]) to 1.0
+/// (returns [b]), but can be outside this range for extrapolation.
+///
+/// Special cases:
+/// - If [a] and [b] are equal or both NaN, returns [a]
+/// - Null values are treated as 0.0
+/// - All values must be finite (asserts in debug mode)
+///
+/// Formula: `a * (1 - t) + b * t`
+///
+/// Example:
+/// ```dart
+/// lerpDouble$(10.0, 20.0, 0.5) // 15.0
+/// lerpDouble$(null, 100.0, 0.25) // 25.0
+/// lerpDouble$(50.0, 50.0, 0.7) // 50.0
+/// ```
+///
+/// Throws [AssertionError] in debug mode if any value is infinite or if [t]
+/// is not finite.
 double? lerpDouble$(num? a, num? b, double t) {
   if (a == b || (a?.isNaN ?? false) && (b?.isNaN ?? false)) {
     return a?.toDouble();
@@ -25,11 +43,36 @@ double? lerpDouble$(num? a, num? b, double t) {
   return a * (1.0 - t) + b * t;
 }
 
-/// Linearly interpolate between two Durations, `a` and `b`, by an extrapolation
-/// factor `t`.
-/// When `a` and `b` are equal, `a` is returned.  Otherwise, `a`, `b`, and `t`
-/// are required to be finite or null, and the result of `a + (b - a) * t` is
-/// returned, where nulls are defaulted to Duration.zero.
+/// Linearly interpolates between two durations.
+///
+/// Performs linear interpolation from [a] to [b] using the interpolation
+/// factor [t]. The [t] value typically ranges from 0.0 (returns [a]) to 1.0
+/// (returns [b]), but can be outside this range for extrapolation.
+///
+/// Special cases:
+/// - If [a] and [b] are equal, returns [a]
+/// - Null values are treated as [Duration.zero]
+/// - The [t] value must be finite (asserts in debug mode)
+///
+/// The interpolation is performed at microsecond precision and the result
+/// is rounded to the nearest microsecond.
+///
+/// Example:
+/// ```dart
+/// lerpDuration$(
+///   Duration(seconds: 1),
+///   Duration(seconds: 3),
+///   0.5,
+/// ) // Duration(seconds: 2)
+///
+/// lerpDuration$(
+///   null,
+///   Duration(milliseconds: 500),
+///   0.25,
+/// ) // Duration(milliseconds: 125)
+/// ```
+///
+/// Throws [AssertionError] in debug mode if [t] is not finite.
 Duration? lerpDuration$(Duration? a, Duration? b, double t) {
   if (a == b) {
     return a;

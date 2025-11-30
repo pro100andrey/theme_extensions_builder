@@ -95,7 +95,7 @@ Method copyWith(ThemeExtensionsConfig config) => Method((m) {
       final args = <String, Expression>{};
       for (final field in fields) {
         args[field.name] = field.name.ref.ifNullThen(
-          '_this'.ref.property(field.name),
+          '_this'.ref.prop(field.name),
         );
       }
 
@@ -128,9 +128,9 @@ Method lerpMethod(ThemeExtensionsConfig config) {
 
   body
     ..statements.add(
-      ifCode(
+      ifStatement(
         'other'.ref.isNotA(config.className.ref),
-        thenBody: ['this'.ref.returned],
+        Block((b) => b.addExpression('this'.ref.returned)),
       ),
     )
     ..addEmptyLine();
@@ -185,7 +185,7 @@ Method lerpMethod(ThemeExtensionsConfig config) {
             // Lerp class with instance lerp method
             case FieldSymbol(lerp: InstanceLerpMethod()):
               final expression = '_this'.ref
-                  .property(field.name)
+                  .prop(field.name)
                   .prop('lerp')
                   .withNullSafety(field.optional)
                   .call(['other'.ref.prop(field.name), 't'.ref])
@@ -195,9 +195,9 @@ Method lerpMethod(ThemeExtensionsConfig config) {
 
             // When the field is of type double
             case FieldSymbol(isDouble: true):
-              final expression = r'lerpDouble$'.ref.call([
-                '_this'.ref.property(field.name),
-                'other'.ref.property(field.name),
+              final expression = r'lerpDouble$'.ref([
+                '_this'.ref.prop(field.name),
+                'other'.ref.prop(field.name),
                 't'.ref,
               ]);
 
@@ -207,9 +207,9 @@ Method lerpMethod(ThemeExtensionsConfig config) {
 
             // When the field is of type Duration
             case FieldSymbol(isDuration: true):
-              final expression = r'lerpDuration$'.ref.call([
-                '_this'.ref.property(field.name),
-                'other'.ref.property(field.name),
+              final expression = r'lerpDuration$'.ref([
+                '_this'.ref.prop(field.name),
+                'other'.ref.prop(field.name),
                 't'.ref,
               ]);
 
@@ -222,8 +222,8 @@ Method lerpMethod(ThemeExtensionsConfig config) {
               args[field.name] = 't'.ref
                   .lessThan(literalNum(0.5))
                   .conditional(
-                    '_this'.ref.property(field.name),
-                    'other'.ref.property(field.name),
+                    '_this'.ref.prop(field.name),
+                    'other'.ref.prop(field.name),
                   );
           }
         }
@@ -311,10 +311,8 @@ Extension contextExtension(ThemeExtensionsConfig config) {
             ..name = config.contextAccessorName ?? config.className.camelCase
             ..returns = config.className.ref
             ..body = 'Theme'.ref
-                .property('of')
-                .call(['this'.ref])
-                .property('extension')
-                .call([], {}, [config.className.ref])
+                .prop('of')(['this'.ref])
+                .prop('extension')([], {}, [config.className.ref])
                 .nullChecked
                 .code;
         }),

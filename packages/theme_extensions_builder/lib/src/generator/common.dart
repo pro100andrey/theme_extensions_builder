@@ -26,16 +26,16 @@ Method equalOperator(BaseConfig config) => Method((m) {
     ..body = Block((b) {
       b
         ..statements.add(
-          ifCode(
+          ifStatement(
             'identical'.ref(['this'.ref, 'other'.ref]),
-            thenBody: [literalTrue.returned],
+            Block((b) => b.addExpression(literalTrue.returned)),
           ),
         )
         ..addEmptyLine()
         ..statements.add(
-          ifCode(
+          ifStatement(
             'other'.ref.prop('runtimeType').notEqualTo('runtimeType'.ref),
-            thenBody: [literalFalse.returned],
+            Block((b) => b.addExpression(literalFalse.returned)),
           ),
         )
         ..addEmptyLine();
@@ -122,34 +122,20 @@ Method hashMethod(BaseConfig config) => Method((m) {
 
 /// Generates an if-else code block.
 /// [condition] The condition for the if statement.
-/// [thenBody] The list of code statements to execute if the condition is true.
-/// [elseBody] (Optional) The list of code statements to execute if the
-/// condition is false.
-Code ifCode(
-  Expression condition, {
-  required List<Expression> thenBody,
-  List<Expression>? elseBody,
-}) {
-  final buf = StringBuffer();
-  final conditionStr = condition.accept(DartEmitter());
+/// [ifBlock] The code to execute if the condition is true.
+/// [elseBlock] (Optional) The code to execute if the condition is false.
 
-  buf.writeln('if ($conditionStr) {');
+Code ifStatement(Expression condition, Block ifBlock, [Block? elseBlock]) {
+  final visiter = DartEmitter();
+  final conditionV = condition.accept(visiter);
+  final ifBlockV = ifBlock.accept(visiter);
+  final elseBlockV = elseBlock?.accept(visiter);
 
-  for (final c in thenBody) {
-    buf.writeln('  ${c.statement.accept(DartEmitter())}');
-  }
+  final ifElse =
+      'if($conditionV){$ifBlockV}'
+      '${elseBlockV != null ? 'else {$elseBlockV}' : ''}';
 
-  buf.write('}');
-
-  if (elseBody != null && elseBody.isNotEmpty) {
-    buf.writeln(' else {');
-    for (final c in elseBody) {
-      buf.writeln('  ${c.statement.accept(DartEmitter())}');
-    }
-    buf.write('}');
-  }
-
-  return Code(buf.toString());
+  return Code(ifElse);
 }
 
 /// A wrapper around [Reference] to provide additional utility methods.

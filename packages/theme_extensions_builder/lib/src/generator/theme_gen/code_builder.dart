@@ -133,19 +133,19 @@ Method merge(ThemeGenConfig config) => Method((m) {
         ..addEmptyLine()
         // Return `_this` if other is null or identical to `_this`
         ..statements.add(
-          ifCode(
+          ifStatement(
             'other'.ref
                 .equalTo(literalNull)
                 .or('identical'.ref(['_this'.ref, 'other'.ref])),
-            thenBody: ['_this'.ref.returned],
+            Block((b) => b.addExpression('_this'.ref.returned)),
           ),
         )
         ..addEmptyLine()
         // Return `other` if it cannot be merged
         ..statements.add(
-          ifCode(
+          ifStatement(
             'other'.ref.negate().prop('canMerge'),
-            thenBody: ['other'.ref.returned],
+            Block((b) => b.addExpression('other'.ref.returned)),
           ),
         )
         ..addEmptyLine();
@@ -212,22 +212,20 @@ Method merge(ThemeGenConfig config) => Method((m) {
 /// Supports fields with custom static or instance `lerp` methods, as well as
 /// `double` and `Duration` fields.
 Method staticLerp(ThemeGenConfig config) => Method((m) {
-  final classType = config.className.typeRef(optional: true);
-
   m
     ..name = 'lerp'
     ..static = true
-    ..returns = classType
+    ..returns = config.className.typeRef(optional: true)
     ..requiredParameters.addAll([
       Parameter(
         (p) => p
           ..name = 'a'.ref.symbol
-          ..type = classType,
+          ..type = config.className.typeRef(optional: true),
       ),
       Parameter(
         (p) => p
           ..name = 'b'.ref.symbol
-          ..type = classType,
+          ..type = config.className.typeRef(optional: true),
       ),
       Parameter(
         (p) => p
@@ -241,37 +239,39 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
       b
         // If a and b are identical, return a
         ..statements.add(
-          ifCode(
+          ifStatement(
             'identical'.ref(['a'.ref, 'b'.ref]),
-            thenBody: [
-              'a'.ref.returned,
-            ],
+            Block((b) => b.addExpression('a'.ref.returned)),
           ),
         )
         ..addEmptyLine()
         // If a is null, return b if t is 1.0, else null
         ..statements.add(
-          ifCode(
+          ifStatement(
             'a'.ref.equalTo(literalNull),
-            thenBody: [
-              't'.ref
-                  .equalTo(literalNum(1.0))
-                  .conditional('b'.ref, literalNull)
-                  .returned,
-            ],
+            Block(
+              (b) => b.addExpression(
+                't'.ref
+                    .equalTo(literalNum(1.0))
+                    .conditional('b'.ref, literalNull)
+                    .returned,
+              ),
+            ),
           ),
         )
         ..addEmptyLine()
         // If b is null, return a if t is 0.0, else null
         ..statements.add(
-          ifCode(
+          ifStatement(
             'b'.ref.equalTo(literalNull),
-            thenBody: [
-              't'.ref
-                  .equalTo(literalNum(0.0))
-                  .conditional('a'.ref, literalNull)
-                  .returned,
-            ],
+            Block(
+              (b) => b.addExpression(
+                't'.ref
+                    .equalTo(literalNum(0.0))
+                    .conditional('a'.ref, literalNull)
+                    .returned,
+              ),
+            ),
           ),
         )
         ..addEmptyLine();

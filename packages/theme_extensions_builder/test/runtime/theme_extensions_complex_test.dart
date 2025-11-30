@@ -360,6 +360,9 @@ void main() {
       expect(themeB.lerp(themeB, 0), isA<ComplexThemeExtension>());
       expect(themeB.lerp(themeB, 0.5), isA<ComplexThemeExtension>());
       expect(themeB.lerp(themeB, 1), isA<ComplexThemeExtension>());
+
+      expect(themeA.lerp(null, 0.5), equals(themeA));
+      expect(themeB.lerp(null, 0.5), equals(themeB));
     });
 
     test('equality works correctly', () {

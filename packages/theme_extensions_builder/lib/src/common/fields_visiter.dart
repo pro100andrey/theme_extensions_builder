@@ -2,9 +2,9 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
+import 'analysis.dart';
 import 'base_class_visiter.dart';
 import 'symbols/field.dart';
-import 'symbols/symbols.dart';
 
 /// A visitor that collects field symbols from a class element,
 /// ignoring those annotated with `@ignore`.

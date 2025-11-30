@@ -4,61 +4,12 @@ import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 import 'arg.dart';
+import 'field.dart';
 import 'lerp_method.dart';
 import 'merge_method.dart';
 
-final class FieldSymbol {
-  factory FieldSymbol.from(FieldElement element) => _fieldSymbol(element);
-
-  FieldSymbol._({
-    required this.name,
-    required this.baseType,
-    required this.optional,
-    required this.isDouble,
-    required this.isDuration,
-    required this.merge,
-    required this.lerp,
-    required this.isStatic,
-  });
-
-  /// The name of the field.
-  final String name;
-
-  /// The base type name of the field without nullability suffix.
-  final String baseType;
-
-  /// True if the field type is nullable.
-  final bool optional;
-
-  /// True if the field type is double.
-  final bool isDouble;
-
-  /// True if the field type is Duration.
-  final bool isDuration;
-
-  /// Information about the merge method for the field type.
-  final MergeMethod merge;
-
-  /// Information about the lerp method for the field type.
-  final LerpMethod lerp;
-
-  /// True if the field is static.
-  final bool isStatic;
-
-  @override
-  String toString() =>
-      'FieldSymbol(name: $name, '
-      'baseType: $baseType, '
-      'optional: $optional, '
-      'isDouble: $isDouble, '
-      'isDuration: $isDuration, '
-      'isStatic: $isStatic, '
-      'merge: $merge, '
-      'lerp: $lerp)';
-}
-
 /// Creates a [FieldSymbol] from the given [element].
-FieldSymbol _fieldSymbol(FieldElement element) {
+FieldSymbol fieldSymbol(FieldElement element) {
   final name = element.displayName;
   final elementType = element.type;
   final isNullable = elementType.nullabilitySuffix == .question;
@@ -66,7 +17,7 @@ FieldSymbol _fieldSymbol(FieldElement element) {
   final isDouble = elementType.isDartCoreDouble;
   final isDuration = elementType.isDuration;
 
-  return FieldSymbol._(
+  return FieldSymbol(
     name: name,
     baseType: baseType,
     optional: isNullable,
@@ -105,7 +56,7 @@ LerpMethod _lerpInfo(DartType type, FieldElement fieldElement) {
           _checkSubtype(p2, type)) {
     return StaticLerpMethod(
       optionalResult: method.returnType.hasNullableSuffix,
-      args: _mapArgumentsSymbols(params),
+      args: _mapArgs(params),
     );
   } else if (params case [final p1, final p2]
       // Check for instance lerp method:
@@ -117,7 +68,7 @@ LerpMethod _lerpInfo(DartType type, FieldElement fieldElement) {
           _checkSubtype(p1, type)) {
     return InstanceLerpMethod(
       optionalResult: method.returnType.hasNullableSuffix,
-      args: _mapArgumentsSymbols(params),
+      args: _mapArgs(params),
     );
   }
 
@@ -154,11 +105,11 @@ bool _checkSubtype(
 }
 
 /// Maps a list of [parameters] to a list of [Arg] symbols.
-List<Arg> _mapArgumentsSymbols(List<FormalParameterElement> parameters) =>
-    parameters.map(_mapArgumentSymbol).toList(growable: false);
+List<Arg> _mapArgs(List<FormalParameterElement> parameters) =>
+    parameters.map(_mapArg).toList(growable: false);
 
 /// Creates an [Arg] from the given [parameter].
-Arg _mapArgumentSymbol(FormalParameterElement parameter) {
+Arg _mapArg(FormalParameterElement parameter) {
   final name = parameter.displayName;
   final type = parameter.type.getDisplayString();
   final isNullable = parameter.type.nullabilitySuffix == .question;

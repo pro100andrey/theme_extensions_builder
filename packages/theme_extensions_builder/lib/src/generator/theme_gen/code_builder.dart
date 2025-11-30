@@ -1,8 +1,8 @@
 import 'package:code_builder/code_builder.dart';
 
+import '../../common/symbols/field.dart';
 import '../../common/symbols/lerp_method.dart';
 import '../../common/symbols/merge_method.dart';
-import '../../common/symbols/symbols.dart';
 import '../../config/config.dart';
 import '../common.dart';
 

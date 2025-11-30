@@ -2,12 +2,13 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
+import 'base_class_visiter.dart';
+import 'symbols/field.dart';
 import 'symbols/symbols.dart';
-import 'visitors.dart';
 
-/// It's a class that extends the SimpleElementVisitor class, and it overrides
-/// the visitClassElement method
-class ThemeClassVisitor extends BaseClassVisitor {
+/// A visitor that collects field symbols from a class element,
+/// ignoring those annotated with `@ignore`.
+class FieldsVisitor extends BaseClassVisitor {
   final List<FieldSymbol> fields = [];
   final _seenFieldNames = <String>{};
 
@@ -20,10 +21,10 @@ class ThemeClassVisitor extends BaseClassVisitor {
     }
 
     if (!element.isSynthetic) {
-      final symbol = FieldSymbol.from(element);
+      final field = fieldSymbol(element);
       // Add field only if not already seen (prevents duplicates)
-      if (_seenFieldNames.add(symbol.name)) {
-        fields.add(symbol);
+      if (_seenFieldNames.add(field.name)) {
+        fields.add(field);
       }
     }
   }

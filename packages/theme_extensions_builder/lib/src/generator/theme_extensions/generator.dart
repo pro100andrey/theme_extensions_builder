@@ -3,7 +3,7 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../../common/visitor.dart';
+import '../../common/fields_visiter.dart';
 import '../../config/config.dart';
 import 'code_builder.dart';
 
@@ -38,7 +38,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
     final contextAccessorName =
         annotation.read('contextAccessorName').literalValue as String?;
 
-    final classVisitor = ThemeClassVisitor();
+    final fieldsVisiter = FieldsVisitor();
     // Get all supertypes to visit their fields as well
     final allSupertypes = element.allSupertypes;
 
@@ -46,18 +46,18 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
       final superElement = supertype.element;
 
       if (!supertype.isDartCoreObject) {
-        superElement.visitChildren(classVisitor);
+        superElement.visitChildren(fieldsVisiter);
       }
     }
 
-    element.visitChildren(classVisitor);
+    element.visitChildren(fieldsVisiter);
 
     // Use naming convention instead of expensive AST parsing
     // Assume the mixin follows the standard pattern: _$ClassName
     final mixinName = '_\$${element.displayName}';
 
     final generatorConfig = ThemeExtensionsConfig(
-      fields: classVisitor.fields,
+      fields: fieldsVisiter.fields,
       className: element.displayName,
       contextAccessorName: contextAccessorName,
       buildContextExtension: buildContextExtension,

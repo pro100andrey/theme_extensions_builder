@@ -1,34 +1,36 @@
+/// Extension for converting strings to camelCase format.
 extension StringCamelCase on String {
-  String get camelCase {
+  /// Converts the string to camelCase, with special handling for 'Extension'
+  /// suffix.
+  ///
+  /// This getter:
+  /// - Returns empty string if the input is empty
+  /// - Converts the first character to lowercase
+  /// - Removes 'Extension' suffix if present (e.g., 'MyExtension' → 'my')
+  ///
+  /// Examples:
+  /// ```dart
+  /// 'HelloWorld'.camelCase // 'helloWorld'
+  /// 'MyThemeExtension'.camelCase // 'myTheme'
+  /// 'theme'.camelCase // 'theme'
+  /// ''.camelCase // ''
+  /// ```
+  String camelCase({String? suffixToRemove}) {
     if (isEmpty) {
       return '';
     }
 
-    var property = this[0].toLowerCase() + substring(1);
+    // Convert first character to lowercase and keep the rest unchanged
+    final property = '${this[0].toLowerCase()}${substring(1)}';
 
-    if (property.endsWith('Extension')) {
-      property = property.substring(0, property.length - 'Extension'.length);
+    // Remove suffix if present
+
+    if (suffixToRemove == null || suffixToRemove.isEmpty) {
+      return property;
     }
 
-    return property;
+    return property.endsWith(suffixToRemove)
+        ? property.substring(0, property.length - suffixToRemove.length)
+        : property;
   }
 }
-
-// extension StringNullable on String {
-//   /// Returns a nullable version of the type if [f] is true.
-//   String nullable({bool f = true}) {
-//     if (!f) {
-//       return this;
-//     }
-
-//     if (this == 'dynamic') {
-//       return this;
-//     }
-
-//     if (endsWith('?')) {
-//       return this;
-//     }
-
-//     return '$this?';
-//   }
-// }

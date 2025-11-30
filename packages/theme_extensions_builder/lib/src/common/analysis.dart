@@ -53,7 +53,10 @@ FieldInfo fieldSymbol(
 
 /// Gets information about the lerp method for the given [type].
 ///
-/// This can improve performance when lerp details aren't needed.
+/// Returns information about static or instance lerp methods, or [NoLerp]
+/// if no suitable lerp method is found or if the type is not an interface.
+///
+/// Throws [StateError] if a lerp method exists but has an invalid signature.
 LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
   final typeElement = type.element;
 
@@ -103,10 +106,23 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
   );
 }
 
-bool _checkSubtype(
-  FormalParameterElement param,
-  DartType type,
-) {
+/// Checks if a parameter type is a subtype of the given [type].
+///
+/// This function performs a type compatibility check between a formal parameter
+/// and a target type. It handles nullability by promoting the type to non-null
+/// before checking subtype relationships.
+///
+/// Returns `true` if:
+/// - Both [FormalParameterElement.type] and [type] are interface types
+/// - [type] can be used as an instance of the parameter's type
+/// - The non-null version of [type] is a subtype of that instance
+///
+/// Returns `false` if either type is not an interface type or if the subtype
+/// relationship doesn't hold.
+///
+/// This is primarily used to validate lerp method signatures, ensuring that
+/// parameters accept the correct types for interpolation.
+bool _checkSubtype(FormalParameterElement param, DartType type) {
   final typeElement = type.element;
   if (typeElement is! InterfaceElement) {
     return false;

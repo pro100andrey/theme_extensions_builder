@@ -324,7 +324,9 @@ Extension contextExtension(ThemeExtensionsConfig config) {
           mb
             ..type = MethodType.getter
             ..lambda = true
-            ..name = config.contextAccessorName ?? config.className.camelCase
+            ..name =
+                config.contextAccessorName ??
+                config.className.camelCase(suffixToRemove: 'Extension')
             ..returns = config.className.ref
             ..body = 'Theme'.ref
                 .prop('of')(['this'.ref])

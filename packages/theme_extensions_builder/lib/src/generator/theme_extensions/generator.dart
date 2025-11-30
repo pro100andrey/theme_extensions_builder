@@ -8,11 +8,28 @@ import '../../common/fields_visitor_config.dart';
 import '../../config/config.dart';
 import 'code_builder.dart';
 
-/// It's a Dart code generator that generates code for the `@ThemeExtensions`
-/// annotation
+/// Code generator for classes annotated with `@ThemeExtensions`.
+///
+/// This generator creates code for custom Flutter theme extensions that
+/// extend `ThemeExtension`. The generated code includes:
+/// - `copyWith` method for creating modified copies
+/// - `lerp` method for smooth theme transitions
+/// - `==` operator and `hashCode` for equality comparison
+/// - Optional BuildContext extension for convenient theme access
+///
+/// Example usage:
+/// ```dart
+/// @ThemeExtensions()
+/// class MyTheme extends ThemeExtension<MyTheme> with _$MyTheme {
+///   const MyTheme({required this.color});
+///   final Color color;
+/// }
+/// ```
 class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
+  /// Creates a [ThemeExtensionsGenerator] with optional [builderOptions].
   ThemeExtensionsGenerator({this.builderOptions});
 
+  /// Optional build configuration options.
   final BuilderOptions? builderOptions;
 
   @override

@@ -27,15 +27,15 @@ Method equalOperator(BaseConfig config) => Method((m) {
       b
         ..statements.add(
           ifCode(
-            'identical'.ref(['this'.ref, 'other'.ref]).code,
-            [literalTrue.returned.statement],
+            'identical'.ref(['this'.ref, 'other'.ref]),
+            thenBody: [literalTrue.returned],
           ),
         )
         ..addEmptyLine()
         ..statements.add(
           ifCode(
-            'other'.ref.prop('runtimeType').notEqualTo('runtimeType'.ref).code,
-            [literalFalse.returned.statement],
+            'other'.ref.prop('runtimeType').notEqualTo('runtimeType'.ref),
+            thenBody: [literalFalse.returned],
           ),
         )
         ..addEmptyLine();
@@ -125,14 +125,18 @@ Method hashMethod(BaseConfig config) => Method((m) {
 /// [thenBody] The list of code statements to execute if the condition is true.
 /// [elseBody] (Optional) The list of code statements to execute if the
 /// condition is false.
-Code ifCode(Code condition, List<Code> thenBody, [List<Code>? elseBody]) {
+Code ifCode(
+  Expression condition, {
+  required List<Expression> thenBody,
+  List<Expression>? elseBody,
+}) {
   final buf = StringBuffer();
   final conditionStr = condition.accept(DartEmitter());
 
   buf.writeln('if ($conditionStr) {');
 
   for (final c in thenBody) {
-    buf.writeln('  ${c.accept(DartEmitter())}');
+    buf.writeln('  ${c.statement.accept(DartEmitter())}');
   }
 
   buf.write('}');
@@ -140,7 +144,7 @@ Code ifCode(Code condition, List<Code> thenBody, [List<Code>? elseBody]) {
   if (elseBody != null && elseBody.isNotEmpty) {
     buf.writeln(' else {');
     for (final c in elseBody) {
-      buf.writeln('  ${c.accept(DartEmitter())}');
+      buf.writeln('  ${c.statement.accept(DartEmitter())}');
     }
     buf.write('}');
   }

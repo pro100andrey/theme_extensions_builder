@@ -129,8 +129,8 @@ Method lerpMethod(ThemeExtensionsConfig config) {
   body
     ..statements.add(
       ifCode(
-        'other'.ref.isNotA(config.className.ref).code,
-        ['this'.ref.returned.statement],
+        'other'.ref.isNotA(config.className.ref),
+        thenBody: ['this'.ref.returned],
       ),
     )
     ..addEmptyLine();

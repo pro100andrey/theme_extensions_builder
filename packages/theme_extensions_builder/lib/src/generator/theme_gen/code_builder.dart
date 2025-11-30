@@ -136,17 +136,16 @@ Method merge(ThemeGenConfig config) => Method((m) {
           ifCode(
             'other'.ref
                 .equalTo(literalNull)
-                .or('identical'.ref(['_this'.ref, 'other'.ref]))
-                .code,
-            ['_this'.ref.returned.statement],
+                .or('identical'.ref(['_this'.ref, 'other'.ref])),
+            thenBody: ['_this'.ref.returned],
           ),
         )
         ..addEmptyLine()
         // Return `other` if it cannot be merged
         ..statements.add(
           ifCode(
-            'other'.ref.negate().prop('canMerge').code,
-            ['other'.ref.returned.statement],
+            'other'.ref.negate().prop('canMerge'),
+            thenBody: ['other'.ref.returned],
           ),
         )
         ..addEmptyLine();
@@ -242,21 +241,23 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
       b
         // If a and b are identical, return a
         ..statements.add(
-          ifCode('identical'.ref(['a'.ref, 'b'.ref]).code, [
-            'a'.ref.returned.statement,
-          ]),
+          ifCode(
+            'identical'.ref(['a'.ref, 'b'.ref]),
+            thenBody: [
+              'a'.ref.returned,
+            ],
+          ),
         )
         ..addEmptyLine()
         // If a is null, return b if t is 1.0, else null
         ..statements.add(
           ifCode(
-            'a'.ref.equalTo(literalNull).code,
-            [
+            'a'.ref.equalTo(literalNull),
+            thenBody: [
               't'.ref
                   .equalTo(literalNum(1.0))
                   .conditional('b'.ref, literalNull)
-                  .returned
-                  .statement,
+                  .returned,
             ],
           ),
         )
@@ -264,13 +265,12 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         // If b is null, return a if t is 0.0, else null
         ..statements.add(
           ifCode(
-            'b'.ref.equalTo(literalNull).code,
-            [
+            'b'.ref.equalTo(literalNull),
+            thenBody: [
               't'.ref
                   .equalTo(literalNum(0.0))
                   .conditional('a'.ref, literalNull)
-                  .returned
-                  .statement,
+                  .returned,
             ],
           ),
         )

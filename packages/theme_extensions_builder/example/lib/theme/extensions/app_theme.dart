@@ -12,9 +12,13 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension>
     required this.primaryColor,
     required this.backgroundColor,
     required this.layoutMode,
+    required this.borderSide,
+    required this.optionalBorderSide,
   });
 
   final Color primaryColor;
   final Color backgroundColor;
   final LayoutMode layoutMode;
+  final BorderSide borderSide;
+  final BorderSide? optionalBorderSide;
 }

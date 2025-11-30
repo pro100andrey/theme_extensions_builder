@@ -15,7 +15,6 @@ class BaseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cardTheme = context.cardTheme;
-
     return Container(
       decoration: BoxDecoration(
         color: cardTheme.backgroundColor,

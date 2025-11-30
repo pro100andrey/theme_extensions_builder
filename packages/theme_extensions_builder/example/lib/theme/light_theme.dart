@@ -11,6 +11,8 @@ ThemeData get lightTheme => ThemeData(
       primaryColor: Colors.orange,
       backgroundColor: Colors.white,
       layoutMode: .compact,
+      borderSide: BorderSide.none,
+      optionalBorderSide: null,
     ),
     CardThemeExtension(
       borderRadius: const .all(.circular(8)),

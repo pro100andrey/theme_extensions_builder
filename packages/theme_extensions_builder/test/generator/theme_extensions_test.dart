@@ -1,0 +1,34 @@
+import 'package:source_gen_test/source_gen_test.dart';
+import 'package:test/test.dart';
+import 'package:theme_extensions_builder/src/generator/theme_extensions/generator.dart';
+import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
+
+Future<void> main() async {
+  initializeBuildLogTracking();
+
+  final emptyReader = await initializeLibraryReaderForDirectory(
+    'test/theme_extensions',
+    'empty_theme_extension.dart',
+  );
+
+  final complexReader = await initializeLibraryReaderForDirectory(
+    'test/theme_extensions',
+    'complex_theme_extension.dart',
+  );
+
+  group('ThemeExtensionsGenerator', () {
+    group('Empty', () {
+      testAnnotatedElements<ThemeExtensions>(
+        emptyReader,
+        ThemeExtensionsGenerator(),
+      );
+    });
+
+    group('Complex', () {
+      testAnnotatedElements<ThemeExtensions>(
+        complexReader,
+        ThemeExtensionsGenerator(),
+      );
+    });
+  });
+}

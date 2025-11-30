@@ -5,18 +5,16 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../../common/analysis.dart';
-import '../../common/symbols.dart';
-import '../../common/visitors.dart';
+import '../../common/visitor.dart';
 import '../../config/config.dart';
 import 'code_builder.dart';
 
 /// It's a Dart code generator that generates code for the `@ThemeGen`
 /// annotation.
 class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
-  ThemeGenGenerator({required this.builderOptions});
+  ThemeGenGenerator({this.builderOptions});
 
-  final BuilderOptions builderOptions;
+  final BuilderOptions? builderOptions;
 
   @override
   Future<String> generateForAnnotatedElement(
@@ -33,15 +31,16 @@ class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
     }
 
     final constructor = annotation.read('constructor').literalValue as String?;
+    final constConstructor = element.constructors.any((c) => c.isConst);
 
-    final classVisitor = _ClassVisitor();
+    final classVisitor = ThemeClassVisitor();
     // Get all supertypes to visit their fields as well
     final allSupertypes = element.allSupertypes;
 
     for (final supertype in allSupertypes) {
       final superElement = supertype.element;
 
-      if (superElement is ClassElement && !supertype.isDartCoreObject) {
+      if (!supertype.isDartCoreObject) {
         superElement.visitChildren(classVisitor);
       }
     }
@@ -52,43 +51,12 @@ class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
       fields: classVisitor.fields,
       className: element.displayName,
       constructor: constructor,
+      constConstructor: constConstructor,
     );
 
     const generator = ThemeGenCodeBuilder();
     final code = generator.generate(generatorConfig);
 
     return code;
-  }
-}
-
-/// It's a class that extends the SimpleElementVisitor class, and it overrides
-/// the visitClassElement method
-class _ClassVisitor extends BaseClassVisitor {
-  final List<FieldSymbol> fields = [];
-  final Map<String, List<bool>> hasInternalAnnotations = {};
-
-  final ignoreAnnotationTypeChecker = TypeChecker.typeNamed(ignore.runtimeType);
-
-  @override
-  void visitFieldElement(FieldElement element) {
-    if (ignoreAnnotationTypeChecker.hasAnnotationOf(element)) {
-      return;
-    }
-
-    if (element.isFinal) {
-      final type = element.type.getDisplayString();
-      final isNullable = type.endsWith('?');
-      final resultType = isNullable ? type.substring(0, type.length - 1) : type;
-
-      final symbol = FieldSymbol(
-        lerpInfo: lerpInfo(element: element),
-        mergeInfo: mergeInfo(element: element),
-        name: element.displayName,
-        type: resultType,
-        isNullable: isNullable,
-      );
-
-      fields.add(symbol);
-    }
   }
 }

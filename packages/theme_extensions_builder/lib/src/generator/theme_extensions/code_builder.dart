@@ -1,10 +1,10 @@
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
 
-import '../../common/code_builder.dart';
 import '../../common/symbols.dart';
 import '../../config/config.dart';
 import '../../extensions/string.dart';
+import '../common.dart';
 
 /// Generates code for `ThemeExtension` mixins and related helpers.
 class ThemeExtensionsCodeBuilder {
@@ -19,23 +19,20 @@ class ThemeExtensionsCodeBuilder {
   /// - optional BuildContext extension if `config.buildContextExtension` is
   /// true.
   String generate(ThemeExtensionsConfig config) {
-    final themeExtensionRef = TypeReference(
-      (t) => t
-        ..symbol = 'ThemeExtension'
-        ..types.add(config.className.ref),
-    );
-
     final mix = Mixin((m) {
       m
         ..name = config.themeExtensionMixinName
-        ..on = themeExtensionRef;
-
-      m.methods.addAll([
-        copyWith(config),
-        lerpMethod(config),
-        equalOperator(config),
-        hashMethod(config),
-      ]);
+        ..on = TypeReference(
+          (t) => t
+            ..symbol = 'ThemeExtension'
+            ..types.add(config.className.ref),
+        )
+        ..methods.addAll([
+          copyWith(config),
+          lerpMethod(config),
+          equalOperator(config),
+          hashMethod(config),
+        ]);
     });
 
     final emitter = DartEmitter(
@@ -50,83 +47,72 @@ class ThemeExtensionsCodeBuilder {
       trailingCommas: TrailingCommas.automate,
     );
 
-    final buffer = StringBuffer(mix.accept(emitter).toString());
-    if (config.buildContextExtension) {
-      buffer.write(contextExtension(config).accept(emitter).toString());
-    }
+    final library = Library(
+      (b) => b.body.addAll([
+        mix,
+        if (config.buildContextExtension) contextExtension(config),
+      ]),
+    );
 
-    final rawCode = buffer.toString();
+    final rawCode = library.accept(emitter).toString();
     final formattedCode = formatter.format(rawCode);
 
     return formattedCode;
   }
 }
 
-// Returns a type reference for `ThemeExtension<T>` based on [config].
-TypeReference themeExtensionRef(
-  ThemeExtensionsConfig config, {
-  bool isNullable = false,
-}) => TypeReference(
-  (t) => t
-    ..symbol = 'ThemeExtension'
-    ..types.add(config.className.ref)
-    ..isNullable = isNullable,
-);
-
 /// Generates the `copyWith` method for the theme extension.
 ///
 /// Allows creating a copy of the theme extension with some fields replaced.
-Method copyWith(ThemeExtensionsConfig config) {
-  final body = BlockBuilder();
-  final fields = config.fields;
+Method copyWith(ThemeExtensionsConfig config) => Method((m) {
+  final fields = config.filteredFields;
 
-  if (fields.isNotEmpty) {
-    body
-      ..addExpression(
-        declareFinal('_this'.ref.symbol).assign(
-          'this'.ref.asA(config.className.ref),
-        ),
-      )
-      ..statements.add(const Code(''));
-  }
-
-  body.addExpression(
-    InvokeExpression.newOf(
-      config.className.ref,
-      [],
-      {
-        for (final field in fields)
-          field.name: field.name.ref.ifNullThen(
-            '_this'.ref.property(field.name),
-          ),
-      },
-      [],
-      config.constructor,
-    ).returned,
-  );
-
-  final parameters = fields
-      .map(
+  m
+    ..name = 'copyWith'
+    ..annotations.add('override'.ref)
+    ..returns = _buildThemeExtensionRef(config)
+    ..optionalParameters.addAll(
+      fields.map(
         (field) => Parameter(
           (p) => p
             ..name = field.name
             ..named = true
-            ..type = field.type.nullable().ref,
+            ..type = field.baseType.typeRef(optional: true),
         ),
-      )
-      .toList(growable: false);
+      ),
+    )
+    ..body = Block((b) {
+      if (fields.isNotEmpty) {
+        b
+          ..addExpression(
+            declareFinal(
+              '_this'.ref.symbol,
+            ).assign('this'.ref.asA(config.className.ref)),
+          )
+          ..addEmptyLine();
+      }
 
-  final result = Method((m) {
-    m
-      ..name = 'copyWith'
-      ..annotations.add('override'.ref)
-      ..returns = themeExtensionRef(config)
-      ..optionalParameters.addAll(parameters)
-      ..body = body.build();
-  });
+      final args = <String, Expression>{};
+      for (final field in fields) {
+        args[field.name] = field.name.ref.ifNullThen(
+          '_this'.ref.prop(field.name),
+        );
+      }
 
-  return result;
-}
+      b.addExpression(
+        (fields.isEmpty && config.constConstructor
+                ? InvokeExpression.constOf
+                : InvokeExpression.newOf)(
+              config.className.ref,
+              [],
+              args,
+              [],
+              config.constructor,
+            )
+            .returned,
+      );
+    });
+});
 
 /// Generates the `lerp` (linear interpolation) method for the theme extension.
 ///
@@ -137,119 +123,126 @@ Method copyWith(ThemeExtensionsConfig config) {
 /// - Default conditional interpolation for other types.
 Method lerpMethod(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
-  final fields = config.fields;
+  final fields = config.filteredFields;
+  final isEmpty = fields.isEmpty;
 
   body
     ..statements.add(
-      ifCode(
-        'other'.ref.isNotA(config.className.ref).code,
-        ['this'.ref.returned.statement],
+      ifStatement(
+        'other'.ref.isNotA(config.className.ref),
+        Block((b) => b.addExpression('this'.ref.returned)),
       ),
     )
-    ..statements.add(const Code(''));
+    ..addEmptyLine();
 
-  if (fields.isNotEmpty) {
+  if (!isEmpty) {
     body
       ..addExpression(
         declareFinal('_this'.ref.symbol).assign(
           'this'.ref.asA(config.className.ref),
         ),
       )
-      ..statements.add(const Code(''));
+      ..addEmptyLine();
   }
 
-  body.addExpression(() {
-    final args = <String, Expression>{};
+  body.addExpression(
+    _buildConstructorCall(
+      config,
+      args: () {
+        final args = <String, Expression>{};
 
-    for (final field in fields) {
-      switch (field) {
-        // Lerp class with static lerp method
-        case FieldSymbol(
-          hasLerp: true,
-          lerpInfo: (isStatic: true, nullableArgs: _, :final methodName),
-        ):
-          final expression = field.type.ref.property(methodName).call([
-            '_this'.ref.property(field.name),
-            'other'.ref.property(field.name),
-            't'.ref,
-          ]);
+        for (final field in fields) {
+          final thisProp = '_this'.ref.prop(field.name);
+          final otherProp = 'other'.ref.prop(field.name);
 
-          args[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
+          switch (field) {
+            // Lerp class with static lerp method
+            case FieldSymbol(
+              lerp: StaticLerpMethod(:final isNullableSignature),
+            ):
+              final expression = !isNullableSignature && field.optional
+                  ? thisProp
+                        .equalTo(literalNull)
+                        .or(otherProp.equalTo(literalNull))
+                        .conditional(
+                          literalNull,
+                          field.baseType.ref.prop('lerp')([
+                            thisProp.nullChecked,
+                            otherProp.nullChecked,
+                            't'.ref,
+                          ]),
+                        )
+                  : field.baseType.ref.prop('lerp')([
+                      '_this'.ref.prop(field.name),
+                      'other'.ref.prop(field.name),
+                      't'.ref,
+                    ]);
 
-        // Lerp class with instance lerp method
-        case FieldSymbol(
-          hasLerp: true,
-          lerpInfo: (isStatic: false, nullableArgs: _, :final methodName),
-        ):
-          final expression = '_this'.ref
-              .property(field.name)
-              .property(methodName)
-              .call([
-                'other'.ref.property(field.name),
+              args[field.name] = field.optional || !isNullableSignature
+                  ? expression
+                  : expression.nullChecked;
+
+            // Lerp class with instance lerp method
+            case FieldSymbol(lerp: InstanceLerpMethod()):
+              final expression = '_this'.ref
+                  .prop(field.name)
+                  .prop('lerp')
+                  .withNullSafety(field.optional)
+                  .call(['other'.ref.prop(field.name), 't'.ref])
+                  .asA(field.baseType.typeRef(optional: field.optional));
+
+              args[field.name] = expression;
+
+            // When the field is of type double
+            case FieldSymbol(isDouble: true):
+              final expression = r'lerpDouble$'.ref([
+                '_this'.ref.prop(field.name),
+                'other'.ref.prop(field.name),
                 't'.ref,
-              ])
-              .asA(field.type.ref);
+              ]);
 
-          args[field.name] = expression;
+              args[field.name] = field.optional
+                  ? expression
+                  : expression.nullChecked;
 
-        // When the field is of type double
-        case FieldSymbol(isDouble: true):
-          final expression = r'lerpDouble$'.ref.call([
-            '_this'.ref.property(field.name),
-            'other'.ref.property(field.name),
-            't'.ref,
-          ]);
+            // When the field is of type Duration
+            case FieldSymbol(isDuration: true):
+              final expression = r'lerpDuration$'.ref([
+                '_this'.ref.prop(field.name),
+                'other'.ref.prop(field.name),
+                't'.ref,
+              ]);
 
-          args[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
+              args[field.name] = field.optional
+                  ? expression
+                  : expression.nullChecked;
 
-        // When the field is of type Duration
-        case FieldSymbol(isDuration: true):
-          final expression = r'lerpDuration$'.ref.call([
-            '_this'.ref.property(field.name),
-            'other'.ref.property(field.name),
-            't'.ref,
-          ]);
+            // Default case: use a simple conditional expression
+            case _:
+              args[field.name] = 't'.ref
+                  .lessThan(literalNum(0.5))
+                  .conditional(
+                    '_this'.ref.prop(field.name),
+                    'other'.ref.prop(field.name),
+                  );
+          }
+        }
 
-          args[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
-
-        // Default case: use a simple conditional expression
-        case _:
-          final expression = 't'.ref
-              .lessThan(literalNum(0.5))
-              .conditional(
-                '_this'.ref.property(field.name),
-                'other'.ref.property(field.name),
-              );
-
-          args[field.name] = expression;
-      }
-    }
-
-    return InvokeExpression.newOf(
-      config.className.ref,
-      [],
-      args,
-      [],
-      config.constructor,
-    ).returned;
-  }());
+        return args;
+      }(),
+    ).returned,
+  );
 
   final result = Method((m) {
     m
       ..name = 'lerp'
       ..annotations.add('override'.ref)
-      ..returns = themeExtensionRef(config)
+      ..returns = _buildThemeExtensionRef(config)
       ..requiredParameters.addAll([
         Parameter(
           (p) => p
             ..name = 'other'
-            ..type = themeExtensionRef(config, isNullable: true),
+            ..type = _buildThemeExtensionRef(config, isNullable: true),
         ),
         Parameter(
           (p) => p
@@ -263,118 +256,40 @@ Method lerpMethod(ThemeExtensionsConfig config) {
   return result;
 }
 
-/// Generates the equality operator `==` for the theme extension.
-Method equalOperator(ThemeExtensionsConfig config) {
-  final body = BlockBuilder();
-  final fields = config.fields;
+// Returns a type reference for `ThemeExtension<T>` based on [config].
+TypeReference _buildThemeExtensionRef(
+  ThemeExtensionsConfig config, {
+  bool isNullable = false,
+}) => TypeReference(
+  (t) => t
+    ..symbol = 'ThemeExtension'
+    ..types.add(config.className.ref)
+    ..isNullable = isNullable,
+);
 
-  body
-    ..statements.add(
-      ifCode(
-        'identical'.ref.call(['this'.ref, 'other'.ref]).code,
-        [literalTrue.returned.statement],
-      ),
-    )
-    ..statements.add(const Code(''))
-    ..statements.add(
-      ifCode(
-        'other'.ref.property('runtimeType').notEqualTo('runtimeType'.ref).code,
-        [literalFalse.returned.statement],
-      ),
-    )
-    ..statements.add(const Code(''));
+/// Helper to build constructor call with correct const/new.
+InvokeExpression _buildConstructorCall(
+  ThemeExtensionsConfig config, {
+  required Map<String, Expression> args,
+}) {
+  final isEmpty = args.isEmpty;
+  final useConst = isEmpty && config.constConstructor;
 
-  if (fields.isNotEmpty) {
-    body
-      ..addExpression(
-        declareFinal('_this').assign('this'.ref.asA(config.className.ref)),
-      )
-      ..addExpression(
-        declareFinal('_other').assign('other'.ref.asA(config.className.ref)),
-      )
-      ..statements.add(const Code(''))
-      ..addExpression(
-        fields
-            .map(
-              (field) => '_other'.ref
-                  .property(field.name)
-                  .equalTo(
-                    '_this'.ref.property(field.name),
-                  ),
-            )
-            .reduce((a, b) => a.and(b))
-            .returned,
-      );
-  } else {
-    body.addExpression(literalTrue.returned);
-  }
-
-  final result = Method((m) {
-    m
-      ..name = 'operator =='
-      ..annotations.add('override'.ref)
-      ..returns = 'bool'.ref
-      ..requiredParameters.add(
-        Parameter(
-          (p) => p
-            ..name = 'other'
-            ..type = 'Object'.ref,
-        ),
-      )
-      ..body = body.build();
-  });
-
-  return result;
-}
-
-/// Generates the `hashCode` getter for the theme extension.
-Method hashMethod(ThemeExtensionsConfig config) {
-  final body = BlockBuilder();
-  final fields = config.fields;
-
-  if (fields.isNotEmpty) {
-    body
-      ..addExpression(
-        declareFinal('_this').assign(
-          'this'.ref.asA(config.className.ref),
-        ),
-      )
-      ..statements.add(const Code(''));
-  }
-
-  switch (fields.length) {
-    case 0:
-      body.addExpression(
-        'runtimeType'.ref.property('hashCode').returned,
-      );
-    case <= 19:
-      body.addExpression(
-        'Object'.ref.property('hash').call([
-          'runtimeType'.ref,
-          for (final field in fields) '_this'.ref.property(field.name),
-        ]).returned,
-      );
-    case _:
-      body.addExpression(
-        'Object'.ref.property('hashAll').call([
-          literalList([
-            'runtimeType'.ref,
-            for (final field in fields) '_this'.ref.property(field.name),
-          ]),
-        ]).returned,
-      );
-  }
-
-  final result = Method((m) {
-    m
-      ..name = 'hashCode'
-      ..annotations.add('override'.ref)
-      ..returns = 'int'.ref
-      ..type = MethodType.getter
-      ..body = body.build();
-  });
-
-  return result;
+  return useConst
+      ? InvokeExpression.constOf(
+          config.className.ref,
+          [],
+          {},
+          [],
+          config.constructor,
+        )
+      : InvokeExpression.newOf(
+          config.className.ref,
+          [],
+          args,
+          [],
+          config.constructor,
+        );
 }
 
 /// Generates a `BuildContext` extension to easily access the theme extension.
@@ -396,10 +311,8 @@ Extension contextExtension(ThemeExtensionsConfig config) {
             ..name = config.contextAccessorName ?? config.className.camelCase
             ..returns = config.className.ref
             ..body = 'Theme'.ref
-                .property('of')
-                .call(['this'.ref])
-                .property('extension')
-                .call([], {}, [config.className.ref])
+                .prop('of')(['this'.ref])
+                .prop('extension')([], {}, [config.className.ref])
                 .nullChecked
                 .code;
         }),

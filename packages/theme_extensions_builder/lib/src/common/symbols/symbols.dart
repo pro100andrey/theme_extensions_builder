@@ -7,7 +7,6 @@ import 'arg.dart';
 import 'lerp_method.dart';
 import 'merge_method.dart';
 
-
 final class FieldSymbol {
   factory FieldSymbol.from(FieldElement element) => _fieldSymbol(element);
 

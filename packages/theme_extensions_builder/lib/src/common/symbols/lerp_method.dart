@@ -1,4 +1,3 @@
-
 import 'arg.dart';
 
 sealed class LerpMethod {

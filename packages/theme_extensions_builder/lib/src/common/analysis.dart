@@ -1,3 +1,7 @@
+/// @docImport 'fields_visitor_config.dart';
+
+library;
+
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -5,13 +9,25 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
+import 'fields_visitor_config.dart';
 import 'symbols/field_info.dart';
 import 'symbols/lerp_info.dart';
 import 'symbols/merge_info.dart';
 import 'symbols/parameter_info.dart';
 
 /// Creates a [FieldInfo] from the given [element].
-FieldInfo fieldSymbol(FieldElement element) {
+///
+/// The [config] parameter controls what information should be collected:
+/// - When [FieldsVisitorConfig.includeLerpLookup] is `false`, lerp method
+///   lookups are skipped
+/// - When [FieldsVisitorConfig.includeMergeLookup] is `false`, merge method
+///   lookups are skipped
+///
+/// Skipping unnecessary lookups can significantly improve performance.
+FieldInfo fieldSymbol(
+  FieldElement element, {
+  FieldsVisitorConfig config = const FieldsVisitorConfig(),
+}) {
   final name = element.displayName;
   final elementType = element.type;
   final isNullable = elementType.nullabilitySuffix == .question;
@@ -26,12 +42,18 @@ FieldInfo fieldSymbol(FieldElement element) {
     isDouble: isDouble,
     isDuration: isDuration,
     isStatic: element.isStatic,
-    merge: _mergeInfo(elementType),
-    lerp: _lerpInfo(elementType, element),
+    merge: config.includeMergeLookup
+        ? _mergeInfo(elementType)
+        : const NoMerge(),
+    lerp: config.includeLerpLookup
+        ? _lerpInfo(elementType, element)
+        : const NoLerp(),
   );
 }
 
 /// Gets information about the lerp method for the given [type].
+///
+/// This can improve performance when lerp details aren't needed.
 LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
   final typeElement = type.element;
 
@@ -162,6 +184,9 @@ MethodElement? _lookupMethod(
   return inheritedMethod;
 }
 
+/// Gets information about the merge method for the given [type].
+///
+/// This can improve performance when merge details aren't needed.
 MergeInfo _mergeInfo(DartType type) {
   final typeElement = type.element;
 

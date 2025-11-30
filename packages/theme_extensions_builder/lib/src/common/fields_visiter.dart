@@ -4,6 +4,7 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 
 import 'analysis.dart';
 import 'base_class_visiter.dart';
+import 'fields_visitor_config.dart';
 import 'symbols/field_info.dart';
 
 /// A visitor that collects field information from a class element.
@@ -17,11 +18,25 @@ import 'symbols/field_info.dart';
 ///
 /// Example usage:
 /// ```dart
+/// // FieldsVisitorConfig config (default)
 /// final visitor = FieldsVisitor();
 /// classElement.visitChildren(visitor);
 /// final fields = visitor.fields;
 /// ```
 class FieldsVisitor extends BaseClassVisitor {
+  /// Creates a [FieldsVisitor] with the specified [config].
+  ///
+  /// The [config] controls what information should be collected during field
+  /// visiting.
+  FieldsVisitor({
+    this.config = const FieldsVisitorConfig(),
+  });
+
+  /// Configuration controlling what information to collect.
+  ///
+  /// See [FieldsVisitorConfig] for available options and presets.
+  final FieldsVisitorConfig config;
+
   /// Internal set to store unique field information.
   final Set<FieldInfo> _fields = {};
 
@@ -53,7 +68,7 @@ class FieldsVisitor extends BaseClassVisitor {
 
     // Only process explicitly declared fields
     if (!element.isSynthetic) {
-      final field = fieldSymbol(element);
+      final field = fieldSymbol(element, config: config);
       _fields.add(field);
     }
   }

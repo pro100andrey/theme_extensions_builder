@@ -4,6 +4,7 @@ import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 import '../../common/fields_visiter.dart';
+import '../../common/fields_visitor_config.dart';
 import '../../config/config.dart';
 import 'code_builder.dart';
 
@@ -38,7 +39,10 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
     final contextAccessorName =
         annotation.read('contextAccessorName').literalValue as String?;
 
-    final fieldsVisiter = FieldsVisitor();
+    // ThemeExtensions needs lerp but doesn't generate merge methods
+    final fieldsVisiter = FieldsVisitor(
+      config: const FieldsVisitorConfig(includeMergeLookup: false),
+    );
     // Get all supertypes to visit their fields as well
     final allSupertypes = element.allSupertypes;
 

@@ -43,14 +43,14 @@ Method equalOperator(BaseConfig config) => Method((m) {
       if (fields.isNotEmpty) {
         b
           ..addExpression(
-            declareFinal(
-              '_this',
-            ).assign('this'.ref.asA(className.ref)),
+            declareFinal('_this').assign(
+              'this'.ref.asA(className.ref),
+            ),
           )
           ..addExpression(
-            declareFinal(
-              '_other',
-            ).assign('other'.ref.asA(className.ref)),
+            declareFinal('_other').assign(
+              'other'.ref.asA(className.ref),
+            ),
           )
           ..addEmptyLine()
           ..addExpression(
@@ -148,10 +148,10 @@ extension StringRef on String {
   ///Shortcut to get a [Ref] from a [String].
   Ref get ref => Ref._(Reference(this));
 
-  Ref typeRef({bool optional = false}) => Ref._(
+  Ref typeRef({bool isNullable = false}) => Ref._(
     TypeReference(
       (b) => b
-        ..isNullable = optional
+        ..isNullable = isNullable
         ..symbol = this,
     ),
   );

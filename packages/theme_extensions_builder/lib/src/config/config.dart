@@ -1,4 +1,4 @@
-import '../common/symbols/field.dart';
+import '../common/symbols/field_info.dart';
 
 sealed class BaseConfig {
   const BaseConfig({
@@ -9,10 +9,10 @@ sealed class BaseConfig {
   });
 
   /// The fields to be included in the generated theme extension.
-  final List<FieldSymbol> fields;
+  final List<FieldInfo> fields;
 
   /// The fields that are supported for generation (non-static fields).
-  Iterable<FieldSymbol> get filteredFields =>
+  Iterable<FieldInfo> get filteredFields =>
       fields.where((field) => !field.isStatic);
 
   /// The name of the class to be generated.

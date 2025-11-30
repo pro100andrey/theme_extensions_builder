@@ -5,13 +5,13 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import 'symbols/arg.dart';
-import 'symbols/field.dart';
-import 'symbols/lerp_method.dart';
-import 'symbols/merge_method.dart';
+import 'symbols/field_info.dart';
+import 'symbols/lerp_info.dart';
+import 'symbols/merge_info.dart';
+import 'symbols/parameter_info.dart';
 
-/// Creates a [FieldSymbol] from the given [element].
-FieldSymbol fieldSymbol(FieldElement element) {
+/// Creates a [FieldInfo] from the given [element].
+FieldInfo fieldSymbol(FieldElement element) {
   final name = element.displayName;
   final elementType = element.type;
   final isNullable = elementType.nullabilitySuffix == .question;
@@ -19,10 +19,10 @@ FieldSymbol fieldSymbol(FieldElement element) {
   final isDouble = elementType.isDartCoreDouble;
   final isDuration = elementType.isDuration;
 
-  return FieldSymbol(
+  return FieldInfo(
     name: name,
-    baseType: baseType,
-    optional: isNullable,
+    typeName: baseType,
+    isNullable: isNullable,
     isDouble: isDouble,
     isDuration: isDuration,
     isStatic: element.isStatic,
@@ -32,17 +32,17 @@ FieldSymbol fieldSymbol(FieldElement element) {
 }
 
 /// Gets information about the lerp method for the given [type].
-LerpMethod _lerpInfo(DartType type, FieldElement fieldElement) {
+LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
   final typeElement = type.element;
 
   if (typeElement is! InterfaceElement) {
-    return const NoLerpMethod();
+    return const NoLerp();
   }
 
   final method = _lookupMethod(typeElement, 'lerp');
 
   if (method == null) {
-    return const NoLerpMethod();
+    return const NoLerp();
   }
 
   final params = method.formalParameters;
@@ -56,7 +56,7 @@ LerpMethod _lerpInfo(DartType type, FieldElement fieldElement) {
           p3.type.isDartCoreDouble &&
           _checkSubtype(p1, type) &&
           _checkSubtype(p2, type)) {
-    return StaticLerpMethod(
+    return StaticLerp(
       optionalResult: method.returnType.hasNullableSuffix,
       args: _mapArgs(params),
     );
@@ -68,7 +68,7 @@ LerpMethod _lerpInfo(DartType type, FieldElement fieldElement) {
       when !method.isStatic &&
           p2.type.isDartCoreDouble &&
           _checkSubtype(p1, type)) {
-    return InstanceLerpMethod(
+    return InstanceLerp(
       optionalResult: method.returnType.hasNullableSuffix,
       args: _mapArgs(params),
     );
@@ -106,17 +106,17 @@ bool _checkSubtype(
   return typeSystem.isSubtypeOf(nonNullType, supertypeInstance);
 }
 
-/// Maps a list of [parameters] to a list of [Arg] symbols.
-List<Arg> _mapArgs(List<FormalParameterElement> parameters) =>
+/// Maps a list of [parameters] to a list of [ParameterInfo] symbols.
+List<ParameterInfo> _mapArgs(List<FormalParameterElement> parameters) =>
     parameters.map(_mapArg).toList(growable: false);
 
-/// Creates an [Arg] from the given [parameter].
-Arg _mapArg(FormalParameterElement parameter) {
+/// Creates an [ParameterInfo] from the given [parameter].
+ParameterInfo _mapArg(FormalParameterElement parameter) {
   final name = parameter.displayName;
   final type = parameter.type.getDisplayString();
   final isNullable = parameter.type.nullabilitySuffix == .question;
 
-  return Arg(
+  return ParameterInfo(
     name: name,
     type: type,
     isNullable: isNullable,
@@ -162,11 +162,11 @@ MethodElement? _lookupMethod(
   return inheritedMethod;
 }
 
-MergeMethod _mergeInfo(DartType type) {
+MergeInfo _mergeInfo(DartType type) {
   final typeElement = type.element;
 
   if (typeElement is! InterfaceElement) {
-    return const NoMergeMethod();
+    return const NoMerge();
   }
 
   // Check if element or its supertypes have @ThemeGen annotation.
@@ -175,12 +175,12 @@ MergeMethod _mergeInfo(DartType type) {
   // phase.
   const themeGenChecker = TypeChecker.typeNamed(ThemeGen);
   if (themeGenChecker.hasAnnotationOfExact(typeElement)) {
-    return const InstanceMergeMethod();
+    return const InstanceMerge();
   }
 
   final method = _lookupMethod(typeElement, 'merge');
   if (method == null) {
-    return const NoMergeMethod();
+    return const NoMerge();
   }
 
   final params = method.formalParameters;
@@ -190,7 +190,7 @@ MergeMethod _mergeInfo(DartType type) {
       // - should have two parameters
       // - both parameters should have the same type as the class type
       when method.isStatic && p1.type.baseType == p2.type.baseType) {
-    return const StaticMergeMethod();
+    return const StaticMerge();
   }
 
   if (params case [final p1]
@@ -198,7 +198,7 @@ MergeMethod _mergeInfo(DartType type) {
       // - should have only one parameter
       // - parameter type should match the class type
       when !method.isStatic && p1.type.baseType == type.baseType) {
-    return const InstanceMergeMethod();
+    return const InstanceMerge();
   }
 
   throw StateError('Merge method not found');

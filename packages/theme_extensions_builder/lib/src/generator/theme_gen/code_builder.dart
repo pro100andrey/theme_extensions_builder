@@ -1,8 +1,8 @@
 import 'package:code_builder/code_builder.dart';
 
-import '../../common/symbols/field.dart';
-import '../../common/symbols/lerp_method.dart';
-import '../../common/symbols/merge_method.dart';
+import '../../common/symbols/field_info.dart';
+import '../../common/symbols/lerp_info.dart';
+import '../../common/symbols/merge_info.dart';
 import '../../config/config.dart';
 import '../common.dart';
 
@@ -63,7 +63,7 @@ Method copyWith(ThemeGenConfig config) => Method((m) {
           (p) => p
             ..name = field.name
             ..named = true
-            ..type = field.baseType.typeRef(optional: true),
+            ..type = field.typeName.typeRef(isNullable: true),
         ),
       ),
     )
@@ -108,7 +108,7 @@ Method merge(ThemeGenConfig config) => Method((m) {
       Parameter(
         (p) => p
           ..name = 'other'
-          ..type = config.className.typeRef(optional: true),
+          ..type = config.className.typeRef(isNullable: true),
       ),
     )
     ..body = Block((b) {
@@ -146,20 +146,20 @@ Method merge(ThemeGenConfig config) => Method((m) {
         final thisProp = '_this'.ref.prop(field.name);
         final otherProp = 'other'.ref.prop(field.name);
 
-        final staticMerge = field.baseType.ref.prop('merge');
+        final staticMerge = field.typeName.ref.prop('merge');
         final instanceMerge = thisProp.prop('merge');
 
         // Handle different merge strategies based on field configuration
 
         // No merge method, just take the other property
         // `property: other.property`
-        if (field.merge case NoMergeMethod()) {
+        if (field.merge case NoMerge()) {
           args[field.name] = otherProp;
           continue;
         }
 
         // Static merge method with optional field
-        if (field.merge case StaticMergeMethod() when field.optional) {
+        if (field.merge case StaticMerge() when field.isNullable) {
           args[field.name] = thisProp
               .notEqualTo(literalNull)
               .and(otherProp.notEqualTo(literalNull))
@@ -171,13 +171,13 @@ Method merge(ThemeGenConfig config) => Method((m) {
         }
 
         // Static merge method with non-optional field
-        if (field.merge case StaticMergeMethod() when !field.optional) {
+        if (field.merge case StaticMerge() when !field.isNullable) {
           args[field.name] = staticMerge([thisProp, otherProp]);
           continue;
         }
 
         // Instance merge method with optional field
-        if (field.merge case InstanceMergeMethod() when field.optional) {
+        if (field.merge case InstanceMerge() when field.isNullable) {
           args[field.name] = thisProp
               .nullSafeProperty('merge')([otherProp])
               .ifNullThen(otherProp);
@@ -185,7 +185,7 @@ Method merge(ThemeGenConfig config) => Method((m) {
         }
 
         // Instance merge method with non-optional field
-        if (field.merge case InstanceMergeMethod() when !field.optional) {
+        if (field.merge case InstanceMerge() when !field.isNullable) {
           args[field.name] = instanceMerge([otherProp]);
           continue;
         }
@@ -206,17 +206,17 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
   m
     ..name = 'lerp'
     ..static = true
-    ..returns = config.className.typeRef(optional: true)
+    ..returns = config.className.typeRef(isNullable: true)
     ..requiredParameters.addAll([
       Parameter(
         (p) => p
           ..name = 'a'.ref.symbol
-          ..type = config.className.typeRef(optional: true),
+          ..type = config.className.typeRef(isNullable: true),
       ),
       Parameter(
         (p) => p
           ..name = 'b'.ref.symbol
-          ..type = config.className.typeRef(optional: true),
+          ..type = config.className.typeRef(isNullable: true),
       ),
       Parameter(
         (p) => p
@@ -272,14 +272,14 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
       for (final field in fields) {
         final aProp = 'a'.ref.prop(field.name);
         final bProp = 'b'.ref.prop(field.name);
-        final lerp = field.baseType.ref.prop('lerp');
+        final lerp = field.typeName.ref.prop('lerp');
 
         // Handle different lerp strategies based on field configuration
 
         // Non-nullable field with non-nullable lerp signature
-        if (field.lerp case StaticLerpMethod(
+        if (field.lerp case StaticLerp(
           isNullableSignature: false,
-        ) when !field.optional) {
+        ) when !field.isNullable) {
           // value: Class.lerp(a.field, b.field, t)
           argsResult[field.name] = lerp([aProp, bProp, 't'.ref]);
 
@@ -287,18 +287,18 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         }
 
         // Non-nullable field with nullable lerp signature
-        if (field.lerp case StaticLerpMethod(
+        if (field.lerp case StaticLerp(
           isNullableSignature: true,
-        ) when !field.optional) {
+        ) when !field.isNullable) {
           // value: Class.lerp(a.field, b.field, t)!
           argsResult[field.name] = lerp([aProp, bProp, 't'.ref]).nullChecked;
           continue;
         }
 
         // Nullable field with non-nullable lerp signature
-        if (field.lerp case StaticLerpMethod(
+        if (field.lerp case StaticLerp(
           isNullableSignature: false,
-        ) when field.optional) {
+        ) when field.isNullable) {
           // value: a.field == null
           //     ? b.field
           //     : b.field == null
@@ -320,9 +320,9 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         }
 
         // Nullable field with nullable lerp signature
-        if (field.lerp case StaticLerpMethod(
+        if (field.lerp case StaticLerp(
           isNullableSignature: true,
-        ) when field.optional) {
+        ) when field.isNullable) {
           // value: Class.lerp(a.field, b.field, t)
           argsResult[field.name] = lerp([aProp, bProp, 't'.ref]);
 
@@ -330,39 +330,39 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         }
 
         // Instance lerp method with optional result
-        if (field.lerp case InstanceLerpMethod(
+        if (field.lerp case InstanceLerp(
           optionalResult: true,
-        ) when field.optional) {
+        ) when field.isNullable) {
           // value: a.field.lerp(b.field, t)
           argsResult[field.name] = aProp
               .prop('lerp', nullSafe: true)([bProp, 't'.ref])
-              .asA(field.baseType.typeRef(optional: field.optional));
+              .asA(field.typeName.typeRef(isNullable: field.isNullable));
 
           continue;
         }
         // Instance lerp method with non-optional result
-        if (field.lerp case InstanceLerpMethod(
+        if (field.lerp case InstanceLerp(
           optionalResult: false,
-        ) when !field.optional) {
+        ) when !field.isNullable) {
           // value: a.field.lerp(b.field, t)
           argsResult[field.name] = aProp
               .prop('lerp')([bProp, 't'.ref])
-              .asA(field.baseType.typeRef());
+              .asA(field.typeName.typeRef());
 
           continue;
         }
 
         // When the field is of type double
-        if (field case FieldSymbol(
+        if (field case FieldInfo(
           isDouble: true,
-        ) when field.lerp is NoLerpMethod) {
+        ) when field.lerp is NoLerp) {
           final expression = r'lerpDouble$'.ref([
             aProp,
             bProp,
             't'.ref,
           ]);
 
-          argsResult[field.name] = field.optional
+          argsResult[field.name] = field.isNullable
               ? expression
               : expression.nullChecked;
 
@@ -370,16 +370,16 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         }
 
         // When the field is of type Duration
-        if (field case FieldSymbol(
+        if (field case FieldInfo(
           isDuration: true,
-        ) when field.lerp is NoLerpMethod) {
+        ) when field.lerp is NoLerp) {
           final expression = r'lerpDuration$'.ref([
             aProp,
             bProp,
             't'.ref,
           ]);
 
-          argsResult[field.name] = field.optional
+          argsResult[field.name] = field.isNullable
               ? expression
               : expression.nullChecked;
 

@@ -4,13 +4,13 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 
 import 'analysis.dart';
 import 'base_class_visiter.dart';
-import 'symbols/field.dart';
+import 'symbols/field_info.dart';
 
 /// A visitor that collects field symbols from a class element,
 /// ignoring those annotated with `@ignore`.
 class FieldsVisitor extends BaseClassVisitor {
-  final Set<FieldSymbol> _fields = {};
-  List<FieldSymbol> get fields => _fields.toList(growable: false);
+  final Set<FieldInfo> _fields = {};
+  List<FieldInfo> get fields => _fields.toList(growable: false);
 
   final ignoreAnnotationTypeChecker = TypeChecker.typeNamed(ignore.runtimeType);
 

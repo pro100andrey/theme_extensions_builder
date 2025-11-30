@@ -1,5 +1,4 @@
 import 'package:code_builder/code_builder.dart';
-import 'package:dart_style/dart_style.dart';
 
 import '../../common/symbols.dart';
 import '../../config/config.dart';
@@ -27,25 +26,15 @@ class ThemeGenCodeBuilder {
         ]);
     });
 
-    // Set up the Dart code emitter and formatter
+    // Set up the Dart code emitter
     final emitter = DartEmitter(
       allocator: Allocator.simplePrefixing(),
       useNullSafetySyntax: true,
       orderDirectives: true,
     );
 
-    final formatter = DartFormatter(
-      languageVersion: DartFormatter.latestLanguageVersion,
-      pageWidth: DartFormatter.defaultPageWidth,
-      trailingCommas: TrailingCommas.automate,
-    );
-
-    // Generate the Dart code for the mixin and format it
     final mixinLibrary = Library((lib) => lib.body.addAll([mix]));
-    final rawCode = mixinLibrary.accept(emitter).toString();
-    final formattedCode = formatter.format(rawCode);
-
-    return formattedCode;
+    return mixinLibrary.accept(emitter).toString();
   }
 }
 

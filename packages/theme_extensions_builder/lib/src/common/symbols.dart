@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:source_gen/source_gen.dart';
@@ -168,10 +166,6 @@ LerpMethod _lerpInfo(DartType type, FieldElement fieldElement) {
   final typeElement = type.element;
 
   if (typeElement is! InterfaceElement) {
-    print(
-      'Type element is not a class: '
-      '${typeElement.runtimeType} for field ${fieldElement.name}',
-    );
     return const NoLerpMethod();
   }
 
@@ -239,14 +233,7 @@ bool _checkSubtype(
   final typeSystem = typeElement.library.typeSystem;
   final nonNullType = typeSystem.promoteToNonNull(type);
 
-  final result = typeSystem.isSubtypeOf(nonNullType, supertypeInstance);
-
-  print(
-    'Checking subtype: '
-    '${nonNullType.getDisplayString()} '
-    'is subtype of ${supertypeInstance.getDisplayString()} : $result',
-  );
-  return result;
+  return typeSystem.isSubtypeOf(nonNullType, supertypeInstance);
 }
 
 /// Maps a list of [parameters] to a list of [Arg] symbols.
@@ -266,23 +253,37 @@ Arg _mapArgumentSymbol(FormalParameterElement parameter) {
   );
 }
 
+/// Cache for method lookups to avoid repeated expensive lookups
+final _methodCache = <InterfaceElement, Map<String, MethodElement?>>{};
+
 /// Looks up a method with the given [name] in the [typeElement].
 /// If the method is not found directly on the type, it looks up
 /// inherited methods as well.
+/// Results are cached to avoid repeated expensive lookups.
 MethodElement? _lookupMethod(
   InterfaceElement typeElement,
   String name,
 ) {
+  final cache = _methodCache.putIfAbsent(typeElement, () => {});
+
+  if (cache.containsKey(name)) {
+    return cache[name];
+  }
+
   final method = typeElement.getMethod(name);
 
   if (method != null) {
+    cache[name] = method;
     return method;
   }
 
-  return typeElement.lookUpInheritedMethod(
+  final inheritedMethod = typeElement.lookUpInheritedMethod(
     methodName: name,
     library: typeElement.library,
   );
+
+  cache[name] = inheritedMethod;
+  return inheritedMethod;
 }
 
 MergeMethod _mergeInfo(DartType type) {

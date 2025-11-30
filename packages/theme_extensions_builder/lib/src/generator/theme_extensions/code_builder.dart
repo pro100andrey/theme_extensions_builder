@@ -1,5 +1,4 @@
 import 'package:code_builder/code_builder.dart';
-import 'package:dart_style/dart_style.dart';
 
 import '../../common/symbols.dart';
 import '../../config/config.dart';
@@ -41,12 +40,6 @@ class ThemeExtensionsCodeBuilder {
       orderDirectives: true,
     );
 
-    final formatter = DartFormatter(
-      languageVersion: DartFormatter.latestLanguageVersion,
-      pageWidth: DartFormatter.defaultPageWidth,
-      trailingCommas: TrailingCommas.automate,
-    );
-
     final library = Library(
       (b) => b.body.addAll([
         mix,
@@ -54,10 +47,7 @@ class ThemeExtensionsCodeBuilder {
       ]),
     );
 
-    final rawCode = library.accept(emitter).toString();
-    final formattedCode = formatter.format(rawCode);
-
-    return formattedCode;
+    return library.accept(emitter).toString();
   }
 }
 

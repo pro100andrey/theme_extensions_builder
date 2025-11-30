@@ -3,7 +3,6 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../../common/analysis.dart';
 import '../../common/visitor.dart';
 import '../../config/config.dart';
 import 'code_builder.dart';
@@ -53,10 +52,9 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
 
     element.visitChildren(classVisitor);
 
-    final mixinName = getMixinsNames(element: element).firstWhere(
-      (m) => m.startsWith(r'_$'),
-      orElse: () => '_\$${element.displayName}',
-    );
+    // Use naming convention instead of expensive AST parsing
+    // Assume the mixin follows the standard pattern: _$ClassName
+    final mixinName = '_\$${element.displayName}';
 
     final generatorConfig = ThemeExtensionsConfig(
       fields: classVisitor.fields,

@@ -9,8 +9,8 @@ import 'symbols/field.dart';
 /// A visitor that collects field symbols from a class element,
 /// ignoring those annotated with `@ignore`.
 class FieldsVisitor extends BaseClassVisitor {
-  final List<FieldSymbol> fields = [];
-  final _seenFieldNames = <String>{};
+  final Set<FieldSymbol> _fields = {};
+  List<FieldSymbol> get fields => _fields.toList(growable: false);
 
   final ignoreAnnotationTypeChecker = TypeChecker.typeNamed(ignore.runtimeType);
 
@@ -22,21 +22,7 @@ class FieldsVisitor extends BaseClassVisitor {
 
     if (!element.isSynthetic) {
       final field = fieldSymbol(element);
-      // Add field only if not already seen (prevents duplicates)
-      if (_seenFieldNames.add(field.name)) {
-        fields.add(field);
-      }
+      _fields.add(field);
     }
-  }
-
-  /// Removes duplicate fields based on field name.
-  /// This is a fallback in case fields were added multiple times.
-  void removeDuplicates() {
-    if (fields.length == _seenFieldNames.length) {
-      return;
-    }
-
-    final seen = <String>{};
-    fields.retainWhere((field) => seen.add(field.name));
   }
 }

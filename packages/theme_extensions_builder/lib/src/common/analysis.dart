@@ -10,7 +10,6 @@ import 'symbols/field.dart';
 import 'symbols/lerp_method.dart';
 import 'symbols/merge_method.dart';
 
-
 /// Creates a [FieldSymbol] from the given [element].
 FieldSymbol fieldSymbol(FieldElement element) {
   final name = element.displayName;
@@ -222,7 +221,6 @@ extension DartTypeExtension on DartType {
   /// Returns true if the type is Duration.
   bool get isDuration => baseType == 'Duration';
 }
-
 
 /// Gets the names of mixins applied to the given [element].
 List<String> getMixinsNames({required ClassElement element}) {

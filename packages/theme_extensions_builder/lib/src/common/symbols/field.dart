@@ -38,6 +38,33 @@ final class FieldSymbol {
   final bool isStatic;
 
   @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FieldSymbol &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          baseType == other.baseType &&
+          optional == other.optional &&
+          isDouble == other.isDouble &&
+          isDuration == other.isDuration &&
+          isStatic == other.isStatic &&
+          merge == other.merge &&
+          lerp == other.lerp;
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    name,
+    baseType,
+    optional,
+    isDouble,
+    isDuration,
+    isStatic,
+    merge,
+    lerp,
+  );
+
+  @override
   String toString() =>
       'FieldSymbol(name: $name, '
       'baseType: $baseType, '

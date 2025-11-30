@@ -1,10 +1,10 @@
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
 
-import '../../common/code_builder.dart';
 import '../../common/symbols.dart';
 import '../../config/config.dart';
 import '../../extensions/string.dart';
+import '../code_builder.dart';
 
 /// Generates code for `ThemeExtension` mixins and related helpers.
 class ThemeExtensionsCodeBuilder {
@@ -29,7 +29,7 @@ class ThemeExtensionsCodeBuilder {
         )
         ..methods.addAll([
           copyWith(config),
-          instanceLerpMethod(config),
+          lerpMethod(config),
           equalOperator(config),
           hashMethod(config),
         ]);
@@ -121,7 +121,7 @@ Method copyWith(ThemeExtensionsConfig config) => Method((m) {
 /// - Fields with instance `lerp` methods,
 /// - `double` and `Duration` fields,
 /// - Default conditional interpolation for other types.
-Method instanceLerpMethod(ThemeExtensionsConfig config) {
+Method lerpMethod(ThemeExtensionsConfig config) {
   final body = BlockBuilder();
   final fields = config.filteredFields;
   final isEmpty = fields.isEmpty;
@@ -145,42 +145,6 @@ Method instanceLerpMethod(ThemeExtensionsConfig config) {
       ..addEmptyLine();
   }
 
-  final args = <String, Expression>{};
-
-  for (final field in fields) {
-    final thisProp = '_this'.ref.prop(field.name);
-    final otherProp = 'other'.ref.prop(field.name);
-
-    if (field.lerp case StaticLerpMethod(
-      isNullableSignature: true,
-    ) when field.optional) {
-      args[field.name] = field.baseType.ref.prop('lerp')([
-        '_this'.ref.prop(field.name),
-        'other'.ref.prop(field.name),
-        't'.ref,
-      ]);
-
-      continue;
-    }
-
-    if (field.lerp case StaticLerpMethod(
-      isNullableSignature: true,
-    ) when field.optional) {
-      args[field.name] = thisProp
-          .equalTo(literalNull)
-          .or(otherProp.equalTo(literalNull))
-          .conditional(
-            literalNull,
-            field.baseType.ref.prop('lerp')([
-              thisProp.nullChecked,
-              otherProp.nullChecked,
-              't'.ref,
-            ]),
-          );
-      continue;
-    }
-  }
-
   body.addExpression(
     _buildConstructorCall(
       config,
@@ -194,9 +158,7 @@ Method instanceLerpMethod(ThemeExtensionsConfig config) {
           switch (field) {
             // Lerp class with static lerp method
             case FieldSymbol(
-              lerp: StaticLerpMethod(
-                :final isNullableSignature,
-              ),
+              lerp: StaticLerpMethod(:final isNullableSignature),
             ):
               final expression = !isNullableSignature && field.optional
                   ? thisProp
@@ -288,120 +250,6 @@ Method instanceLerpMethod(ThemeExtensionsConfig config) {
             ..type = 'double'.ref,
         ),
       ])
-      ..body = body.build();
-  });
-
-  return result;
-}
-
-/// Generates the equality operator `==` for the theme extension.
-Method equalOperator(ThemeExtensionsConfig config) {
-  final body = BlockBuilder();
-  final fields = config.filteredFields;
-
-  body
-    ..statements.add(
-      ifCode(
-        'identical'.ref.call(['this'.ref, 'other'.ref]).code,
-        [literalTrue.returned.statement],
-      ),
-    )
-    ..addEmptyLine()
-    ..statements.add(
-      ifCode(
-        'other'.ref.property('runtimeType').notEqualTo('runtimeType'.ref).code,
-        [literalFalse.returned.statement],
-      ),
-    )
-    ..addEmptyLine();
-
-  if (fields.isNotEmpty) {
-    body
-      ..addExpression(
-        declareFinal('_this').assign('this'.ref.asA(config.className.ref)),
-      )
-      ..addExpression(
-        declareFinal('_other').assign('other'.ref.asA(config.className.ref)),
-      )
-      ..addEmptyLine()
-      ..addExpression(
-        fields
-            .map(
-              (field) => '_other'.ref
-                  .property(field.name)
-                  .equalTo(
-                    '_this'.ref.property(field.name),
-                  ),
-            )
-            .reduce((a, b) => a.and(b))
-            .returned,
-      );
-  } else {
-    body.addExpression(literalTrue.returned);
-  }
-
-  final result = Method((m) {
-    m
-      ..name = 'operator =='
-      ..annotations.add('override'.ref)
-      ..returns = 'bool'.ref
-      ..requiredParameters.add(
-        Parameter(
-          (p) => p
-            ..name = 'other'
-            ..type = 'Object'.ref,
-        ),
-      )
-      ..body = body.build();
-  });
-
-  return result;
-}
-
-/// Generates the `hashCode` getter for the theme extension.
-Method hashMethod(ThemeExtensionsConfig config) {
-  final body = BlockBuilder();
-  final fields = config.filteredFields;
-
-  if (fields.isNotEmpty) {
-    body
-      ..addExpression(
-        declareFinal('_this').assign(
-          'this'.ref.asA(config.className.ref),
-        ),
-      )
-      ..addEmptyLine();
-  }
-
-  switch (fields.length) {
-    case 0:
-      body.addExpression(
-        'runtimeType'.ref.property('hashCode').returned,
-      );
-    case <= 19:
-      body.addExpression(
-        'Object'.ref.property('hash').call([
-          'runtimeType'.ref,
-          for (final field in fields) '_this'.ref.property(field.name),
-        ]).returned,
-      );
-    case _:
-      body.addExpression(
-        'Object'.ref.property('hashAll').call([
-          literalList([
-            'runtimeType'.ref,
-            for (final field in fields) '_this'.ref.property(field.name),
-          ]),
-        ]).returned,
-      );
-  }
-
-  final result = Method((m) {
-    m
-      ..name = 'hashCode'
-      ..annotations.add('override'.ref)
-      ..returns = 'int'.ref
-      ..type = MethodType.getter
       ..body = body.build();
   });
 

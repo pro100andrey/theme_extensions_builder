@@ -1,9 +1,9 @@
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
 
-import '../../common/code_builder.dart';
 import '../../common/symbols.dart';
 import '../../config/config.dart';
+import '../code_builder.dart';
 
 /// Generates code for theme extensions based on a given configuration.
 class ThemeGenCodeBuilder {
@@ -420,111 +420,5 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
             )
             .returned,
       );
-    });
-});
-
-/// Generates the equality operator `==` for the theme class.
-Method equalOperator(ThemeGenConfig config) => Method((m) {
-  m
-    ..name = 'operator =='
-    ..annotations.add('override'.ref)
-    ..returns = 'bool'.ref
-    ..requiredParameters.add(
-      Parameter(
-        (p) => p
-          ..name = 'other'
-          ..type = 'Object'.ref,
-      ),
-    )
-    ..body = Block((b) {
-      final fields = config.filteredFields;
-
-      b
-        ..statements.add(
-          ifCode(
-            'identical'.ref(['this'.ref, 'other'.ref]).code,
-            [literalTrue.returned.statement],
-          ),
-        )
-        ..addEmptyLine()
-        ..statements.add(
-          ifCode(
-            'other'.ref.prop('runtimeType').notEqualTo('runtimeType'.ref).code,
-            [literalFalse.returned.statement],
-          ),
-        )
-        ..addEmptyLine();
-
-      if (fields.isNotEmpty) {
-        b
-          ..addExpression(
-            declareFinal(
-              '_this',
-            ).assign('this'.ref.asA(config.className.ref)),
-          )
-          ..addExpression(
-            declareFinal(
-              '_other',
-            ).assign('other'.ref.asA(config.className.ref)),
-          )
-          ..addEmptyLine()
-          ..addExpression(
-            fields
-                .map(
-                  (field) => '_other'.ref
-                      .prop(field.name)
-                      .equalTo('_this'.ref.prop(field.name)),
-                )
-                .reduce((a, b) => a.and(b))
-                .returned,
-          );
-      } else {
-        b.addExpression(literalTrue.returned);
-      }
-    });
-});
-
-/// Generates the `hashCode` getter for the theme class.
-Method hashMethod(ThemeGenConfig config) => Method((m) {
-  m
-    ..name = 'hashCode'
-    ..annotations.add('override'.ref)
-    ..returns = 'int'.ref
-    ..type = MethodType.getter
-    ..body = Block((b) {
-      final fields = config.filteredFields;
-
-      if (fields.isNotEmpty) {
-        b
-          ..addExpression(
-            declareFinal('_this').assign('this'.ref.asA(config.className.ref)),
-          )
-          ..addEmptyLine();
-      }
-
-      switch (fields.length) {
-        case 0:
-          b.addExpression('runtimeType'.ref.prop('hashCode').returned);
-        case <= 19:
-          b.addExpression(
-            'Object'.ref
-                .prop('hash')([
-                  'runtimeType'.ref,
-                  for (final field in fields) '_this'.ref.prop(field.name),
-                ])
-                .returned,
-          );
-        case _:
-          b.addExpression(
-            'Object'.ref
-                .prop('hashAll')([
-                  literalList([
-                    'runtimeType'.ref,
-                    for (final field in fields) '_this'.ref.prop(field.name),
-                  ]),
-                ])
-                .returned,
-          );
-      }
     });
 });

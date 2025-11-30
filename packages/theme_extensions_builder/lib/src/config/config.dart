@@ -1,4 +1,4 @@
-import '../common/symbols.dart';
+import '../common/symbols/symbols.dart';
 
 sealed class BaseConfig {
   const BaseConfig({

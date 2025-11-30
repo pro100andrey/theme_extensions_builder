@@ -3,92 +3,10 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-final class Arg {
-  const Arg({
-    required this.name,
-    required this.type,
-    required this.isNullable,
-  });
+import 'arg.dart';
+import 'lerp_method.dart';
+import 'merge_method.dart';
 
-  final String name;
-  final String type;
-  final bool isNullable;
-
-  @override
-  String toString() => 'Arg(name: $name, type: $type, isNullable: $isNullable)';
-}
-
-sealed class LerpMethod {
-  const LerpMethod();
-}
-
-final class StaticLerpMethod extends LerpMethod {
-  const StaticLerpMethod({
-    required this.optionalResult,
-    required this.args,
-  });
-
-  final List<Arg> args;
-  final bool optionalResult;
-
-  bool get isNullableSignature =>
-      optionalResult && args[0].isNullable && args[1].isNullable;
-
-  @override
-  String toString() =>
-      'StaticLerpMethod(optionalResult: $optionalResult, args: $args)';
-}
-
-final class InstanceLerpMethod extends LerpMethod {
-  const InstanceLerpMethod({
-    required this.optionalResult,
-    required this.args,
-  });
-
-  final List<Arg> args;
-  final bool optionalResult;
-
-  bool get isNullableSignature => optionalResult && args[0].isNullable;
-
-  @override
-  String toString() =>
-      'InstanceLerpMethod(optionalResult: $optionalResult, args: $args)';
-}
-
-final class NoLerpMethod extends LerpMethod {
-  const NoLerpMethod();
-
-  @override
-  String toString() => 'NoLerpMethod()';
-}
-
-sealed class MergeMethod {
-  const MergeMethod();
-
-  @override
-  String toString() => 'MergeMethod()';
-}
-
-final class NoMergeMethod extends MergeMethod {
-  const NoMergeMethod();
-
-  @override
-  String toString() => 'NoMergeMethod()';
-}
-
-final class StaticMergeMethod extends MergeMethod {
-  const StaticMergeMethod();
-
-  @override
-  String toString() => 'StaticMergeMethod()';
-}
-
-final class InstanceMergeMethod extends MergeMethod {
-  const InstanceMergeMethod();
-
-  @override
-  String toString() => 'InstanceMergeMethod()';
-}
 
 final class FieldSymbol {
   factory FieldSymbol.from(FieldElement element) => _fieldSymbol(element);
@@ -253,8 +171,10 @@ Arg _mapArgumentSymbol(FormalParameterElement parameter) {
   );
 }
 
-/// Cache for method lookups to avoid repeated expensive lookups
-final _methodCache = <InterfaceElement, Map<String, MethodElement?>>{};
+/// Cache for method lookups to avoid repeated expensive lookups.
+/// Using Expando to avoid memory leaks - entries are automatically removed
+/// when InterfaceElement is garbage collected.
+final _methodCache = Expando<Map<String, MethodElement?>>('method_cache');
 
 /// Looks up a method with the given [name] in the [typeElement].
 /// If the method is not found directly on the type, it looks up
@@ -264,7 +184,11 @@ MethodElement? _lookupMethod(
   InterfaceElement typeElement,
   String name,
 ) {
-  final cache = _methodCache.putIfAbsent(typeElement, () => {});
+  var cache = _methodCache[typeElement];
+  if (cache == null) {
+    cache = <String, MethodElement?>{};
+    _methodCache[typeElement] = cache;
+  }
 
   if (cache.containsKey(name)) {
     return cache[name];

@@ -1,6 +1,6 @@
 import 'package:code_builder/code_builder.dart';
 
-import '../../common/symbols.dart';
+import '../../common/symbols/lerp_method.dart';
 import '../../config/config.dart';
 import '../../extensions/string.dart';
 import '../common.dart';

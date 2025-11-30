@@ -1,8 +1,9 @@
 import 'package:test/test.dart';
 
 import '../theme_extensions/complex_theme_extension.dart';
+import '../theme_extensions/empty_theme.dart';
+import '../theme_extensions/empty_theme_extension.dart';
 import '../theme_extensions/mock.dart';
-import '../theme_gen/empty_theme.dart';
 
 void main() {
   group('ComplexThemeExtensionNoContext', () {
@@ -212,6 +213,8 @@ void main() {
         optionalColor: Color(0xFFFF0000),
         optionalBorderSide: BorderSide(width: 3),
         optionalTheme: EmptyTheme(),
+        requiredThemeExtension: EmptyThemeExtension(),
+        optionalThemeExtension: EmptyThemeExtension(),
       );
 
       expect(theme, isA<ComplexThemeExtension>());
@@ -231,6 +234,7 @@ void main() {
         requiredColor: Color(0xFF0000FF),
         requiredBorderSide: BorderSide(width: 2),
         requiredTheme: EmptyTheme(),
+        requiredThemeExtension: EmptyThemeExtension(),
         optionalInt: null,
         optionalDouble: null,
         optionalString: null,
@@ -239,6 +243,7 @@ void main() {
         optionalColor: null,
         optionalBorderSide: null,
         optionalTheme: null,
+        optionalThemeExtension: null,
       );
 
       expect(theme.optionalInt, isNull);
@@ -246,6 +251,10 @@ void main() {
       expect(theme.optionalString, isNull);
       expect(theme.optionalBool, isNull);
       expect(theme.optionalDuration, isNull);
+      expect(theme.optionalColor, isNull);
+      expect(theme.optionalBorderSide, isNull);
+      expect(theme.optionalTheme, isNull);
+      expect(theme.optionalThemeExtension, isNull);
     });
 
     test('copyWith updates required fields', () {
@@ -258,6 +267,7 @@ void main() {
         requiredColor: Color(0xFF0000FF),
         requiredBorderSide: BorderSide(width: 2),
         requiredTheme: EmptyTheme(),
+        requiredThemeExtension: EmptyThemeExtension(),
         optionalInt: 20,
         optionalDouble: 2.5,
         optionalString: 'world',
@@ -266,6 +276,7 @@ void main() {
         optionalColor: Color(0xFFFF0000),
         optionalBorderSide: BorderSide(width: 3),
         optionalTheme: EmptyTheme(),
+        optionalThemeExtension: EmptyThemeExtension(),
       );
 
       final copied =
@@ -290,6 +301,7 @@ void main() {
         requiredColor: Color(0xFF0000FF),
         requiredBorderSide: BorderSide(width: 2),
         requiredTheme: EmptyTheme(),
+        requiredThemeExtension: EmptyThemeExtension(),
         optionalInt: 20,
         optionalDouble: 2.5,
         optionalString: 'world',
@@ -298,6 +310,7 @@ void main() {
         optionalColor: Color(0xFFFF0000),
         optionalBorderSide: BorderSide(width: 3),
         optionalTheme: EmptyTheme(),
+        optionalThemeExtension: EmptyThemeExtension(),
       );
 
       final copied =
@@ -322,6 +335,7 @@ void main() {
         requiredColor: Color(0xFF0000FF),
         requiredBorderSide: BorderSide(width: 2),
         requiredTheme: EmptyTheme(),
+        requiredThemeExtension: EmptyThemeExtension(),
         optionalInt: 10,
         optionalDouble: null,
         optionalString: null,
@@ -330,6 +344,7 @@ void main() {
         optionalColor: null,
         optionalBorderSide: null,
         optionalTheme: null,
+        optionalThemeExtension: null,
       );
 
       const themeB = ComplexThemeExtension(
@@ -341,6 +356,7 @@ void main() {
         requiredColor: Color(0xFF00FF00),
         requiredBorderSide: BorderSide(width: 4),
         requiredTheme: EmptyTheme(),
+        requiredThemeExtension: EmptyThemeExtension(),
         optionalInt: null,
         optionalDouble: null,
         optionalString: null,
@@ -349,6 +365,7 @@ void main() {
         optionalColor: null,
         optionalBorderSide: null,
         optionalTheme: null,
+        optionalThemeExtension: null,
       );
 
       // Just verify lerp method exists and returns a result
@@ -383,6 +400,8 @@ void main() {
         optionalColor: Color(0xFFFF0000),
         optionalBorderSide: BorderSide(width: 3),
         optionalTheme: EmptyTheme(),
+        requiredThemeExtension: EmptyThemeExtension(),
+        optionalThemeExtension: EmptyThemeExtension(),
       );
       const theme2 = ComplexThemeExtension(
         requiredInt: 10,
@@ -401,6 +420,8 @@ void main() {
         optionalColor: Color(0xFFFF0000),
         optionalBorderSide: BorderSide(width: 3),
         optionalTheme: EmptyTheme(),
+        requiredThemeExtension: EmptyThemeExtension(),
+        optionalThemeExtension: EmptyThemeExtension(),
       );
       expect(theme1, equals(theme2));
       expect(theme1.hashCode, equals(theme2.hashCode));
@@ -416,6 +437,7 @@ void main() {
         requiredColor: Color(0xFF0000FF),
         requiredBorderSide: BorderSide(width: 2),
         requiredTheme: EmptyTheme(),
+        requiredThemeExtension: EmptyThemeExtension(),
         optionalInt: 20,
         optionalDouble: null,
         optionalString: null,
@@ -424,6 +446,7 @@ void main() {
         optionalColor: null,
         optionalBorderSide: null,
         optionalTheme: null,
+        optionalThemeExtension: null,
       );
       const theme2 = ComplexThemeExtension(
         requiredInt: 10,
@@ -434,6 +457,7 @@ void main() {
         requiredColor: Color(0xFF0000FF),
         requiredBorderSide: BorderSide(width: 2),
         requiredTheme: EmptyTheme(),
+        requiredThemeExtension: EmptyThemeExtension(),
         optionalInt: null,
         optionalDouble: null,
         optionalString: null,
@@ -442,6 +466,7 @@ void main() {
         optionalColor: null,
         optionalBorderSide: null,
         optionalTheme: null,
+        optionalThemeExtension: null,
       );
       expect(theme1, isNot(equals(theme2)));
     });
@@ -465,6 +490,8 @@ void main() {
         optionalColor: Color(0xFFFF00FF),
         optionalBorderSide: BorderSide(width: 10),
         optionalTheme: EmptyTheme(),
+        requiredThemeExtension: EmptyThemeExtension(),
+        optionalThemeExtension: EmptyThemeExtension(),
       );
 
       // Create a Theme with the extension

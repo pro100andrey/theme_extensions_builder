@@ -182,6 +182,7 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
     Color? requiredColor,
     BorderSide? requiredBorderSide,
     EmptyTheme? requiredTheme,
+    EmptyThemeExtension? requiredThemeExtension,
     int? optionalInt,
     double? optionalDouble,
     String? optionalString,
@@ -190,6 +191,7 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
     Color? optionalColor,
     BorderSide? optionalBorderSide,
     EmptyTheme? optionalTheme,
+    EmptyThemeExtension? optionalThemeExtension,
   }) {
     final _this = (this as ComplexThemeExtension);
 
@@ -202,6 +204,8 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
       requiredColor: requiredColor ?? _this.requiredColor,
       requiredBorderSide: requiredBorderSide ?? _this.requiredBorderSide,
       requiredTheme: requiredTheme ?? _this.requiredTheme,
+      requiredThemeExtension:
+          requiredThemeExtension ?? _this.requiredThemeExtension,
       optionalInt: optionalInt ?? _this.optionalInt,
       optionalDouble: optionalDouble ?? _this.optionalDouble,
       optionalString: optionalString ?? _this.optionalString,
@@ -210,6 +214,8 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
       optionalColor: optionalColor ?? _this.optionalColor,
       optionalBorderSide: optionalBorderSide ?? _this.optionalBorderSide,
       optionalTheme: optionalTheme ?? _this.optionalTheme,
+      optionalThemeExtension:
+          optionalThemeExtension ?? _this.optionalThemeExtension,
     );
   }
 
@@ -249,6 +255,9 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
         other.requiredTheme,
         t,
       )!,
+      requiredThemeExtension:
+          (_this.requiredThemeExtension.lerp(other.requiredThemeExtension, t)
+              as EmptyThemeExtension),
       optionalInt: t < 0.5 ? _this.optionalInt : other.optionalInt,
       optionalDouble: lerpDouble$(
         _this.optionalDouble,
@@ -263,9 +272,10 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
         t,
       ),
       optionalColor: Color.lerp(_this.optionalColor, other.optionalColor, t),
-      optionalBorderSide:
-          _this.optionalBorderSide == null || other.optionalBorderSide == null
-          ? null
+      optionalBorderSide: _this.optionalBorderSide == null
+          ? other.optionalBorderSide
+          : other.optionalBorderSide == null
+          ? _this.optionalBorderSide
           : BorderSide.lerp(
               _this.optionalBorderSide!,
               other.optionalBorderSide!,
@@ -276,6 +286,8 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
         other.optionalTheme,
         t,
       ),
+      optionalThemeExtension:
+          (_this.optionalThemeExtension?.lerp as EmptyThemeExtension?),
     );
   }
 
@@ -300,6 +312,7 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
         _other.requiredColor == _this.requiredColor &&
         _other.requiredBorderSide == _this.requiredBorderSide &&
         _other.requiredTheme == _this.requiredTheme &&
+        _other.requiredThemeExtension == _this.requiredThemeExtension &&
         _other.optionalInt == _this.optionalInt &&
         _other.optionalDouble == _this.optionalDouble &&
         _other.optionalString == _this.optionalString &&
@@ -307,7 +320,8 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
         _other.optionalDuration == _this.optionalDuration &&
         _other.optionalColor == _this.optionalColor &&
         _other.optionalBorderSide == _this.optionalBorderSide &&
-        _other.optionalTheme == _this.optionalTheme;
+        _other.optionalTheme == _this.optionalTheme &&
+        _other.optionalThemeExtension == _this.optionalThemeExtension;
   }
 
   @override
@@ -324,6 +338,7 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
       _this.requiredColor,
       _this.requiredBorderSide,
       _this.requiredTheme,
+      _this.requiredThemeExtension,
       _this.optionalInt,
       _this.optionalDouble,
       _this.optionalString,
@@ -332,6 +347,7 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
       _this.optionalColor,
       _this.optionalBorderSide,
       _this.optionalTheme,
+      _this.optionalThemeExtension,
     );
   }
 }

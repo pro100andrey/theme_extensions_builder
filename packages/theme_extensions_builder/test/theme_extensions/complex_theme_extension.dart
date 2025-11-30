@@ -1,7 +1,8 @@
 import 'package:source_gen_test/source_gen_test.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../theme_gen/empty_theme.dart';
+import 'empty_theme.dart';
+import 'empty_theme_extension.dart';
 import 'mock.dart';
 
 part 'complex_theme_extension.g.theme.dart';
@@ -120,6 +121,7 @@ final class ComplexThemeExtension extends ThemeExtension<ComplexThemeExtension>
     required this.requiredColor,
     required this.requiredBorderSide,
     required this.requiredTheme,
+    required this.requiredThemeExtension,
     required this.optionalInt,
     required this.optionalString,
     required this.optionalDouble,
@@ -128,6 +130,8 @@ final class ComplexThemeExtension extends ThemeExtension<ComplexThemeExtension>
     required this.optionalColor,
     required this.optionalBorderSide,
     required this.optionalTheme,
+    required this.optionalThemeExtension,
+
     // ignore: unused_element_parameter
     this.computedValue = 'computed',
   });
@@ -141,6 +145,7 @@ final class ComplexThemeExtension extends ThemeExtension<ComplexThemeExtension>
   final Color requiredColor;
   final BorderSide requiredBorderSide;
   final EmptyTheme requiredTheme;
+  final EmptyThemeExtension requiredThemeExtension;
 
   // Optional nullable fields
   final int? optionalInt;
@@ -151,6 +156,7 @@ final class ComplexThemeExtension extends ThemeExtension<ComplexThemeExtension>
   final Color? optionalColor;
   final BorderSide? optionalBorderSide;
   final EmptyTheme? optionalTheme;
+  final EmptyThemeExtension? optionalThemeExtension;
 
   @ignore
   final String computedValue;

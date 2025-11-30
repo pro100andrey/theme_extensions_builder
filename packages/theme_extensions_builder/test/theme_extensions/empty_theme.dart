@@ -3,18 +3,17 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 part 'empty_theme.g.theme.dart';
 
 @themeGen
-final class EmptyThemeWithConstConstructor
-    with _$EmptyThemeWithConstConstructor {
-  const EmptyThemeWithConstConstructor();
+final class EmptyTheme with _$EmptyTheme {
+  const EmptyTheme();
 
   @override
   bool get canMerge => true;
 
-  static EmptyThemeWithConstConstructor? lerp(
-    EmptyThemeWithConstConstructor? a,
-    EmptyThemeWithConstConstructor? b,
+  static EmptyTheme? lerp(
+    EmptyTheme? a,
+    EmptyTheme? b,
     double t,
-  ) => _$EmptyThemeWithConstConstructor.lerp(a, b, t);
+  ) => _$EmptyTheme.lerp(a, b, t);
 }
 
 @themeGen

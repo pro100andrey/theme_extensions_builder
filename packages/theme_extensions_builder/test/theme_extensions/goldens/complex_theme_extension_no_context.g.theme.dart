@@ -11,7 +11,7 @@ mixin _$ComplexThemeExtensionNoContext
     Duration? duration,
     Color? color,
     BorderSide? borderSide,
-    InvalidType? theme,
+    EmptyTheme? theme,
   }) {
     final _this = (this as ComplexThemeExtensionNoContext);
 
@@ -46,7 +46,7 @@ mixin _$ComplexThemeExtensionNoContext
       duration: lerpDuration$(_this.duration, other.duration, t)!,
       color: Color.lerp(_this.color, other.color, t)!,
       borderSide: BorderSide.lerp(_this.borderSide, other.borderSide, t),
-      theme: t < 0.5 ? _this.theme : other.theme,
+      theme: EmptyTheme.lerp(_this.theme, other.theme, t)!,
     );
   }
 

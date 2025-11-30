@@ -1,7 +1,6 @@
 import 'package:test/test.dart';
 
 import '../theme_extensions/empty_theme.dart';
-import '../theme_gen/empty_theme.dart';
 
 void main() {
   group('EmptyTheme - with const constructor', () {

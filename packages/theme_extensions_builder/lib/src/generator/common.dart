@@ -158,27 +158,14 @@ extension StringRef on String {
 }
 
 extension ExpressionExtensions on Expression {
-  BinaryExpression prop(String name) => property(name) as BinaryExpression;
+  BinaryExpression prop(
+    String name, {
+    bool nullSafe = false,
+  }) =>
+      (nullSafe ? nullSafeProperty(name) : property(name)) as BinaryExpression;
 }
 
 extension BlockBuilderExtensions on BlockBuilder {
   /// Adds an empty line to the block.
   void addEmptyLine() => statements.add(const Code(''));
-}
-
-extension BinaryExpressionExtensions on BinaryExpression {
-  // ignore: avoid_positional_boolean_parameters
-  BinaryExpression withNullSafety([bool enable = true]) {
-    if (!enable) {
-      return this;
-    }
-
-    final lSymbol = (left as Reference).symbol!;
-    final rSymbol = (right as LiteralExpression).literal;
-
-    return CodeExpression(Code(lSymbol)).nullSafeProperty(rSymbol)
-        as BinaryExpression;
-  }
-
-  BinaryExpression get nullSafe => withNullSafety();
 }

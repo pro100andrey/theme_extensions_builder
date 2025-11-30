@@ -121,141 +121,192 @@ Method copyWith(ThemeExtensionsConfig config) => Method((m) {
 /// - Fields with instance `lerp` methods,
 /// - `double` and `Duration` fields,
 /// - Default conditional interpolation for other types.
-Method lerpMethod(ThemeExtensionsConfig config) {
-  final body = BlockBuilder();
-  final fields = config.filteredFields;
-  final isEmpty = fields.isEmpty;
-
-  body
-    ..statements.add(
-      ifStatement(
-        'other'.ref.isNotA(config.className.ref),
-        Block((b) => b.addExpression('this'.ref.returned)),
+Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
+  m
+    ..name = 'lerp'
+    ..annotations.add('override'.ref)
+    ..returns = _buildThemeExtensionRef(config)
+    ..requiredParameters.addAll([
+      Parameter(
+        (p) => p
+          ..name = 'other'
+          ..type = _buildThemeExtensionRef(config, isNullable: true),
       ),
-    )
-    ..addEmptyLine();
+      Parameter(
+        (p) => p
+          ..name = 't'
+          ..type = 'double'.ref,
+      ),
+    ])
+    ..body = Block((b) {
+      final fields = config.filteredFields;
 
-  if (!isEmpty) {
-    body
-      ..addExpression(
-        declareFinal('_this'.ref.symbol).assign(
-          'this'.ref.asA(config.className.ref),
-        ),
-      )
-      ..addEmptyLine();
-  }
+      b
+        ..statements.add(
+          ifStatement(
+            'other'.ref.isNotA(config.className.ref),
+            Block((b) => b.addExpression('this'.ref.returned)),
+          ),
+        )
+        ..addEmptyLine();
 
-  body.addExpression(
-    _buildConstructorCall(
-      config,
-      args: () {
-        final args = <String, Expression>{};
+      if (fields.isNotEmpty) {
+        b
+          ..addExpression(
+            declareFinal('_this'.ref.symbol).assign(
+              'this'.ref.asA(config.className.ref),
+            ),
+          )
+          ..addEmptyLine();
+      }
 
-        for (final field in fields) {
-          final thisProp = '_this'.ref.prop(field.name);
-          final otherProp = 'other'.ref.prop(field.name);
+      final args = <String, Expression>{};
 
-          switch (field) {
-            // Lerp class with static lerp method
-            case FieldSymbol(
-              lerp: StaticLerpMethod(:final isNullableSignature),
-            ):
-              final expression = !isNullableSignature && field.optional
-                  ? thisProp
-                        .equalTo(literalNull)
-                        .or(otherProp.equalTo(literalNull))
-                        .conditional(
-                          literalNull,
-                          field.baseType.ref.prop('lerp')([
-                            thisProp.nullChecked,
-                            otherProp.nullChecked,
-                            't'.ref,
-                          ]),
-                        )
-                  : field.baseType.ref.prop('lerp')([
-                      '_this'.ref.prop(field.name),
-                      'other'.ref.prop(field.name),
-                      't'.ref,
-                    ]);
+      for (final field in fields) {
+        final tProp = '_this'.ref.prop(field.name);
+        final oProp = 'other'.ref.prop(field.name);
 
-              args[field.name] = field.optional || !isNullableSignature
-                  ? expression
-                  : expression.nullChecked;
+        // Handle NoLerpMethod with double field
+        if (field.lerp case NoLerpMethod() when field.isDouble) {
+          // lerpDouble$(_this.field, other.field, t) or
+          // lerpDouble$(_this.field, other.field, t)!
+          final expression = r'lerpDouble$'.ref([
+            tProp,
+            oProp,
+            't'.ref,
+          ]);
 
-            // Lerp class with instance lerp method
-            case FieldSymbol(lerp: InstanceLerpMethod()):
-              final expression = '_this'.ref
-                  .prop(field.name)
-                  .prop('lerp')
-                  .withNullSafety(field.optional)
-                  .call(['other'.ref.prop(field.name), 't'.ref])
-                  .asA(field.baseType.typeRef(optional: field.optional));
-
-              args[field.name] = expression;
-
-            // When the field is of type double
-            case FieldSymbol(isDouble: true):
-              final expression = r'lerpDouble$'.ref([
-                '_this'.ref.prop(field.name),
-                'other'.ref.prop(field.name),
-                't'.ref,
-              ]);
-
-              args[field.name] = field.optional
-                  ? expression
-                  : expression.nullChecked;
-
-            // When the field is of type Duration
-            case FieldSymbol(isDuration: true):
-              final expression = r'lerpDuration$'.ref([
-                '_this'.ref.prop(field.name),
-                'other'.ref.prop(field.name),
-                't'.ref,
-              ]);
-
-              args[field.name] = field.optional
-                  ? expression
-                  : expression.nullChecked;
-
-            // Default case: use a simple conditional expression
-            case _:
-              args[field.name] = 't'.ref
-                  .lessThan(literalNum(0.5))
-                  .conditional(
-                    '_this'.ref.prop(field.name),
-                    'other'.ref.prop(field.name),
-                  );
-          }
+          args[field.name] = field.optional
+              ? expression
+              : expression.nullChecked;
+          continue;
         }
 
-        return args;
-      }(),
-    ).returned,
-  );
+        // Handle NoLerpMethod with duration field
+        if (field.lerp case NoLerpMethod() when field.isDuration) {
+          // lerpDuration$(_this.field, other.field, t) or
+          // lerpDuration$(_this.field, other.field, t)!
+          final expression = r'lerpDuration$'.ref([
+            tProp,
+            oProp,
+            't'.ref,
+          ]);
 
-  final result = Method((m) {
-    m
-      ..name = 'lerp'
-      ..annotations.add('override'.ref)
-      ..returns = _buildThemeExtensionRef(config)
-      ..requiredParameters.addAll([
-        Parameter(
-          (p) => p
-            ..name = 'other'
-            ..type = _buildThemeExtensionRef(config, isNullable: true),
-        ),
-        Parameter(
-          (p) => p
-            ..name = 't'
-            ..type = 'double'.ref,
-        ),
-      ])
-      ..body = body.build();
-  });
+          args[field.name] = field.optional
+              ? expression
+              : expression.nullChecked;
+          continue;
+        }
 
-  return result;
-}
+        if (field.lerp case NoLerpMethod()) {
+          // Default conditional expression
 
+          args[field.name] = 't'.ref
+              .lessThan(literalNum(0.5))
+              .conditional(
+                '_this'.ref.prop(field.name),
+                'other'.ref.prop(field.name),
+              );
+
+          continue;
+        }
+
+        final sLerp = field.baseType.ref.prop('lerp');
+
+        // Handle StaticLerpMethod with non-nullable signature and optional
+        // field
+        if (field.lerp case StaticLerpMethod(
+          isNullableSignature: false,
+        ) when field.optional) {
+          // _this.side == null
+          // ? other.side
+          // : other.side == null
+          // ? _this.side
+          // : Side.lerp(_this.side!, other.side!, t),
+          args[field.name] = tProp
+              .equalTo(literalNull)
+              .conditional(
+                oProp,
+                oProp
+                    .equalTo(literalNull)
+                    .conditional(
+                      tProp,
+                      sLerp([
+                        tProp.nullChecked,
+                        oProp.nullChecked,
+                        't'.ref,
+                      ]),
+                    ),
+              );
+          continue;
+        }
+        // Handle StaticLerpMethod with non-nullable signature and
+        // non-optional field
+        if (field.lerp case StaticLerpMethod(
+          isNullableSignature: false,
+        ) when !field.optional) {
+          // FieldType.lerp(_this.field, other.field, t)
+          args[field.name] = sLerp([tProp, oProp, 't'.ref]);
+          continue;
+        }
+
+        // Handle StaticLerpMethod with nullable signature and
+        // non-optional field
+        if (field.lerp case StaticLerpMethod(
+          isNullableSignature: true,
+        ) when !field.optional) {
+          // FieldType.lerp(_this.field!, other.field!, t)!
+          args[field.name] = sLerp([tProp, oProp, 't'.ref]).nullChecked;
+          continue;
+        }
+
+        // Handle StaticLerpMethod with nullable signature and optional
+        // field
+        if (field.lerp case StaticLerpMethod(
+          isNullableSignature: true,
+        ) when field.optional) {
+          // FieldType.lerp(_this.field, other.field, t)
+          args[field.name] = sLerp([tProp, oProp, 't'.ref]);
+          continue;
+        }
+
+        // Handle InstanceLerpMethod with optional field
+        if (field.lerp case InstanceLerpMethod() when field.optional) {
+          // _this.field?.lerp(other.field, t) as FieldType?
+          args[field.name] = tProp
+              .prop('lerp', nullSafe: true)
+              .asA(field.baseType.typeRef(optional: field.optional));
+          continue;
+        }
+
+        // Handle InstanceLerpMethod with non-optional field
+        if (field.lerp case InstanceLerpMethod() when !field.optional) {
+          // _this.field.lerp(other.field, t) as FieldType
+          args[field.name] = tProp
+              .prop('lerp')([oProp, 't'.ref])
+              .asA(field.baseType.typeRef(optional: field.optional));
+          continue;
+        }
+
+        throw UnimplementedError(
+          'Lerp method not implemented for field: ${field.name}',
+        );
+      }
+
+      b.addExpression(
+        (args.isEmpty && config.constConstructor
+                ? InvokeExpression.constOf
+                : InvokeExpression.newOf)(
+              config.className.ref,
+              [],
+              args,
+              [],
+              config.constructor,
+            )
+            .returned,
+      );
+    });
+});
 // Returns a type reference for `ThemeExtension<T>` based on [config].
 TypeReference _buildThemeExtensionRef(
   ThemeExtensionsConfig config, {
@@ -266,31 +317,6 @@ TypeReference _buildThemeExtensionRef(
     ..types.add(config.className.ref)
     ..isNullable = isNullable,
 );
-
-/// Helper to build constructor call with correct const/new.
-InvokeExpression _buildConstructorCall(
-  ThemeExtensionsConfig config, {
-  required Map<String, Expression> args,
-}) {
-  final isEmpty = args.isEmpty;
-  final useConst = isEmpty && config.constConstructor;
-
-  return useConst
-      ? InvokeExpression.constOf(
-          config.className.ref,
-          [],
-          {},
-          [],
-          config.constructor,
-        )
-      : InvokeExpression.newOf(
-          config.className.ref,
-          [],
-          args,
-          [],
-          config.constructor,
-        );
-}
 
 /// Generates a `BuildContext` extension to easily access the theme extension.
 ///

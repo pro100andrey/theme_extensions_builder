@@ -9,14 +9,10 @@ part of 'empty_theme.dart';
 // ThemeGenGenerator
 // **************************************************************************
 
-mixin _$EmptyThemeWithConstConstructor {
+mixin _$EmptyTheme {
   bool get canMerge => true;
 
-  static EmptyThemeWithConstConstructor? lerp(
-    EmptyThemeWithConstConstructor? a,
-    EmptyThemeWithConstConstructor? b,
-    double t,
-  ) {
+  static EmptyTheme? lerp(EmptyTheme? a, EmptyTheme? b, double t) {
     if (identical(a, b)) {
       return a;
     }
@@ -29,15 +25,15 @@ mixin _$EmptyThemeWithConstConstructor {
       return t == 0.0 ? a : null;
     }
 
-    return const EmptyThemeWithConstConstructor();
+    return const EmptyTheme();
   }
 
-  EmptyThemeWithConstConstructor copyWith() {
-    return const EmptyThemeWithConstConstructor();
+  EmptyTheme copyWith() {
+    return const EmptyTheme();
   }
 
-  EmptyThemeWithConstConstructor merge(EmptyThemeWithConstConstructor? other) {
-    final _this = (this as EmptyThemeWithConstConstructor);
+  EmptyTheme merge(EmptyTheme? other) {
+    final _this = (this as EmptyTheme);
 
     if (other == null || identical(_this, other)) {
       return _this;

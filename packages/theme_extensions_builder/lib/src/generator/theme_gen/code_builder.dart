@@ -343,9 +343,8 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
           optionalResult: true,
         ) when field.optional) {
           // value: a.field.lerp(b.field, t)
-          argsResult[field.name] = aProp.nullSafe
-              .prop('lerp')
-              .withNullSafety(field.optional)([bProp.nullSafe, 't'.ref])
+          argsResult[field.name] = aProp
+              .prop('lerp', nullSafe: true)([bProp, 't'.ref])
               .asA(field.baseType.typeRef(optional: field.optional));
 
           continue;

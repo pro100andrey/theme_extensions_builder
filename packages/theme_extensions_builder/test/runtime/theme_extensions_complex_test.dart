@@ -322,11 +322,11 @@ void main() {
         requiredColor: Color(0xFF0000FF),
         requiredBorderSide: BorderSide(width: 2),
         requiredTheme: EmptyTheme(),
-        optionalInt: null,
+        optionalInt: 10,
         optionalDouble: null,
         optionalString: null,
         optionalBool: null,
-        optionalDuration: null,
+        optionalDuration: Duration(seconds: 10),
         optionalColor: null,
         optionalBorderSide: null,
         optionalTheme: null,
@@ -352,8 +352,14 @@ void main() {
       );
 
       // Just verify lerp method exists and returns a result
-      final result = themeA.lerp(themeB, 0.5);
-      expect(result, isA<ComplexThemeExtension>());
+
+      expect(themeA.lerp(themeB, 0), isA<ComplexThemeExtension>());
+      expect(themeA.lerp(themeB, 0.5), isA<ComplexThemeExtension>());
+      expect(themeA.lerp(themeB, 1), isA<ComplexThemeExtension>());
+
+      expect(themeB.lerp(themeB, 0), isA<ComplexThemeExtension>());
+      expect(themeB.lerp(themeB, 0.5), isA<ComplexThemeExtension>());
+      expect(themeB.lerp(themeB, 1), isA<ComplexThemeExtension>());
     });
 
     test('equality works correctly', () {

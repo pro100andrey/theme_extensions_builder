@@ -85,9 +85,9 @@ Method copyWith(ThemeExtensionsConfig config) => Method((m) {
       if (fields.isNotEmpty) {
         b
           ..addExpression(
-            declareFinal(
-              '_this'.ref.symbol,
-            ).assign('this'.ref.asA(config.className.ref)),
+            declareFinal('_this'.ref.symbol).assign(
+              'this'.ref.asA(config.className.ref),
+            ),
           )
           ..addEmptyLine();
       }

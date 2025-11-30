@@ -3,7 +3,7 @@ import 'package:dart_style/dart_style.dart';
 
 import '../../common/symbols.dart';
 import '../../config/config.dart';
-import '../code_builder.dart';
+import '../common.dart';
 
 /// Generates code for theme extensions based on a given configuration.
 class ThemeGenCodeBuilder {

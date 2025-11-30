@@ -4,7 +4,7 @@ import 'package:dart_style/dart_style.dart';
 import '../../common/symbols.dart';
 import '../../config/config.dart';
 import '../../extensions/string.dart';
-import '../code_builder.dart';
+import '../common.dart';
 
 /// Generates code for `ThemeExtension` mixins and related helpers.
 class ThemeExtensionsCodeBuilder {

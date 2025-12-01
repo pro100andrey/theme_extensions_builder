@@ -18,17 +18,11 @@ Future<void> main() async {
 
   group('ThemeGenGenerator', () {
     group('Empty', () {
-      testAnnotatedElements<ThemeGen>(
-        emptyReader,
-        ThemeGenGenerator(),
-      );
+      testAnnotatedElements<ThemeGen>(emptyReader, ThemeGenGenerator());
     });
 
     group('Complex', () {
-      testAnnotatedElements<ThemeGen>(
-        complexReader,
-        ThemeGenGenerator(),
-      );
+      testAnnotatedElements<ThemeGen>(complexReader, ThemeGenGenerator());
     });
   });
 }

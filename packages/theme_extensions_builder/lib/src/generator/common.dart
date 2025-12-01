@@ -49,14 +49,10 @@ Method equalOperator(BaseConfig config) => Method((m) {
       if (fields.isNotEmpty) {
         b
           ..addExpression(
-            declareFinal('_this').assign(
-              'this'.ref.asA(className.ref),
-            ),
+            declareFinal('_this').assign('this'.ref.asA(className.ref)),
           )
           ..addExpression(
-            declareFinal('_other').assign(
-              'other'.ref.asA(className.ref),
-            ),
+            declareFinal('_other').assign('other'.ref.asA(className.ref)),
           )
           ..addEmptyLine()
           ..addExpression(
@@ -194,10 +190,7 @@ extension ExpressionExtensions on Expression {
   /// 'obj'.ref.prop('field') // obj.field
   /// 'obj'.ref.prop('field', nullSafe: true) // obj?.field
   /// ```
-  BinaryExpression prop(
-    String name, {
-    bool nullSafe = false,
-  }) =>
+  BinaryExpression prop(String name, {bool nullSafe = false}) =>
       (nullSafe ? nullSafeProperty(name) : property(name)) as BinaryExpression;
 }
 

@@ -75,9 +75,9 @@ Method copyWith(ThemeExtensionsConfig config) => Method((m) {
       if (fields.isNotEmpty) {
         b
           ..addExpression(
-            declareFinal('_this'.ref.symbol).assign(
-              'this'.ref.asA(config.className.ref),
-            ),
+            declareFinal(
+              '_this'.ref.symbol,
+            ).assign('this'.ref.asA(config.className.ref)),
           )
           ..addEmptyLine();
       }
@@ -143,9 +143,9 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
       if (fields.isNotEmpty) {
         b
           ..addExpression(
-            declareFinal('_this'.ref.symbol).assign(
-              'this'.ref.asA(config.className.ref),
-            ),
+            declareFinal(
+              '_this'.ref.symbol,
+            ).assign('this'.ref.asA(config.className.ref)),
           )
           ..addEmptyLine();
       }
@@ -160,11 +160,7 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
         if (field.lerp case NoLerp() when field.isDouble) {
           // lerpDouble$(_this.field, other.field, t) or
           // lerpDouble$(_this.field, other.field, t)!
-          final expression = r'lerpDouble$'.ref([
-            tProp,
-            oProp,
-            't'.ref,
-          ]);
+          final expression = r'lerpDouble$'.ref([tProp, oProp, 't'.ref]);
 
           args[field.name] = field.isNullable
               ? expression
@@ -176,11 +172,7 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
         if (field.lerp case NoLerp() when field.isDuration) {
           // lerpDuration$(_this.field, other.field, t) or
           // lerpDuration$(_this.field, other.field, t)!
-          final expression = r'lerpDuration$'.ref([
-            tProp,
-            oProp,
-            't'.ref,
-          ]);
+          final expression = r'lerpDuration$'.ref([tProp, oProp, 't'.ref]);
 
           args[field.name] = field.isNullable
               ? expression
@@ -221,11 +213,7 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
                     .equalTo(literalNull)
                     .conditional(
                       tProp,
-                      sLerp([
-                        tProp.nullChecked,
-                        oProp.nullChecked,
-                        't'.ref,
-                      ]),
+                      sLerp([tProp.nullChecked, oProp.nullChecked, 't'.ref]),
                     ),
               );
           continue;

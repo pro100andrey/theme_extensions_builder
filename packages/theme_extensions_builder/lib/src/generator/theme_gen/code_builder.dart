@@ -117,9 +117,9 @@ Method merge(ThemeGenConfig config) => Method((m) {
       b
         // Create a _this variable for easier access to the current instance
         ..addExpression(
-          declareFinal('_this'.ref.symbol).assign(
-            'this'.ref.asA(config.className.ref),
-          ),
+          declareFinal(
+            '_this'.ref.symbol,
+          ).assign('this'.ref.asA(config.className.ref)),
         )
         ..addEmptyLine()
         // Return `_this` if other is null or identical to `_this`
@@ -353,14 +353,8 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         }
 
         // When the field is of type double
-        if (field case FieldInfo(
-          isDouble: true,
-        ) when field.lerp is NoLerp) {
-          final expression = r'lerpDouble$'.ref([
-            aProp,
-            bProp,
-            't'.ref,
-          ]);
+        if (field case FieldInfo(isDouble: true) when field.lerp is NoLerp) {
+          final expression = r'lerpDouble$'.ref([aProp, bProp, 't'.ref]);
 
           argsResult[field.name] = field.isNullable
               ? expression
@@ -370,14 +364,8 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         }
 
         // When the field is of type Duration
-        if (field case FieldInfo(
-          isDuration: true,
-        ) when field.lerp is NoLerp) {
-          final expression = r'lerpDuration$'.ref([
-            aProp,
-            bProp,
-            't'.ref,
-          ]);
+        if (field case FieldInfo(isDuration: true) when field.lerp is NoLerp) {
+          final expression = r'lerpDuration$'.ref([aProp, bProp, 't'.ref]);
 
           argsResult[field.name] = field.isNullable
               ? expression

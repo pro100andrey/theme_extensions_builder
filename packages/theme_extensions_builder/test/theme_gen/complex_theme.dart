@@ -103,10 +103,7 @@ final class ComplexThemeInternal with _$ComplexThemeInternal {
 }
 
 /// ThemeGen with required and optional fields
-@ShouldGenerateFile(
-  'goldens/complex_theme.g.theme.dart',
-  partOfCurrent: true,
-)
+@ShouldGenerateFile('goldens/complex_theme.g.theme.dart', partOfCurrent: true)
 @themeGen
 final class ComplexTheme with _$ComplexTheme {
   const ComplexTheme({
@@ -159,9 +156,6 @@ final class ComplexTheme with _$ComplexTheme {
   @override
   bool get canMerge => true;
 
-  static ComplexTheme? lerp(
-    ComplexTheme? a,
-    ComplexTheme? b,
-    double t,
-  ) => _$ComplexTheme.lerp(a, b, t);
+  static ComplexTheme? lerp(ComplexTheme? a, ComplexTheme? b, double t) =>
+      _$ComplexTheme.lerp(a, b, t);
 }

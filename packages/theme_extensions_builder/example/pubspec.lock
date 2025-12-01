@@ -400,7 +400,7 @@ packages:
       path: "../../theme_extensions_builder_annotation"
       relative: true
     source: path
-    version: "7.0.0"
+    version: "7.1.0"
   typed_data:
     dependency: transitive
     description:

@@ -81,9 +81,7 @@ class BuildContext {
 /// Real Flutter Theme: https://api.flutter.dev/flutter/material/Theme-class.html
 class Theme {
   /// Creates a Theme with theme extensions.
-  Theme({
-    required this.extensions,
-  });
+  Theme({required this.extensions});
 
   /// Returns the [Theme] from the given [BuildContext].
   static Theme of(BuildContext context) {
@@ -294,10 +292,7 @@ class BorderSide {
   /// A hairline border side with no color.
   ///
   /// This is the default value for [BorderSide].
-  static const BorderSide none = BorderSide(
-    width: 0,
-    style: BorderStyle.none,
-  );
+  static const BorderSide none = BorderSide(width: 0, style: BorderStyle.none);
 
   /// Linearly interpolate between two border sides.
   ///

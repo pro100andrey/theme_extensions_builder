@@ -19,10 +19,7 @@ sealed class LerpInfo {
 /// `static T? lerp(T? a, T? b, double t)`
 final class StaticLerp extends LerpInfo {
   /// Creates a [StaticLerp] with the specified properties.
-  const StaticLerp({
-    required this.optionalResult,
-    required this.args,
-  });
+  const StaticLerp({required this.optionalResult, required this.args});
 
   /// The parameters of the lerp method.
   final List<ParameterInfo> args;
@@ -50,10 +47,7 @@ final class StaticLerp extends LerpInfo {
           _listEquality.equals(args, other.args);
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    optionalResult,
-  );
+  int get hashCode => Object.hash(runtimeType, optionalResult);
 
   @override
   String toString() =>
@@ -66,10 +60,7 @@ final class StaticLerp extends LerpInfo {
 /// `T lerp(T other, double t)`
 final class InstanceLerp extends LerpInfo {
   /// Creates an [InstanceLerp] with the specified properties.
-  const InstanceLerp({
-    required this.optionalResult,
-    required this.args,
-  });
+  const InstanceLerp({required this.optionalResult, required this.args});
 
   /// The parameters of the lerp method.
   final List<ParameterInfo> args;
@@ -91,11 +82,7 @@ final class InstanceLerp extends LerpInfo {
           _listEquality.equals(args, other.args);
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    optionalResult,
-    args,
-  );
+  int get hashCode => Object.hash(runtimeType, optionalResult, args);
 
   @override
   String toString() =>

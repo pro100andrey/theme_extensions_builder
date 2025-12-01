@@ -28,9 +28,7 @@ class FieldsVisitor extends BaseClassVisitor {
   ///
   /// The [config] controls what information should be collected during field
   /// visiting.
-  FieldsVisitor({
-    this.config = const FieldsVisitorConfig(),
-  });
+  FieldsVisitor({this.config = const FieldsVisitorConfig()});
 
   /// Configuration controlling what information to collect.
   ///

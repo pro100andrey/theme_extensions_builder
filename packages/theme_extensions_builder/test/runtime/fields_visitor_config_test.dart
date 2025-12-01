@@ -19,17 +19,13 @@ void main() {
     });
 
     test('custom config with only lerp lookup enabled', () {
-      const config = FieldsVisitorConfig(
-        includeMergeLookup: false,
-      );
+      const config = FieldsVisitorConfig(includeMergeLookup: false);
       expect(config.includeLerpLookup, isTrue);
       expect(config.includeMergeLookup, isFalse);
     });
 
     test('custom config with only merge lookup enabled', () {
-      const config = FieldsVisitorConfig(
-        includeLerpLookup: false,
-      );
+      const config = FieldsVisitorConfig(includeLerpLookup: false);
       expect(config.includeLerpLookup, isFalse);
       expect(config.includeMergeLookup, isTrue);
     });
@@ -74,9 +70,7 @@ void main() {
     });
 
     test('toString provides readable output', () {
-      const config = FieldsVisitorConfig(
-        includeLerpLookup: false,
-      );
+      const config = FieldsVisitorConfig(includeLerpLookup: false);
 
       final string = config.toString();
       expect(string, contains('FieldsVisitorConfig'));

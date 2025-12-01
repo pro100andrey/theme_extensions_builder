@@ -87,9 +87,7 @@ final class ComplexThemeExtensionNoContext
   'goldens/complex_theme_extension_custom_accessor.g.theme.dart',
   partOfCurrent: true,
 )
-@ThemeExtensions(
-  contextAccessorName: 'myCustomTheme',
-)
+@ThemeExtensions(contextAccessorName: 'myCustomTheme')
 final class ComplexThemeExtensionCustomAccessor
     extends ThemeExtension<ComplexThemeExtensionCustomAccessor>
     with _$ComplexThemeExtensionCustomAccessor {

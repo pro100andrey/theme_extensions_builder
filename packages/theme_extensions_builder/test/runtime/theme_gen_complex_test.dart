@@ -145,10 +145,7 @@ void main() {
       });
 
       test('updates optional fields', () {
-        final copied = themeA.copyWith(
-          optionalInt: 100,
-          optionalString: 'new',
-        );
+        final copied = themeA.copyWith(optionalInt: 100, optionalString: 'new');
         expect(copied.optionalInt, equals(100));
         expect(copied.optionalString, equals('new'));
       });

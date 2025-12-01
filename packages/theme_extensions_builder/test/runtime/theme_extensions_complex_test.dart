@@ -114,9 +114,7 @@ void main() {
       () {
         final themeExtension = ComplexThemeExtensionNoContext.defaults();
         final theme = Theme(
-          extensions: {
-            ComplexThemeExtensionNoContext: themeExtension,
-          },
+          extensions: {ComplexThemeExtensionNoContext: themeExtension},
         );
 
         final context = BuildContext(theme);
@@ -162,9 +160,7 @@ void main() {
 
       // Create a Theme with the extension
       final theme = Theme(
-        extensions: {
-          ComplexThemeExtensionCustomAccessor: themeExtension,
-        },
+        extensions: {ComplexThemeExtensionCustomAccessor: themeExtension},
       );
 
       // Create a BuildContext with the theme
@@ -280,10 +276,7 @@ void main() {
       );
 
       final copied =
-          theme.copyWith(
-                requiredInt: 999,
-                requiredString: 'updated',
-              )
+          theme.copyWith(requiredInt: 999, requiredString: 'updated')
               as ComplexThemeExtension;
 
       expect(copied.requiredInt, equals(999));
@@ -314,10 +307,7 @@ void main() {
       );
 
       final copied =
-          theme.copyWith(
-                optionalInt: 500,
-                optionalString: 'new',
-              )
+          theme.copyWith(optionalInt: 500, optionalString: 'new')
               as ComplexThemeExtension;
 
       expect(copied.optionalInt, equals(500));
@@ -495,11 +485,7 @@ void main() {
       );
 
       // Create a Theme with the extension
-      final theme = Theme(
-        extensions: {
-          ComplexThemeExtension: themeExtension,
-        },
-      );
+      final theme = Theme(extensions: {ComplexThemeExtension: themeExtension});
 
       // Create a BuildContext with the theme
       final context = BuildContext(theme);

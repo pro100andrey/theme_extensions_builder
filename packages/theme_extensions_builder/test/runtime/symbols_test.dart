@@ -36,11 +36,7 @@ void main() {
     });
 
     test('toString returns readable format', () {
-      const arg = ParameterInfo(
-        name: 'test',
-        type: 'double',
-        isNullable: true,
-      );
+      const arg = ParameterInfo(name: 'test', type: 'double', isNullable: true);
       expect(
         arg.toString(),
         'ParameterInfo(name: test, type: double, isNullable: true)',
@@ -103,10 +99,7 @@ void main() {
     });
 
     test('isNullableSignature handles empty args safely', () {
-      const lerp = StaticLerp(
-        optionalResult: true,
-        args: [],
-      );
+      const lerp = StaticLerp(optionalResult: true, args: []);
 
       expect(lerp.isNullableSignature, false);
     });
@@ -114,9 +107,7 @@ void main() {
     test('isNullableSignature handles single arg safely', () {
       const lerp = StaticLerp(
         optionalResult: true,
-        args: [
-          ParameterInfo(name: 'a', type: 'Color', isNullable: true),
-        ],
+        args: [ParameterInfo(name: 'a', type: 'Color', isNullable: true)],
       );
 
       expect(lerp.isNullableSignature, false);
@@ -125,21 +116,15 @@ void main() {
     test('equality works correctly', () {
       const lerp1 = StaticLerp(
         optionalResult: true,
-        args: [
-          ParameterInfo(name: 'a', type: 'int', isNullable: false),
-        ],
+        args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
       );
       const lerp2 = StaticLerp(
         optionalResult: true,
-        args: [
-          ParameterInfo(name: 'a', type: 'int', isNullable: false),
-        ],
+        args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
       );
       const lerp3 = StaticLerp(
         optionalResult: false,
-        args: [
-          ParameterInfo(name: 'a', type: 'int', isNullable: false),
-        ],
+        args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
       );
 
       expect(lerp1, equals(lerp2));
@@ -186,10 +171,7 @@ void main() {
     });
 
     test('isNullableSignature handles empty args safely', () {
-      const lerp = InstanceLerp(
-        optionalResult: true,
-        args: [],
-      );
+      const lerp = InstanceLerp(optionalResult: true, args: []);
 
       expect(lerp.isNullableSignature, false);
     });
@@ -379,10 +361,7 @@ void main() {
         isDouble: false,
         isDuration: true,
         merge: InstanceMerge(),
-        lerp: StaticLerp(
-          optionalResult: false,
-          args: [],
-        ),
+        lerp: StaticLerp(optionalResult: false, args: []),
         isStatic: false,
       );
 

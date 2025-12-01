@@ -1,4 +1,23 @@
 
+## 7.1.0
+
+- **Documentation**: Improved internal code comments for better understanding of the codebase
+- **Documentation**: Added `.github/README.md` with quick start guide and installation instructions
+- **Documentation**: Separated and clarified `@ThemeExtensions` vs `@ThemeGen` usage patterns
+- **Example**: Enhanced example app with 5 comprehensive theme extensions:
+  - `ButtonThemeExtension` - Complete button system with variants (primary, secondary, outlined, text) and sizes
+  - `TypographyThemeExtension` - Full typography scale (display, headline, body, label, code styles)
+  - `SpacingThemeExtension` - Consistent spacing system for layouts
+  - `CardThemeExtension` - Customizable card components
+  - `AppThemeExtension` - Application-level colors and layout modes
+- **Example**: Added multi-page navigation with NavigationBar showcasing different features
+- **Example**: Custom button component with loading and disabled states
+- **Example**: Typography and button showcase pages
+- **Example**: Updated README with detailed feature descriptions and project structure
+- **Improvement**: Added more unit tests for better coverage
+- **Improvement**: Updated dependencies to latest versions
+- **Fixes**: Various bug fixes and stability improvements
+
 ## 7.0.1
 
 - **Improvement**: Updated `==` operator to check `runtimeType`.

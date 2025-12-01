@@ -4,10 +4,7 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 part 'empty_theme.g.theme.dart';
 
 /// Empty Theme - testing edge case with no fields
-@ShouldGenerateFile(
-  'goldens/empty_theme.g.theme.dart',
-  partOfCurrent: true,
-)
+@ShouldGenerateFile('goldens/empty_theme.g.theme.dart', partOfCurrent: true)
 @themeGen
 final class EmptyTheme with _$EmptyTheme {
   const EmptyTheme();
@@ -15,11 +12,8 @@ final class EmptyTheme with _$EmptyTheme {
   @override
   bool get canMerge => true;
 
-  static EmptyTheme? lerp(
-    EmptyTheme? a,
-    EmptyTheme? b,
-    double t,
-  ) => _$EmptyTheme.lerp(a, b, t);
+  static EmptyTheme? lerp(EmptyTheme? a, EmptyTheme? b, double t) =>
+      _$EmptyTheme.lerp(a, b, t);
 }
 
 /// Empty Theme - testing edge case with no fields

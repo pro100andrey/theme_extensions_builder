@@ -154,11 +154,7 @@ ParameterInfo _mapArg(FormalParameterElement parameter) {
   final type = parameter.type.getDisplayString();
   final isNullable = parameter.type.nullabilitySuffix == .question;
 
-  return ParameterInfo(
-    name: name,
-    type: type,
-    isNullable: isNullable,
-  );
+  return ParameterInfo(name: name, type: type, isNullable: isNullable);
 }
 
 /// Cache for method lookups to avoid repeated expensive lookups.
@@ -170,10 +166,7 @@ final _methodCache = Expando<Map<String, MethodElement?>>('method_cache');
 /// If the method is not found directly on the type, it looks up
 /// inherited methods as well.
 /// Results are cached to avoid repeated expensive lookups.
-MethodElement? _lookupMethod(
-  InterfaceElement typeElement,
-  String name,
-) {
+MethodElement? _lookupMethod(InterfaceElement typeElement, String name) {
   var cache = _methodCache[typeElement];
   if (cache == null) {
     cache = <String, MethodElement?>{};

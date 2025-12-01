@@ -9,11 +9,8 @@ final class EmptyTheme with _$EmptyTheme {
   @override
   bool get canMerge => true;
 
-  static EmptyTheme? lerp(
-    EmptyTheme? a,
-    EmptyTheme? b,
-    double t,
-  ) => _$EmptyTheme.lerp(a, b, t);
+  static EmptyTheme? lerp(EmptyTheme? a, EmptyTheme? b, double t) =>
+      _$EmptyTheme.lerp(a, b, t);
 }
 
 @themeGen

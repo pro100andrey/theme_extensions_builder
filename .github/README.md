@@ -14,7 +14,32 @@
 - 📦 [pub.dev Package](https://pub.dev/packages/theme_extensions_builder)
 - 🐛 [Report Issues](https://github.com/pro100andrey/theme_extensions_builder/issues)
 
+## 📦 Installation
+
+Add the packages to your project:
+
+```bash
+flutter pub add theme_extensions_builder_annotation
+flutter pub add --dev theme_extensions_builder
+flutter pub add --dev build_runner
+```
+
+Or add to `pubspec.yaml`:
+
+```yaml
+dependencies:
+  theme_extensions_builder_annotation: ^7.0.0
+
+dev_dependencies:
+  build_runner: ^2.10.4
+  theme_extensions_builder: ^7.0.0
+```
+
 ## 🚀 Quick Start
+
+### Using @ThemeExtensions
+
+For classes extending `ThemeExtension`:
 
 ```dart
 import 'package:flutter/material.dart';
@@ -53,15 +78,63 @@ Widget build(BuildContext context) {
 }
 ```
 
-## ✨ Features
+### Using @ThemeGen
 
-- ✅ Automatic code generation for `ThemeExtension` classes
-- ✅ BuildContext extensions for convenient theme access
-- ✅ Type-safe theme management with full IDE support
-- ✅ Supports complex types: Colors, TextStyles, EdgeInsets, Durations, enums, and custom types
-- ✅ Smart lerp implementation with proper null handling
+For standalone theme data classes:
 
-## 📖 Full Example
+```dart
+@ThemeGen()
+class ButtonThemeData with _$ButtonThemeData {
+  const ButtonThemeData({
+    required this.backgroundColor,
+    this.borderRadius = 8.0,
+  });
+
+  final Color backgroundColor;
+  final double borderRadius;
+
+  static ButtonThemeData? lerp(ButtonThemeData? a, ButtonThemeData? b, double t) =>
+      _$ButtonThemeData.lerp(a, b, t);
+}
+```
+
+## 📋 Choose Your Annotation
+
+### @ThemeExtensions (Recommended)
+
+For classes extending Flutter's `ThemeExtension` - ideal for most use cases.
+
+**Perfect for:**
+
+- Full Flutter theme integration
+- Automatic theme switching with lerp animations
+- Easy access via BuildContext (e.g., `context.appTheme`)
+
+**Generates:**
+
+- Complete `ThemeExtension` implementation with `copyWith` and `lerp`
+- BuildContext extension for convenient access
+- Equality operators and hashCode
+
+### @ThemeGen
+
+For standalone theme data classes without `ThemeExtension` inheritance.
+
+**Perfect for:**
+
+- Custom theme systems outside standard Flutter themes
+- Maximum control over class structure
+- Nested theme data objects
+
+**Generates:**
+
+- `copyWith` and `merge` methods
+- Static `lerp` method
+- Equality operators and hashCode
+
+---
+
+## 📖 Example
 
 Check out the [example project](../packages/theme_extensions_builder/example) for a comprehensive Flutter app with:
 

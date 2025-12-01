@@ -428,12 +428,26 @@ This project consists of two packages:
 
 ## 📖 Example
 
-Check out the [example project](packages/theme_extensions_builder/example) for a complete working implementation with:
+Check out the [example project](packages/theme_extensions_builder/example) for a comprehensive Flutter app demonstrating:
 
-- Multiple theme extensions
-- Light and dark themes
-- Theme switching
-- Complex types usage
+### Theme Extensions
+
+- **AppThemeExtension** - Application-level colors and layout modes
+- **ButtonThemeExtension** - Complete button system with variants (primary, secondary, outlined, text) and sizes
+- **CardThemeExtension** - Customizable card components
+- **TypographyThemeExtension** - Full typography scale (display, headline, body, label, code styles)
+- **SpacingThemeExtension** - Consistent spacing system
+
+### Features
+
+- 🌗 Light and dark theme switching with smooth transitions
+- 🎨 Multiple theme extensions working together
+- 🔘 Custom button component with loading and disabled states
+- 📝 Complete typography showcase
+- 🎯 Complex types: enums, EdgeInsets, BorderRadius, BoxShadow, TextStyle
+- 📱 Multi-page navigation with NavigationBar
+
+The example includes ready-to-use components and demonstrates best practices for organizing theme extensions in a real Flutter application.
 
 ## 🔧 Build Configuration
 

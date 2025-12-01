@@ -1,86 +1,213 @@
+/// @docImport 'fields_visitor_config.dart';
+
+library;
+
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import 'symbols.dart';
+import 'fields_visitor_config.dart';
+import 'symbols/field_info.dart';
+import 'symbols/lerp_info.dart';
+import 'symbols/merge_info.dart';
+import 'symbols/parameter_info.dart';
 
-/// Checks if the [element] type has a `lerp` method.
+/// Creates a [FieldInfo] from the given [element].
 ///
-/// Returns [LerpInfo] if a valid `lerp` method is found, otherwise returns
-/// `null`.
+/// The [config] parameter controls what information should be collected:
+/// - When [FieldsVisitorConfig.includeLerpLookup] is `false`, lerp method
+///   lookups are skipped
+/// - When [FieldsVisitorConfig.includeMergeLookup] is `false`, merge method
+///   lookups are skipped
 ///
-/// The `lerp` method can be:
-/// - Static: `static T lerp(T a, T b, double t)`
-/// - Instance: `T lerp(T other, double t)`
-LerpInfo? lerpInfo({required FieldElement element}) {
-  final typeElement = element.type.element;
+/// Skipping unnecessary lookups can significantly improve performance.
+FieldInfo fieldSymbol(
+  FieldElement element, {
+  FieldsVisitorConfig config = const FieldsVisitorConfig(),
+}) {
+  final name = element.displayName;
+  final elementType = element.type;
+  final isNullable = elementType.nullabilitySuffix == .question;
+  final baseType = elementType.baseType;
+  final isDouble = elementType.isDartCoreDouble;
+  final isDuration = elementType.isDuration;
 
-  if (typeElement is! ClassElement) {
-    return null;
-  }
-
-  final types = [
-    typeElement,
-    ...typeElement.allSupertypes
-        .where((e) => !e.isDartCoreObject)
-        .map((e) => e.element),
-  ];
-
-  for (final type in types) {
-    for (final method in type.methods) {
-      // Check type is List<T> with T being a valid type for lerp.
-
-      if (method case MethodElement(
-        displayName: 'lerp',
-        isPublic: true,
-      )) {
-        final length = method.children.length;
-        final isStatic = method.isStatic;
-
-        if (method.children.last case FormalParameterElement(:final type)
-            when type.isDartCoreDouble && (length == 3 && isStatic) ||
-                (length == 2 && !isStatic)) {
-          final nullableArgs = isStatic
-              ? method.children
-                    .whereType<FormalParameterElement>()
-                    .take(2)
-                    .any((e) => e.type.nullabilitySuffix.name != 'none')
-              : method.children
-                    .whereType<FormalParameterElement>()
-                    .take(1)
-                    .any((e) => e.type.nullabilitySuffix.name != 'none');
-
-          return (
-            isStatic: isStatic,
-            nullableArgs: nullableArgs,
-            methodName: method.displayName,
-          );
-        }
-      }
-    }
-  }
-
-  return null;
+  return FieldInfo(
+    name: name,
+    typeName: baseType,
+    isNullable: isNullable,
+    isDouble: isDouble,
+    isDuration: isDuration,
+    isStatic: element.isStatic,
+    merge: config.includeMergeLookup
+        ? _mergeInfo(elementType)
+        : const NoMerge(),
+    lerp: config.includeLerpLookup
+        ? _lerpInfo(elementType, element)
+        : const NoLerp(),
+  );
 }
 
-/// Checks if the [element] type has a `merge` method.
+/// Gets information about the lerp method for the given [type].
 ///
-/// Returns [MergeInfo] if a valid `merge` method is found, otherwise returns
-/// `null`.
+/// Returns information about static or instance lerp methods, or [NoLerp]
+/// if no suitable lerp method is found or if the type is not an interface.
 ///
-/// The `merge` method can be:
-/// - Static: `static T merge(T a, T b)`
-/// - Instance: `T merge(T other)`
-///
-/// Also checks if the class is annotated with `@ThemeGen`, which implies
-/// the existence of a `merge` method.
-MergeInfo? mergeInfo({required FieldElement element}) {
-  final typeElement = element.type.element;
+/// Throws [StateError] if a lerp method exists but has an invalid signature.
+LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
+  final typeElement = type.element;
 
-  if (typeElement is! ClassElement) {
-    return null;
+  if (typeElement is! InterfaceElement) {
+    return const NoLerp();
+  }
+
+  final method = _lookupMethod(typeElement, 'lerp');
+
+  if (method == null) {
+    return const NoLerp();
+  }
+
+  final params = method.formalParameters;
+
+  if (params case [final p1, final p2, final p3]
+      // Check for static lerp method
+      // - should have three parameters
+      // - first two parameters should have the same type as the class type
+      // - third parameter should be double
+      when method.isStatic &&
+          p3.type.isDartCoreDouble &&
+          _checkSubtype(p1, type) &&
+          _checkSubtype(p2, type)) {
+    return StaticLerp(
+      optionalResult: method.returnType.hasNullableSuffix,
+      args: _mapArgs(params),
+    );
+  } else if (params case [final p1, final p2]
+      // Check for instance lerp method:
+      // - should have only two parameters
+      // - first parameter type should match the class type
+      // - second parameter should be double
+      when !method.isStatic &&
+          p2.type.isDartCoreDouble &&
+          _checkSubtype(p1, type)) {
+    return InstanceLerp(
+      optionalResult: method.returnType.hasNullableSuffix,
+      args: _mapArgs(params),
+    );
+  }
+
+  throw StateError(
+    'Lerp method has invalid signature for type '
+    '${type.getDisplayString()} of field ${fieldElement.name} '
+    'method: ${method.displayName} isStatic: ${method.isStatic} ',
+  );
+}
+
+/// Checks if a parameter type is a subtype of the given [type].
+///
+/// This function performs a type compatibility check between a formal parameter
+/// and a target type. It handles nullability by promoting the type to non-null
+/// before checking subtype relationships.
+///
+/// Returns `true` if:
+/// - Both [FormalParameterElement.type] and [type] are interface types
+/// - [type] can be used as an instance of the parameter's type
+/// - The non-null version of [type] is a subtype of that instance
+///
+/// Returns `false` if either type is not an interface type or if the subtype
+/// relationship doesn't hold.
+///
+/// This is primarily used to validate lerp method signatures, ensuring that
+/// parameters accept the correct types for interpolation.
+bool _checkSubtype(FormalParameterElement param, DartType type) {
+  final typeElement = type.element;
+  if (typeElement is! InterfaceElement) {
+    return false;
+  }
+
+  final paramTypeElement = param.type.element;
+  if (paramTypeElement is! InterfaceElement) {
+    return false;
+  }
+
+  final supertypeInstance = type.asInstanceOf(paramTypeElement);
+  if (supertypeInstance == null) {
+    return false;
+  }
+
+  final typeSystem = typeElement.library.typeSystem;
+  final nonNullType = typeSystem.promoteToNonNull(type);
+
+  return typeSystem.isSubtypeOf(nonNullType, supertypeInstance);
+}
+
+/// Maps a list of [parameters] to a list of [ParameterInfo] symbols.
+List<ParameterInfo> _mapArgs(List<FormalParameterElement> parameters) =>
+    parameters.map(_mapArg).toList(growable: false);
+
+/// Creates an [ParameterInfo] from the given [parameter].
+ParameterInfo _mapArg(FormalParameterElement parameter) {
+  final name = parameter.displayName;
+  final type = parameter.type.getDisplayString();
+  final isNullable = parameter.type.nullabilitySuffix == .question;
+
+  return ParameterInfo(
+    name: name,
+    type: type,
+    isNullable: isNullable,
+  );
+}
+
+/// Cache for method lookups to avoid repeated expensive lookups.
+/// Using Expando to avoid memory leaks - entries are automatically removed
+/// when InterfaceElement is garbage collected.
+final _methodCache = Expando<Map<String, MethodElement?>>('method_cache');
+
+/// Looks up a method with the given [name] in the [typeElement].
+/// If the method is not found directly on the type, it looks up
+/// inherited methods as well.
+/// Results are cached to avoid repeated expensive lookups.
+MethodElement? _lookupMethod(
+  InterfaceElement typeElement,
+  String name,
+) {
+  var cache = _methodCache[typeElement];
+  if (cache == null) {
+    cache = <String, MethodElement?>{};
+    _methodCache[typeElement] = cache;
+  }
+
+  if (cache.containsKey(name)) {
+    return cache[name];
+  }
+
+  final method = typeElement.getMethod(name);
+
+  if (method != null) {
+    cache[name] = method;
+    return method;
+  }
+
+  final inheritedMethod = typeElement.lookUpInheritedMethod(
+    methodName: name,
+    library: typeElement.library,
+  );
+
+  cache[name] = inheritedMethod;
+  return inheritedMethod;
+}
+
+/// Gets information about the merge method for the given [type].
+///
+/// This can improve performance when merge details aren't needed.
+MergeInfo _mergeInfo(DartType type) {
+  final typeElement = type.element;
+
+  if (typeElement is! InterfaceElement) {
+    return const NoMerge();
   }
 
   // Check if element or its supertypes have @ThemeGen annotation.
@@ -88,38 +215,52 @@ MergeInfo? mergeInfo({required FieldElement element}) {
   // impossible to get information about the merge method during the build
   // phase.
   const themeGenChecker = TypeChecker.typeNamed(ThemeGen);
-  if (themeGenChecker.hasAnnotationOfExact(element)) {
-    return (isStatic: false);
+  if (themeGenChecker.hasAnnotationOfExact(typeElement)) {
+    return const InstanceMerge();
   }
 
-  final types = [
-    typeElement,
-    ...typeElement.allSupertypes
-        .where((e) => !e.isDartCoreObject)
-        .map((e) => e.element),
-  ];
-
-  for (final type in types) {
-    for (final method in type.methods) {
-      if (method case MethodElement(displayName: 'merge', isPublic: true)) {
-        final isStatic = method.isStatic;
-
-        if (method.children case [
-          FormalParameterElement(type: final t1),
-          FormalParameterElement(type: final t2),
-        ] when isStatic && t1.getDisplayString() == t2.getDisplayString()) {
-          return (isStatic: isStatic);
-        }
-
-        if (method.children case [
-          FormalParameterElement(),
-        ] when !isStatic) {
-          return (isStatic: isStatic);
-        }
-      }
-    }
+  final method = _lookupMethod(typeElement, 'merge');
+  if (method == null) {
+    return const NoMerge();
   }
-  return null;
+
+  final params = method.formalParameters;
+
+  if (params case [final p1, final p2]
+      // Check for static merge method
+      // - should have two parameters
+      // - both parameters should have the same type as the class type
+      when method.isStatic && p1.type.baseType == p2.type.baseType) {
+    return const StaticMerge();
+  }
+
+  if (params case [final p1]
+      // Check for instance merge method:
+      // - should have only one parameter
+      // - parameter type should match the class type
+      when !method.isStatic && p1.type.baseType == type.baseType) {
+    return const InstanceMerge();
+  }
+
+  throw StateError('Merge method not found');
+}
+
+extension DartTypeExtension on DartType {
+  /// Returns the base type name without nullability suffix.
+  String get baseType {
+    final displayString = getDisplayString();
+    final result = nullabilitySuffix == .question
+        ? displayString.replaceFirst(RegExp(r'\?$'), '')
+        : displayString;
+
+    return result;
+  }
+
+  /// Returns true if the type has a nullable suffix.
+  bool get hasNullableSuffix => nullabilitySuffix == .question;
+
+  /// Returns true if the type is Duration.
+  bool get isDuration => baseType == 'Duration';
 }
 
 /// Gets the names of mixins applied to the given [element].
@@ -132,21 +273,25 @@ List<String> getMixinsNames({required ClassElement element}) {
     throw StateError('Could not get parsed library for element');
   }
 
-  final compilationUnit = library.units.single.unit;
+  ClassDeclaration? classDeclaration;
 
-  final classDeclaration = compilationUnit.declarations.firstWhere(
-    (decl) =>
-        decl is ClassDeclaration && decl.name.lexeme == element.displayName,
-  );
-
-  if (classDeclaration is! ClassDeclaration) {
-    throw StateError('Class declaration not found ');
+  outerLoop:
+  for (final unit in library.units) {
+    for (final decl in unit.unit.declarations) {
+      if (decl is ClassDeclaration && decl.name.lexeme == element.displayName) {
+        classDeclaration = decl;
+        break outerLoop;
+      }
+    }
   }
 
-  final withClause = classDeclaration.withClause;
+  final withClause = classDeclaration?.withClause;
 
   if (withClause == null) {
-    throw StateError('Mixin clause is missing');
+    throw StateError(
+      'Mixin clause is missing for class ${element.displayName}. '
+      'Try adding "with _\$${element.displayName}" to the class declaration.',
+    );
   }
 
   final result = withClause.mixinTypes

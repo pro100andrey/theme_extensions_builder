@@ -15,6 +15,8 @@ mixin _$AppThemeExtension on ThemeExtension<AppThemeExtension> {
     Color? primaryColor,
     Color? backgroundColor,
     LayoutMode? layoutMode,
+    BorderSide? borderSide,
+    BorderSide? optionalBorderSide,
   }) {
     final _this = (this as AppThemeExtension);
 
@@ -22,6 +24,8 @@ mixin _$AppThemeExtension on ThemeExtension<AppThemeExtension> {
       primaryColor: primaryColor ?? _this.primaryColor,
       backgroundColor: backgroundColor ?? _this.backgroundColor,
       layoutMode: layoutMode ?? _this.layoutMode,
+      borderSide: borderSide ?? _this.borderSide,
+      optionalBorderSide: optionalBorderSide ?? _this.optionalBorderSide,
     );
   }
 
@@ -44,6 +48,16 @@ mixin _$AppThemeExtension on ThemeExtension<AppThemeExtension> {
         t,
       )!,
       layoutMode: t < 0.5 ? _this.layoutMode : other.layoutMode,
+      borderSide: BorderSide.lerp(_this.borderSide, other.borderSide, t),
+      optionalBorderSide: _this.optionalBorderSide == null
+          ? other.optionalBorderSide
+          : other.optionalBorderSide == null
+          ? _this.optionalBorderSide
+          : BorderSide.lerp(
+              _this.optionalBorderSide!,
+              other.optionalBorderSide!,
+              t,
+            ),
     );
   }
 
@@ -62,7 +76,9 @@ mixin _$AppThemeExtension on ThemeExtension<AppThemeExtension> {
 
     return _other.primaryColor == _this.primaryColor &&
         _other.backgroundColor == _this.backgroundColor &&
-        _other.layoutMode == _this.layoutMode;
+        _other.layoutMode == _this.layoutMode &&
+        _other.borderSide == _this.borderSide &&
+        _other.optionalBorderSide == _this.optionalBorderSide;
   }
 
   @override
@@ -74,6 +90,8 @@ mixin _$AppThemeExtension on ThemeExtension<AppThemeExtension> {
       _this.primaryColor,
       _this.backgroundColor,
       _this.layoutMode,
+      _this.borderSide,
+      _this.optionalBorderSide,
     );
   }
 }

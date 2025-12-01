@@ -3,18 +3,34 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../../common/analysis.dart';
-import '../../common/symbols.dart';
-import '../../common/visitors.dart';
+import '../../common/fields_visiter.dart';
+import '../../common/fields_visitor_config.dart';
 import '../../config/config.dart';
 import 'code_builder.dart';
 
-/// It's a Dart code generator that generates code for the `@ThemeExtensions`
-/// annotation
+/// Code generator for classes annotated with `@ThemeExtensions`.
+///
+/// This generator creates code for custom Flutter theme extensions that
+/// extend `ThemeExtension`. The generated code includes:
+/// - `copyWith` method for creating modified copies
+/// - `lerp` method for smooth theme transitions
+/// - `==` operator and `hashCode` for equality comparison
+/// - Optional BuildContext extension for convenient theme access
+///
+/// Example usage:
+/// ```dart
+/// @ThemeExtensions()
+/// class MyTheme extends ThemeExtension<MyTheme> with _$MyTheme {
+///   const MyTheme({required this.color});
+///   final Color color;
+/// }
+/// ```
 class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
-  ThemeExtensionsGenerator({required this.builderOptions});
+  /// Creates a [ThemeExtensionsGenerator] with optional [builderOptions].
+  ThemeExtensionsGenerator({this.builderOptions});
 
-  final BuilderOptions builderOptions;
+  /// Optional build configuration options.
+  final BuilderOptions? builderOptions;
 
   @override
   Future<String> generateForAnnotatedElement(
@@ -35,73 +51,45 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
         .boolValue;
 
     final constructor = annotation.read('constructor').literalValue as String?;
+    final constConstructor = element.constructors.any((c) => c.isConst);
 
     final contextAccessorName =
         annotation.read('contextAccessorName').literalValue as String?;
 
-    final classVisitor = _ClassVisitor();
+    // ThemeExtensions needs lerp but doesn't generate merge methods
+    final fieldsVisiter = FieldsVisitor(
+      config: const FieldsVisitorConfig(includeMergeLookup: false),
+    );
     // Get all supertypes to visit their fields as well
     final allSupertypes = element.allSupertypes;
 
     for (final supertype in allSupertypes) {
       final superElement = supertype.element;
 
-      if (superElement is ClassElement && !supertype.isDartCoreObject) {
-        superElement.visitChildren(classVisitor);
+      if (!supertype.isDartCoreObject) {
+        superElement.visitChildren(fieldsVisiter);
       }
     }
 
-    element.visitChildren(classVisitor);
+    element.visitChildren(fieldsVisiter);
 
-    final mixinName = getMixinsNames(element: element).firstWhere(
-      (m) => m.startsWith(r'_$'),
-      orElse: () => '_\$${element.displayName}',
-    );
+    // Use naming convention instead of expensive AST parsing
+    // Assume the mixin follows the standard pattern: _$ClassName
+    final mixinName = '_\$${element.displayName}';
 
     final generatorConfig = ThemeExtensionsConfig(
-      fields: classVisitor.fields,
+      fields: fieldsVisiter.fields,
       className: element.displayName,
       contextAccessorName: contextAccessorName,
       buildContextExtension: buildContextExtension,
       constructor: constructor,
       themeExtensionMixinName: mixinName,
+      constConstructor: constConstructor,
     );
 
     const generator = ThemeExtensionsCodeBuilder();
     final code = generator.generate(generatorConfig);
 
     return code;
-  }
-}
-
-/// It's a class that extends the SimpleElementVisitor class, and it overrides
-/// the visitClassElement method
-class _ClassVisitor extends BaseClassVisitor {
-  final List<FieldSymbol> fields = [];
-  final Map<String, List<bool>> hasInternalAnnotations = {};
-
-  final ignoreAnnotationTypeChecker = TypeChecker.typeNamed(ignore.runtimeType);
-
-  @override
-  void visitFieldElement(FieldElement element) {
-    if (ignoreAnnotationTypeChecker.hasAnnotationOf(element)) {
-      return;
-    }
-
-    if (element.isFinal) {
-      final type = element.type.getDisplayString();
-      final isNullable = type.endsWith('?');
-      final resultType = isNullable ? type.substring(0, type.length - 1) : type;
-
-      final symbol = FieldSymbol(
-        lerpInfo: lerpInfo(element: element),
-        mergeInfo: null,
-        name: element.displayName,
-        type: resultType,
-        isNullable: isNullable,
-      );
-
-      fields.add(symbol);
-    }
   }
 }

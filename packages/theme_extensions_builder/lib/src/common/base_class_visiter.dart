@@ -1,7 +1,13 @@
 import 'package:analyzer/dart/element/element.dart';
 
-/// It's a class that extends the SimpleElementVisitor class, and it overrides
-/// the visitClassElement method
+/// Base class for visiting Dart element nodes in the AST.
+///
+/// This class extends [ElementVisitor2] and provides empty implementations
+/// for all visitor methods. Subclasses should override specific methods
+/// to implement custom visiting behavior.
+///
+/// Commonly used by code generators to traverse class elements and extract
+/// information about fields, methods, and other class members.
 class BaseClassVisitor extends ElementVisitor2<void> {
   @override
   void visitFieldElement(FieldElement element) {}

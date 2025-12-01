@@ -5,18 +5,34 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../../common/analysis.dart';
-import '../../common/symbols.dart';
-import '../../common/visitors.dart';
+import '../../common/fields_visiter.dart';
 import '../../config/config.dart';
 import 'code_builder.dart';
 
-/// It's a Dart code generator that generates code for the `@ThemeGen`
-/// annotation.
+/// Code generator for classes annotated with `@ThemeGen`.
+///
+/// This generator creates mixins for theme data classes that don't extend
+/// Flutter's `ThemeExtension`. The generated code includes:
+/// - `copyWith` method for creating modified copies
+/// - `merge` method for combining theme instances
+/// - `lerp` static method for interpolation
+/// - `==` operator and `hashCode` for equality comparison
+/// - `canMerge` getter indicating merge capability
+///
+/// Example usage:
+/// ```dart
+/// @ThemeGen()
+/// class MyTheme with _$MyTheme {
+///   const MyTheme({required this.color});
+///   final Color color;
+/// }
+/// ```
 class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
-  ThemeGenGenerator({required this.builderOptions});
+  /// Creates a [ThemeGenGenerator] with optional [builderOptions].
+  ThemeGenGenerator({this.builderOptions});
 
-  final BuilderOptions builderOptions;
+  /// Optional build configuration options.
+  final BuilderOptions? builderOptions;
 
   @override
   Future<String> generateForAnnotatedElement(
@@ -33,62 +49,32 @@ class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
     }
 
     final constructor = annotation.read('constructor').literalValue as String?;
+    final constConstructor = element.constructors.any((c) => c.isConst);
 
-    final classVisitor = _ClassVisitor();
+    final fieldsVisiter = FieldsVisitor();
     // Get all supertypes to visit their fields as well
     final allSupertypes = element.allSupertypes;
 
     for (final supertype in allSupertypes) {
       final superElement = supertype.element;
 
-      if (superElement is ClassElement && !supertype.isDartCoreObject) {
-        superElement.visitChildren(classVisitor);
+      if (!supertype.isDartCoreObject) {
+        superElement.visitChildren(fieldsVisiter);
       }
     }
     // Finally, visit the original class to get its own fields
-    element.visitChildren(classVisitor);
+    element.visitChildren(fieldsVisiter);
 
     final generatorConfig = ThemeGenConfig(
-      fields: classVisitor.fields,
+      fields: fieldsVisiter.fields,
       className: element.displayName,
       constructor: constructor,
+      constConstructor: constConstructor,
     );
 
     const generator = ThemeGenCodeBuilder();
     final code = generator.generate(generatorConfig);
 
     return code;
-  }
-}
-
-/// It's a class that extends the SimpleElementVisitor class, and it overrides
-/// the visitClassElement method
-class _ClassVisitor extends BaseClassVisitor {
-  final List<FieldSymbol> fields = [];
-  final Map<String, List<bool>> hasInternalAnnotations = {};
-
-  final ignoreAnnotationTypeChecker = TypeChecker.typeNamed(ignore.runtimeType);
-
-  @override
-  void visitFieldElement(FieldElement element) {
-    if (ignoreAnnotationTypeChecker.hasAnnotationOf(element)) {
-      return;
-    }
-
-    if (element.isFinal) {
-      final type = element.type.getDisplayString();
-      final isNullable = type.endsWith('?');
-      final resultType = isNullable ? type.substring(0, type.length - 1) : type;
-
-      final symbol = FieldSymbol(
-        lerpInfo: lerpInfo(element: element),
-        mergeInfo: mergeInfo(element: element),
-        name: element.displayName,
-        type: resultType,
-        isNullable: isNullable,
-      );
-
-      fields.add(symbol);
-    }
   }
 }

@@ -17,6 +17,7 @@ class AppState extends State<App> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     theme: _isDark ? darkTheme : lightTheme,
+    debugShowCheckedModeBanner: false,
     home: const HomePage(),
   );
 

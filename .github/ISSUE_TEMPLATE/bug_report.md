@@ -1,38 +1,46 @@
 ---
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
+name: Bug Report
+about: Report a bug to help us improve
+title: '[Bug]: '
+labels: bug
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Description
+<!-- A clear description of what the bug is -->
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+## Reproduction
+<!-- Minimal code example that reproduces the issue -->
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+```dart
+// Your code here
+```
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Steps:**
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+1.
+2.
+3.
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+## Expected vs Actual
 
-**Additional context**
-Add any other context about the problem here.
+<!-- What should happen vs what actually happens -->
+
+**Expected:**
+
+**Actual:**
+
+## Environment
+
+- Package version:
+- Dart SDK:
+- Flutter (if applicable):
+
+## Additional context
+
+<!-- Stack trace, error messages, or any other relevant information -->
+
+```text
+// Error output or stack trace
+```

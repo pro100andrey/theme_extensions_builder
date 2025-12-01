@@ -1,6 +1,11 @@
+
+## 7.1.0
+
+- *Update*: Improved documentation.
+
 ## 7.0.0
 
-- *Added*: `constructor` parameter to `ThemeExtensions` and `ThemeGen` annotations.
+- *Added*: Support for custom constructors in `ThemeExtensions` and `ThemeGen` annotations.
 
 ## 6.0.1
 

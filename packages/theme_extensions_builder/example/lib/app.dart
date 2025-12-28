@@ -12,7 +12,7 @@ class App extends StatefulWidget {
 }
 
 class AppState extends State<App> {
-  bool _isDark = false;
+  var _isDark = false;
 
   @override
   Widget build(BuildContext context) => MaterialApp(

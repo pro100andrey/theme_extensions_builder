@@ -292,7 +292,7 @@ class BorderSide {
   /// A hairline border side with no color.
   ///
   /// This is the default value for [BorderSide].
-  static const BorderSide none = BorderSide(width: 0, style: BorderStyle.none);
+  static const  none = BorderSide(width: 0, style: BorderStyle.none);
 
   /// Linearly interpolate between two border sides.
   ///

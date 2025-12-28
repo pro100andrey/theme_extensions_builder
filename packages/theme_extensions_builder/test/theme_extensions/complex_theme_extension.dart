@@ -37,7 +37,6 @@ final class ComplexThemeExtensionNoContext
     required this.borderSide,
     required this.theme,
 
-    // ignore: unused_element_parameter
     this.ignoredField = 'ignored',
   });
 
@@ -130,7 +129,6 @@ final class ComplexThemeExtension extends ThemeExtension<ComplexThemeExtension>
     required this.optionalTheme,
     required this.optionalThemeExtension,
 
-    // ignore: unused_element_parameter
     this.computedValue = 'computed',
   });
 

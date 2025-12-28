@@ -3,7 +3,7 @@
 /// This library provides interpolation (lerp) functions used by the generated
 /// theme code to smoothly transition between theme values during animations.
 library;
-
+// Ignore lint for parameter assignments in this file
 // ignore_for_file: parameter_assignments
 
 /// Linearly interpolates between two numbers.

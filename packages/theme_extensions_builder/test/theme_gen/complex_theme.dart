@@ -39,7 +39,6 @@ final class ComplexThemeInternal with _$ComplexThemeInternal {
     required this.optionalTheme,
     required this.optionalThemeExtension,
 
-    // ignore: unused_element_parameter
     this.ignoredField,
   });
 

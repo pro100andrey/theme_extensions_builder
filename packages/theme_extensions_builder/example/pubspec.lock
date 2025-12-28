@@ -282,10 +282,10 @@ packages:
     dependency: "direct dev"
     description:
       name: pro_lints
-      sha256: d36b5b490f74eae5f66d03ba75650885aae213927e24b7aacdf7a238cb6ef073
+      sha256: "21e0c247480417710b38136f03c1c68c8cc0e7fd9af61de6a4bbef7c3ebe0438"
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.0"
+    version: "5.1.0"
   pub_semver:
     dependency: transitive
     description:
@@ -393,7 +393,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "7.0.1"
+    version: "7.1.0"
   theme_extensions_builder_annotation:
     dependency: "direct main"
     description:
@@ -421,10 +421,10 @@ packages:
     dependency: transitive
     description:
       name: watcher
-      sha256: "592ab6e2892f67760543fb712ff0177f4ec76c031f02f5b4ff8d3fc5eb9fb61a"
+      sha256: f52385d4f73589977c80797e60fe51014f7f2b957b5e9a62c3f6ada439889249
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.4"
+    version: "1.2.0"
   web:
     dependency: transitive
     description:

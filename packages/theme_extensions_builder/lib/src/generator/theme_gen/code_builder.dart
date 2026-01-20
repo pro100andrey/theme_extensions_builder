@@ -333,10 +333,11 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         if (field.lerp case InstanceLerp(
           optionalResult: true,
         ) when field.isNullable) {
-          // value: a.field.lerp(b.field, t)
-          argsResult[field.name] = aProp
-              .prop('lerp', nullSafe: true)([bProp, 't'.ref])
-              .asA(field.typeName.typeRef(isNullable: field.isNullable));
+          // value: a.field?.lerp(b.field, t)
+          argsResult[field.name] = aProp.prop('lerp', nullSafe: true)([
+            bProp,
+            't'.ref,
+          ]);
 
           continue;
         }

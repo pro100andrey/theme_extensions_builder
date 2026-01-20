@@ -68,6 +68,8 @@ mixin _$ComplexThemeInternal {
       optionalThemeExtension: t < 0.5
           ? a.optionalThemeExtension
           : b.optionalThemeExtension,
+      optionalLerpableWithOptionalResult: a.optionalLerpableWithOptionalResult
+          ?.lerp(b.optionalLerpableWithOptionalResult, t),
     );
   }
 
@@ -90,6 +92,7 @@ mixin _$ComplexThemeInternal {
     BorderSide? optionalBorderSide,
     EmptyTheme? optionalTheme,
     EmptyThemeExtension? optionalThemeExtension,
+    LerpableWithOptionalResult? optionalLerpableWithOptionalResult,
   }) {
     final _this = (this as ComplexThemeInternal);
 
@@ -114,6 +117,9 @@ mixin _$ComplexThemeInternal {
       optionalTheme: optionalTheme ?? _this.optionalTheme,
       optionalThemeExtension:
           optionalThemeExtension ?? _this.optionalThemeExtension,
+      optionalLerpableWithOptionalResult:
+          optionalLerpableWithOptionalResult ??
+          _this.optionalLerpableWithOptionalResult,
     );
   }
 
@@ -158,6 +164,8 @@ mixin _$ComplexThemeInternal {
           _this.optionalTheme?.merge(other.optionalTheme) ??
           other.optionalTheme,
       optionalThemeExtension: other.optionalThemeExtension,
+      optionalLerpableWithOptionalResult:
+          other.optionalLerpableWithOptionalResult,
     );
   }
 
@@ -191,7 +199,9 @@ mixin _$ComplexThemeInternal {
         _other.optionalColor == _this.optionalColor &&
         _other.optionalBorderSide == _this.optionalBorderSide &&
         _other.optionalTheme == _this.optionalTheme &&
-        _other.optionalThemeExtension == _this.optionalThemeExtension;
+        _other.optionalThemeExtension == _this.optionalThemeExtension &&
+        _other.optionalLerpableWithOptionalResult ==
+            _this.optionalLerpableWithOptionalResult;
   }
 
   @override
@@ -218,6 +228,7 @@ mixin _$ComplexThemeInternal {
       _this.optionalBorderSide,
       _this.optionalTheme,
       _this.optionalThemeExtension,
+      _this.optionalLerpableWithOptionalResult,
     );
   }
 }
@@ -277,6 +288,8 @@ mixin _$ComplexTheme {
       optionalThemeExtension: t < 0.5
           ? a.optionalThemeExtension
           : b.optionalThemeExtension,
+      optionalLerpableWithOptionalResult: a.optionalLerpableWithOptionalResult
+          ?.lerp(b.optionalLerpableWithOptionalResult, t),
     );
   }
 
@@ -299,6 +312,7 @@ mixin _$ComplexTheme {
     BorderSide? optionalBorderSide,
     EmptyTheme? optionalTheme,
     EmptyThemeExtension? optionalThemeExtension,
+    LerpableWithOptionalResult? optionalLerpableWithOptionalResult,
   }) {
     final _this = (this as ComplexTheme);
 
@@ -323,6 +337,9 @@ mixin _$ComplexTheme {
       optionalTheme: optionalTheme ?? _this.optionalTheme,
       optionalThemeExtension:
           optionalThemeExtension ?? _this.optionalThemeExtension,
+      optionalLerpableWithOptionalResult:
+          optionalLerpableWithOptionalResult ??
+          _this.optionalLerpableWithOptionalResult,
     );
   }
 
@@ -367,6 +384,8 @@ mixin _$ComplexTheme {
           _this.optionalTheme?.merge(other.optionalTheme) ??
           other.optionalTheme,
       optionalThemeExtension: other.optionalThemeExtension,
+      optionalLerpableWithOptionalResult:
+          other.optionalLerpableWithOptionalResult,
     );
   }
 
@@ -400,7 +419,9 @@ mixin _$ComplexTheme {
         _other.optionalColor == _this.optionalColor &&
         _other.optionalBorderSide == _this.optionalBorderSide &&
         _other.optionalTheme == _this.optionalTheme &&
-        _other.optionalThemeExtension == _this.optionalThemeExtension;
+        _other.optionalThemeExtension == _this.optionalThemeExtension &&
+        _other.optionalLerpableWithOptionalResult ==
+            _this.optionalLerpableWithOptionalResult;
   }
 
   @override
@@ -427,6 +448,7 @@ mixin _$ComplexTheme {
       _this.optionalBorderSide,
       _this.optionalTheme,
       _this.optionalThemeExtension,
+      _this.optionalLerpableWithOptionalResult,
     );
   }
 }

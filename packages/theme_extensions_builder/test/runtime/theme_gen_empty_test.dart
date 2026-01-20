@@ -252,6 +252,7 @@ void main() {
       test('not equal to EmptyTheme', () {
         final theme = EmptyThemeWithoutConstConstructor();
         const otherTheme = EmptyTheme();
+        // == operator between different types
         // ignore: unrelated_type_equality_checks
         expect(theme == otherTheme, isFalse);
       });

@@ -22,8 +22,6 @@ class AppState extends State<App> {
   );
 
   void toggleTheme() {
-
-
     setState(() {
       _isDark = !_isDark;
     });

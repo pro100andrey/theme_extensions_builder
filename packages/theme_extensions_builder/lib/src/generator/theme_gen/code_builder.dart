@@ -353,6 +353,36 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
           continue;
         }
 
+        // WidgetStateProperty lerp with inner lerp function
+        if (field.lerp case WidgetStatePropertyLerp(
+          :final baseTypeName,
+          :final genericType,
+          :final isNullableGeneric,
+          :final genericIsDouble,
+          :final genericIsDuration,
+        )) {
+          // Get the inner lerp function reference
+          final innerLerpFn = genericIsDouble
+              ? r'lerpDouble$'.ref
+              : genericIsDuration
+              ? r'lerpDuration$'.ref
+              : genericType.ref.prop('lerp');
+
+          // WidgetStateProperty.lerp<Color?>(
+          // a.field,
+          // b.field,
+          // t,
+          // Color.lerp
+          // )
+          argsResult[field.name] = baseTypeName.ref.prop('lerp')(
+            [aProp, bProp, 't'.ref, innerLerpFn],
+            {},
+            [genericType.typeRef(isNullable: isNullableGeneric)],
+          );
+
+          continue;
+        }
+
         // When the field is of type double
         if (field case FieldInfo(isDouble: true) when field.lerp is NoLerp) {
           final expression = r'lerpDouble$'.ref([aProp, bProp, 't'.ref]);

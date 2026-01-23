@@ -92,35 +92,47 @@ final class InstanceLerp extends LerpInfo {
 final class WidgetStatePropertyLerp extends LerpInfo {
   /// Creates a [WidgetStatePropertyLerp] with the specified properties.
   const WidgetStatePropertyLerp({
-    required this.optionalResult,
-    required this.args,
-    required this.innerLerpInfo,
+    required this.baseTypeName,
+    required this.genericType,
+    required this.isNullableGeneric,
   });
 
-  /// The parameters of the lerp method.
-  final List<ParameterInfo> args;
+  /// The base type name without generics.
+  /// For `WidgetStateProperty<Color?>` this is 'WidgetStateProperty'.
+  final String baseTypeName;
 
-  /// Whether the return type of the lerp method is nullable.
-  final bool optionalResult;
+  /// The generic type with nullability.
+  /// For `WidgetStateProperty<Color?>` this is 'Color'.
+  final String genericType;
 
-  /// The lerp info for the inner type of the WidgetStateProperty.
-  /// Like Color, double, etc.
-  final LerpInfo innerLerpInfo;
+  final bool isNullableGeneric;
+
+  bool get genericIsDouble => genericType == 'double';
+
+  bool get genericIsDuration => genericType == 'Duration';
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is WidgetStatePropertyLerp &&
           runtimeType == other.runtimeType &&
-          optionalResult == other.optionalResult &&
-          _listEquality.equals(args, other.args);
+          baseTypeName == other.baseTypeName &&
+          genericType == other.genericType;
 
   @override
-  int get hashCode => Object.hash(runtimeType, optionalResult, args);
+  int get hashCode => Object.hash(
+    runtimeType,
+
+    baseTypeName,
+    genericType,
+  );
 
   @override
   String toString() =>
-      'WidgetStatePropertyLerp(optionalResult: $optionalResult, args: $args)';
+      'WidgetStatePropertyLerp('
+      'baseTypeName: $baseTypeName, '
+      'genericType: $genericType, '
+      ')';
 }
 
 /// Indicates that no lerp method is available for the field type.

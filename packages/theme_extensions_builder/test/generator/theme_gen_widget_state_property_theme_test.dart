@@ -10,7 +10,7 @@ Future<void> main() async {
     'test/theme_gen',
     'widget_state_property_theme.dart',
   );
-  
+
   group('ThemeGenGenerator', () {
     testAnnotatedElements<ThemeGen>(wspReader, ThemeGenGenerator());
   });

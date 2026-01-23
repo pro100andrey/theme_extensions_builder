@@ -116,13 +116,16 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
     }
 
     final innerType = type.typeArguments.single;
-    final args = _mapArgs(params);
-    final innerLerpInfo = _lerpInfo(innerType, fieldElement);
+
+    // Extract type parts from WidgetStateProperty<Color?>
+
+    final baseTypeName = type.element.displayName;
+    final genericType = innerType.baseType;
 
     return WidgetStatePropertyLerp(
-      optionalResult: method.returnType.hasNullableSuffix,
-      args: args,
-      innerLerpInfo: innerLerpInfo,
+      baseTypeName: baseTypeName,
+      genericType: genericType,
+      isNullableGeneric: innerType.hasNullableSuffix,
     );
   }
 

@@ -21,15 +21,38 @@ mixin _$WidgetStatePropertyTheme {
     }
 
     return WidgetStatePropertyTheme(
-      backgroundColor: t < 0.5 ? a.backgroundColor : b.backgroundColor,
+      backgroundColor: WidgetStateProperty.lerp<Color?>(
+        a.backgroundColor,
+        b.backgroundColor,
+        t,
+        Color.lerp,
+      ),
+      width: WidgetStateProperty.lerp<double?>(
+        a.width,
+        b.width,
+        t,
+        lerpDouble$,
+      ),
+      duration: WidgetStateProperty.lerp<Duration?>(
+        a.duration,
+        b.duration,
+        t,
+        lerpDuration$,
+      ),
     );
   }
 
-  WidgetStatePropertyTheme copyWith({InvalidType? backgroundColor}) {
+  WidgetStatePropertyTheme copyWith({
+    WidgetStateProperty<Color?>? backgroundColor,
+    WidgetStateProperty<double?>? width,
+    WidgetStateProperty<Duration?>? duration,
+  }) {
     final _this = (this as WidgetStatePropertyTheme);
 
     return WidgetStatePropertyTheme(
       backgroundColor: backgroundColor ?? _this.backgroundColor,
+      width: width ?? _this.width,
+      duration: duration ?? _this.duration,
     );
   }
 
@@ -44,7 +67,11 @@ mixin _$WidgetStatePropertyTheme {
       return other;
     }
 
-    return copyWith(backgroundColor: other.backgroundColor);
+    return copyWith(
+      backgroundColor: other.backgroundColor,
+      width: other.width,
+      duration: other.duration,
+    );
   }
 
   @override
@@ -60,13 +87,20 @@ mixin _$WidgetStatePropertyTheme {
     final _this = (this as WidgetStatePropertyTheme);
     final _other = (other as WidgetStatePropertyTheme);
 
-    return _other.backgroundColor == _this.backgroundColor;
+    return _other.backgroundColor == _this.backgroundColor &&
+        _other.width == _this.width &&
+        _other.duration == _this.duration;
   }
 
   @override
   int get hashCode {
     final _this = (this as WidgetStatePropertyTheme);
 
-    return Object.hash(runtimeType, _this.backgroundColor);
+    return Object.hash(
+      runtimeType,
+      _this.backgroundColor,
+      _this.width,
+      _this.duration,
+    );
   }
 }

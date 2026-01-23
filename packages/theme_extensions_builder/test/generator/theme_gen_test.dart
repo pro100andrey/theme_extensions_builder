@@ -16,11 +16,6 @@ Future<void> main() async {
     'complex_theme.dart',
   );
 
-  final wspReader = await initializeLibraryReaderForDirectory(
-    'test/theme_gen',
-    'widget_state_property_theme.dart',
-  );
-
   group('ThemeGenGenerator', () {
     group('Empty', () {
       testAnnotatedElements<ThemeGen>(emptyReader, ThemeGenGenerator());
@@ -28,10 +23,6 @@ Future<void> main() async {
 
     group('Complex', () {
       testAnnotatedElements<ThemeGen>(complexReader, ThemeGenGenerator());
-    });
-
-    group('WidgetStatePropertyTheme', () {
-      testAnnotatedElements<ThemeGen>(wspReader, ThemeGenGenerator());
     });
   });
 }

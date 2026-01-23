@@ -29,11 +29,19 @@ mixin _$WidgetStatePropertyTheme {
       return t == 0.0 ? a : null;
     }
 
-    return const WidgetStatePropertyTheme();
+    return WidgetStatePropertyTheme(
+      backgroundColor: t < 0.5 ? a.backgroundColor : b.backgroundColor,
+    );
   }
 
-  WidgetStatePropertyTheme copyWith() {
-    return const WidgetStatePropertyTheme();
+  WidgetStatePropertyTheme copyWith({
+    WidgetStateProperty<Color>? backgroundColor,
+  }) {
+    final _this = (this as WidgetStatePropertyTheme);
+
+    return WidgetStatePropertyTheme(
+      backgroundColor: backgroundColor ?? _this.backgroundColor,
+    );
   }
 
   WidgetStatePropertyTheme merge(WidgetStatePropertyTheme? other) {
@@ -47,7 +55,7 @@ mixin _$WidgetStatePropertyTheme {
       return other;
     }
 
-    return copyWith();
+    return copyWith(backgroundColor: other.backgroundColor);
   }
 
   @override
@@ -60,11 +68,16 @@ mixin _$WidgetStatePropertyTheme {
       return false;
     }
 
-    return true;
+    final _this = (this as WidgetStatePropertyTheme);
+    final _other = (other as WidgetStatePropertyTheme);
+
+    return _other.backgroundColor == _this.backgroundColor;
   }
 
   @override
   int get hashCode {
-    return runtimeType.hashCode;
+    final _this = (this as WidgetStatePropertyTheme);
+
+    return Object.hash(runtimeType, _this.backgroundColor);
   }
 }

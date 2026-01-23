@@ -405,3 +405,38 @@ class LerpableWithOptionalResult {
   @override
   String toString() => 'LerpableWithOptionalResult($value)';
 }
+
+// Ignore for simplicity; this is just a mock implementation.
+// ignore: avoid_classes_with_only_static_members
+abstract class WidgetStateProperty<T> {
+  /// This abstract constructor allows extending the class.
+  ///
+  /// [WidgetStateProperty] is designed as an interface, so this constructor
+  /// is only needed for backward compatibility.
+  WidgetStateProperty();
+
+  /// Linearly interpolate between two [WidgetStateProperty]s.
+  static WidgetStateProperty<T?>? lerp<T>(
+    WidgetStateProperty<T>? a,
+    WidgetStateProperty<T>? b,
+    double t,
+    T? Function(T?, T?, double) lerpFunction,
+  ) {
+    // Avoid creating a _LerpProperties object for a common case.
+    if (a == null && b == null) {
+      return null;
+    }
+    return _LerpProperties<T>(a, b, t, lerpFunction);
+  }
+}
+
+class _LerpProperties<T> implements WidgetStateProperty<T?> {
+  const _LerpProperties(this.a, this.b, this.t, this.lerpFunction);
+
+  final WidgetStateProperty<T>? a;
+  final WidgetStateProperty<T>? b;
+  final double t;
+  // Ignore unsafe variance for simplicity in this mock implementation.
+  // ignore: unsafe_variance
+  final T? Function(T?, T?, double) lerpFunction;
+}

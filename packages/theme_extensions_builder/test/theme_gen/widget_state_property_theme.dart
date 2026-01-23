@@ -1,6 +1,8 @@
 import 'package:source_gen_test/source_gen_test.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
+import 'mock.dart';
+
 part 'widget_state_property_theme.g.theme.dart';
 
 /// Empty Theme - testing edge case with no fields
@@ -10,7 +12,11 @@ part 'widget_state_property_theme.g.theme.dart';
 )
 @themeGen
 final class WidgetStatePropertyTheme with _$WidgetStatePropertyTheme {
-  const WidgetStatePropertyTheme();
+  const WidgetStatePropertyTheme({
+    required this.backgroundColor,
+  });
+
+  final WidgetStateProperty<Color>? backgroundColor;
 
   @override
   bool get canMerge => true;

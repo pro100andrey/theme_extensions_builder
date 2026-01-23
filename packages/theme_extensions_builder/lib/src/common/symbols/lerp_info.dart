@@ -89,6 +89,40 @@ final class InstanceLerp extends LerpInfo {
       'InstanceLerp(optionalResult: $optionalResult, args: $args)';
 }
 
+final class WidgetStatePropertyLerp extends LerpInfo {
+  /// Creates a [WidgetStatePropertyLerp] with the specified properties.
+  const WidgetStatePropertyLerp({
+    required this.optionalResult,
+    required this.args,
+    required this.innerLerpInfo,
+  });
+
+  /// The parameters of the lerp method.
+  final List<ParameterInfo> args;
+
+  /// Whether the return type of the lerp method is nullable.
+  final bool optionalResult;
+
+  /// The lerp info for the inner type of the WidgetStateProperty.
+  /// Like Color, double, etc.
+  final LerpInfo innerLerpInfo;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WidgetStatePropertyLerp &&
+          runtimeType == other.runtimeType &&
+          optionalResult == other.optionalResult &&
+          _listEquality.equals(args, other.args);
+
+  @override
+  int get hashCode => Object.hash(runtimeType, optionalResult, args);
+
+  @override
+  String toString() =>
+      'WidgetStatePropertyLerp(optionalResult: $optionalResult, args: $args)';
+}
+
 /// Indicates that no lerp method is available for the field type.
 ///
 /// When this is used, the generator will fall back to a simple conditional

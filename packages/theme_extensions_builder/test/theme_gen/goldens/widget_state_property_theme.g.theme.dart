@@ -39,6 +39,24 @@ mixin _$WidgetStatePropertyTheme {
         t,
         lerpDuration$,
       ),
+      rBackgroundColor: WidgetStateProperty.lerp<Color?>(
+        a.rBackgroundColor,
+        b.rBackgroundColor,
+        t,
+        Color.lerp,
+      )!,
+      rWidth: WidgetStateProperty.lerp<double?>(
+        a.rWidth,
+        b.rWidth,
+        t,
+        lerpDouble$,
+      )!,
+      rDuration: WidgetStateProperty.lerp<Duration?>(
+        a.rDuration,
+        b.rDuration,
+        t,
+        lerpDuration$,
+      )!,
     );
   }
 
@@ -46,6 +64,9 @@ mixin _$WidgetStatePropertyTheme {
     WidgetStateProperty<Color?>? backgroundColor,
     WidgetStateProperty<double?>? width,
     WidgetStateProperty<Duration?>? duration,
+    WidgetStateProperty<Color?>? rBackgroundColor,
+    WidgetStateProperty<double?>? rWidth,
+    WidgetStateProperty<Duration?>? rDuration,
   }) {
     final _this = (this as WidgetStatePropertyTheme);
 
@@ -53,6 +74,9 @@ mixin _$WidgetStatePropertyTheme {
       backgroundColor: backgroundColor ?? _this.backgroundColor,
       width: width ?? _this.width,
       duration: duration ?? _this.duration,
+      rBackgroundColor: rBackgroundColor ?? _this.rBackgroundColor,
+      rWidth: rWidth ?? _this.rWidth,
+      rDuration: rDuration ?? _this.rDuration,
     );
   }
 
@@ -71,6 +95,9 @@ mixin _$WidgetStatePropertyTheme {
       backgroundColor: other.backgroundColor,
       width: other.width,
       duration: other.duration,
+      rBackgroundColor: other.rBackgroundColor,
+      rWidth: other.rWidth,
+      rDuration: other.rDuration,
     );
   }
 
@@ -89,7 +116,10 @@ mixin _$WidgetStatePropertyTheme {
 
     return _other.backgroundColor == _this.backgroundColor &&
         _other.width == _this.width &&
-        _other.duration == _this.duration;
+        _other.duration == _this.duration &&
+        _other.rBackgroundColor == _this.rBackgroundColor &&
+        _other.rWidth == _this.rWidth &&
+        _other.rDuration == _this.rDuration;
   }
 
   @override
@@ -101,6 +131,9 @@ mixin _$WidgetStatePropertyTheme {
       _this.backgroundColor,
       _this.width,
       _this.duration,
+      _this.rBackgroundColor,
+      _this.rWidth,
+      _this.rDuration,
     );
   }
 }

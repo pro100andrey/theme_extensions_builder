@@ -374,11 +374,16 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
           // t,
           // Color.lerp
           // )
-          argsResult[field.name] = baseTypeName.ref.prop('lerp')(
+
+          final expression = baseTypeName.ref.prop('lerp')(
             [aProp, bProp, 't'.ref, innerLerpFn],
             {},
             [genericType.typeRef(isNullable: isNullableGeneric)],
           );
+
+          argsResult[field.name] = field.isNullable
+              ? expression
+              : expression.nullChecked;
 
           continue;
         }

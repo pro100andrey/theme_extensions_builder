@@ -116,9 +116,6 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
     }
 
     final innerType = type.typeArguments.single;
-
-    // Extract type parts from WidgetStateProperty<Color?>
-
     final baseTypeName = type.element.displayName;
     final genericType = innerType.baseType;
 

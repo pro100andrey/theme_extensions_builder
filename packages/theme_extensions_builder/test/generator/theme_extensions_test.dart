@@ -24,4 +24,12 @@ Future<void> main() async {
   group('Complex', () {
     testAnnotatedElements<ThemeExtensions>(complexReader, generator);
   });
+
+  final wspReader = await initializeLibraryReaderForDirectory(
+    'test/theme_extensions',
+    'widget_state_property_theme_extension.dart',
+  );
+  group('WidgetStateProperty', () {
+    testAnnotatedElements<ThemeExtensions>(wspReader, generator);
+  });
 }

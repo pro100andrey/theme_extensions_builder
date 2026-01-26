@@ -30,39 +30,34 @@ mixin _$WidgetStatePropertyTheme {
     }
 
     return WidgetStatePropertyTheme(
-      backgroundColor: WidgetStateProperty.lerp<Color?>(
-        a.backgroundColor,
-        b.backgroundColor,
-        t,
-        Color.lerp,
-      ),
+      color: WidgetStateProperty.lerp<Color?>(a.color, b.color, t, Color.lerp)!,
       width: WidgetStateProperty.lerp<double?>(
         a.width,
         b.width,
         t,
         lerpDouble$,
-      ),
+      )!,
       duration: WidgetStateProperty.lerp<Duration?>(
         a.duration,
         b.duration,
         t,
         lerpDuration$,
-      ),
-      rBackgroundColor: WidgetStateProperty.lerp<Color?>(
-        a.rBackgroundColor,
-        b.rBackgroundColor,
+      )!,
+      optionalColor: WidgetStateProperty.lerp<Color?>(
+        a.optionalColor,
+        b.optionalColor,
         t,
         Color.lerp,
       )!,
-      rWidth: WidgetStateProperty.lerp<double?>(
-        a.rWidth,
-        b.rWidth,
+      optionalWidth: WidgetStateProperty.lerp<double?>(
+        a.optionalWidth,
+        b.optionalWidth,
         t,
         lerpDouble$,
       )!,
-      rDuration: WidgetStateProperty.lerp<Duration?>(
-        a.rDuration,
-        b.rDuration,
+      optionalDuration: WidgetStateProperty.lerp<Duration?>(
+        a.optionalDuration,
+        b.optionalDuration,
         t,
         lerpDuration$,
       )!,
@@ -70,22 +65,22 @@ mixin _$WidgetStatePropertyTheme {
   }
 
   WidgetStatePropertyTheme copyWith({
-    WidgetStateProperty<Color?>? backgroundColor,
+    WidgetStateProperty<Color?>? color,
     WidgetStateProperty<double?>? width,
     WidgetStateProperty<Duration?>? duration,
-    WidgetStateProperty<Color?>? rBackgroundColor,
-    WidgetStateProperty<double?>? rWidth,
-    WidgetStateProperty<Duration?>? rDuration,
+    WidgetStateProperty<Color?>? optionalColor,
+    WidgetStateProperty<double?>? optionalWidth,
+    WidgetStateProperty<Duration?>? optionalDuration,
   }) {
     final _this = (this as WidgetStatePropertyTheme);
 
     return WidgetStatePropertyTheme(
-      backgroundColor: backgroundColor ?? _this.backgroundColor,
+      color: color ?? _this.color,
       width: width ?? _this.width,
       duration: duration ?? _this.duration,
-      rBackgroundColor: rBackgroundColor ?? _this.rBackgroundColor,
-      rWidth: rWidth ?? _this.rWidth,
-      rDuration: rDuration ?? _this.rDuration,
+      optionalColor: optionalColor ?? _this.optionalColor,
+      optionalWidth: optionalWidth ?? _this.optionalWidth,
+      optionalDuration: optionalDuration ?? _this.optionalDuration,
     );
   }
 
@@ -101,12 +96,12 @@ mixin _$WidgetStatePropertyTheme {
     }
 
     return copyWith(
-      backgroundColor: other.backgroundColor,
+      color: other.color,
       width: other.width,
       duration: other.duration,
-      rBackgroundColor: other.rBackgroundColor,
-      rWidth: other.rWidth,
-      rDuration: other.rDuration,
+      optionalColor: other.optionalColor,
+      optionalWidth: other.optionalWidth,
+      optionalDuration: other.optionalDuration,
     );
   }
 
@@ -123,12 +118,12 @@ mixin _$WidgetStatePropertyTheme {
     final _this = (this as WidgetStatePropertyTheme);
     final _other = (other as WidgetStatePropertyTheme);
 
-    return _other.backgroundColor == _this.backgroundColor &&
+    return _other.color == _this.color &&
         _other.width == _this.width &&
         _other.duration == _this.duration &&
-        _other.rBackgroundColor == _this.rBackgroundColor &&
-        _other.rWidth == _this.rWidth &&
-        _other.rDuration == _this.rDuration;
+        _other.optionalColor == _this.optionalColor &&
+        _other.optionalWidth == _this.optionalWidth &&
+        _other.optionalDuration == _this.optionalDuration;
   }
 
   @override
@@ -137,12 +132,12 @@ mixin _$WidgetStatePropertyTheme {
 
     return Object.hash(
       runtimeType,
-      _this.backgroundColor,
+      _this.color,
       _this.width,
       _this.duration,
-      _this.rBackgroundColor,
-      _this.rWidth,
-      _this.rDuration,
+      _this.optionalColor,
+      _this.optionalWidth,
+      _this.optionalDuration,
     );
   }
 }

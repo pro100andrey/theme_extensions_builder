@@ -13,21 +13,21 @@ part 'widget_state_property_theme.g.theme.dart';
 @themeGen
 final class WidgetStatePropertyTheme with _$WidgetStatePropertyTheme {
   const WidgetStatePropertyTheme({
-    required this.backgroundColor,
+    required this.color,
     required this.width,
     required this.duration,
-    required this.rBackgroundColor,
-    required this.rWidth,
-    required this.rDuration,
+    required this.optionalColor,
+    required this.optionalWidth,
+    required this.optionalDuration,
   });
 
-  final WidgetStateProperty<Color?>? backgroundColor;
-  final WidgetStateProperty<double?>? width;
-  final WidgetStateProperty<Duration?>? duration;
+  final WidgetStateProperty<Color?> color;
+  final WidgetStateProperty<double?> width;
+  final WidgetStateProperty<Duration?> duration;
 
-  final WidgetStateProperty<Color?> rBackgroundColor;
-  final WidgetStateProperty<double?> rWidth;
-  final WidgetStateProperty<Duration?> rDuration;
+  final WidgetStateProperty<Color?> optionalColor;
+  final WidgetStateProperty<double?> optionalWidth;
+  final WidgetStateProperty<Duration?> optionalDuration;
 
   @override
   bool get canMerge => true;

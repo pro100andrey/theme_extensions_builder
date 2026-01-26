@@ -4,6 +4,7 @@
 /// theme code to smoothly transition between theme values during animations.
 library;
 
+// Ignore warnings about parameter assignments in lerp functions
 // ignore_for_file: parameter_assignments
 
 /// Linearly interpolates between two numbers.

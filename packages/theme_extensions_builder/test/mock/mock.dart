@@ -292,7 +292,7 @@ class BorderSide {
   /// A hairline border side with no color.
   ///
   /// This is the default value for [BorderSide].
-  static const BorderSide none = BorderSide(width: 0, style: BorderStyle.none);
+  static const none = BorderSide(width: 0, style: BorderStyle.none);
 
   /// Linearly interpolate between two border sides.
   ///
@@ -358,4 +358,85 @@ class BorderSide {
   String toString() =>
       'BorderSide(style: $style, width: $width, color: $color, '
       'strokeAlign: $strokeAlign)';
+}
+
+/// Mock class for testing instance lerp with optional result.
+///
+/// This class provides an instance lerp method that returns a nullable result,
+/// which is used to test the InstanceLerp(optionalResult: true) case.
+class LerpableWithOptionalResult {
+  const LerpableWithOptionalResult(this.value);
+
+  final double value;
+
+  /// Instance lerp method that returns nullable result.
+  ///
+  /// This tests the case where an instance lerp method exists but
+  /// returns an optional result (nullable).
+  LerpableWithOptionalResult? lerp(
+    LerpableWithOptionalResult? other,
+    double t,
+  ) {
+    if (other == null) {
+      return null;
+    }
+
+    return LerpableWithOptionalResult(
+      value + (other.value - value) * t,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    if (other is! LerpableWithOptionalResult) {
+      return false;
+    }
+
+    return value == other.value;
+  }
+
+  @override
+  int get hashCode => value.hashCode;
+
+  @override
+  String toString() => 'LerpableWithOptionalResult($value)';
+}
+
+// Ignore for simplicity; this is just a mock implementation.
+// ignore: avoid_classes_with_only_static_members
+abstract class WidgetStateProperty<T> {
+  /// This abstract constructor allows extending the class.
+  ///
+  /// [WidgetStateProperty] is designed as an interface, so this constructor
+  /// is only needed for backward compatibility.
+  WidgetStateProperty();
+
+  /// Linearly interpolate between two [WidgetStateProperty]s.
+  static WidgetStateProperty<T?>? lerp<T>(
+    WidgetStateProperty<T>? a,
+    WidgetStateProperty<T>? b,
+    double t,
+    T? Function(T?, T?, double) lerpFunction,
+  ) {
+    // Avoid creating a _LerpProperties object for a common case.
+    if (a == null && b == null) {
+      return null;
+    }
+    return _LerpProperties<T>(a, b, t, lerpFunction);
+  }
+}
+
+class _LerpProperties<T> implements WidgetStateProperty<T?> {
+  const _LerpProperties(this.a, this.b, this.t, this.lerpFunction);
+
+  final WidgetStateProperty<T>? a;
+  final WidgetStateProperty<T>? b;
+  final double t;
+  // Ignore unsafe variance for simplicity in this mock implementation.
+  // ignore: unsafe_variance
+  final T? Function(T?, T?, double) lerpFunction;
 }

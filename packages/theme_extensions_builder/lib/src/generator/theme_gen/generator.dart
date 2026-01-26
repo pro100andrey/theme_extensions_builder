@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
@@ -29,7 +27,7 @@ import 'code_builder.dart';
 /// ```
 class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
   /// Creates a [ThemeGenGenerator] with optional [builderOptions].
-  ThemeGenGenerator({this.builderOptions});
+  const ThemeGenGenerator({this.builderOptions});
 
   /// Optional build configuration options.
   final BuilderOptions? builderOptions;

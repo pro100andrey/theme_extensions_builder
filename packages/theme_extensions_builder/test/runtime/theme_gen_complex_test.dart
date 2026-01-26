@@ -30,6 +30,7 @@ void main() {
         optionalBorderSide: BorderSide(width: 3),
         optionalTheme: EmptyTheme(),
         optionalThemeExtension: EmptyThemeExtension(),
+        optionalLerpableWithOptionalResult: LerpableWithOptionalResult(1),
         ignoredField: 'test',
       );
 
@@ -52,6 +53,7 @@ void main() {
         optionalBorderSide: BorderSide(width: 5),
         optionalTheme: EmptyTheme(),
         optionalThemeExtension: EmptyThemeExtension(),
+        optionalLerpableWithOptionalResult: LerpableWithOptionalResult(5),
         ignoredField: 'test2',
       );
     });
@@ -71,45 +73,6 @@ void main() {
       // methods
       expect(themeA.ignoredField, equals('test'));
       expect(themeB.ignoredField, equals('test2'));
-    });
-
-    group('lerp', () {
-      test('returns a when identical', () {
-        final result = ComplexTheme.lerp(themeA, themeA, 0.5);
-        expect(identical(result, themeA), isTrue);
-      });
-
-      test('returns null when both are null', () {
-        final result = ComplexTheme.lerp(null, null, 0.5);
-        expect(result, isNull);
-      });
-
-      test('returns null when a is null and t != 1.0', () {
-        final result = ComplexTheme.lerp(null, themeB, 0.5);
-        expect(result, isNull);
-      });
-
-      test('returns b when a is null and t == 1.0', () {
-        final result = ComplexTheme.lerp(null, themeB, 1);
-        expect(result, equals(themeB));
-      });
-
-      test('returns null when b is null and t != 0.0', () {
-        final result = ComplexTheme.lerp(themeA, null, 0.5);
-        expect(result, isNull);
-      });
-
-      test('returns a when b is null and t == 0.0', () {
-        final result = ComplexTheme.lerp(themeA, null, 0);
-        expect(result, equals(themeA));
-      });
-
-      test('lerp method exists and has correct signature', () {
-        // Just verify that lerp can be called
-        // We don't test actual interpolation because Color.lerp can return null
-        // which causes issues with required non-nullable Color fields
-        expect(ComplexTheme.lerp, isA<Function>());
-      });
     });
 
     group('copyWith', () {
@@ -217,6 +180,124 @@ void main() {
       });
     });
 
+    group('lerp', () {
+      test('returns a when identical', () {
+        final result = ComplexTheme.lerp(themeA, themeA, 0.5);
+        expect(identical(result, themeA), isTrue);
+      });
+
+      test('returns null when both are null', () {
+        final result = ComplexTheme.lerp(null, null, 0.5);
+        expect(result, isNull);
+      });
+
+      test('returns null when a is null and t != 1.0', () {
+        final result = ComplexTheme.lerp(null, themeB, 0.5);
+        expect(result, isNull);
+      });
+
+      test('returns b when a is null and t == 1.0', () {
+        final result = ComplexTheme.lerp(null, themeB, 1);
+        expect(result, equals(themeB));
+      });
+
+      test('returns null when b is null and t != 0.0', () {
+        final result = ComplexTheme.lerp(themeA, null, 0.5);
+        expect(result, isNull);
+      });
+
+      test('lerps optional values correctly at t=0.5', () {
+        final result = ComplexTheme.lerp(themeA, themeB, 0.5);
+
+        expect(result, isNotNull);
+        expect(result!.optionalDouble, equals(3.5));
+        expect(result.optionalDuration, equals(const Duration(seconds: 15)));
+      });
+
+      test('lerps instance lerp with optional result (nullable field)', () {
+        // Test InstanceLerp(optionalResult: true) with nullable field
+        final themeWithLerpable1 = themeA.copyWith(
+          optionalLerpableWithOptionalResult: const LerpableWithOptionalResult(
+            2,
+          ),
+        );
+        final themeWithLerpable2 = themeB.copyWith(
+          optionalLerpableWithOptionalResult: const LerpableWithOptionalResult(
+            8,
+          ),
+        );
+
+        final result = ComplexTheme.lerp(
+          themeWithLerpable1,
+          themeWithLerpable2,
+          0.5,
+        );
+
+        expect(result, isNotNull);
+        expect(result!.optionalLerpableWithOptionalResult, isNotNull);
+        expect(
+          result.optionalLerpableWithOptionalResult!.value,
+          equals(5.0),
+        );
+      });
+
+      test(
+        'lerps instance lerp with optional result when first value is null',
+        () {
+          // Create themes where one has null for the lerpable field
+          const themeWithNull = ComplexTheme(
+            requiredInt: 10,
+            requiredDouble: 1.5,
+            requiredString: 'hello',
+            requiredBool: true,
+            requiredDuration: Duration(seconds: 5),
+            requiredColor: Color(0xFF0000FF),
+            requiredBorderSide: BorderSide(width: 2),
+            requiredTheme: EmptyTheme(),
+            requiredThemeExtension: EmptyThemeExtension(),
+            optionalInt: 20,
+            optionalDouble: 2.5,
+            optionalString: 'world',
+            optionalBool: false,
+            optionalDuration: Duration(seconds: 10),
+            optionalColor: Color(0xFFFF0000),
+            optionalBorderSide: BorderSide(width: 3),
+            optionalTheme: EmptyTheme(),
+            optionalThemeExtension: EmptyThemeExtension(),
+            optionalLerpableWithOptionalResult: null,
+          );
+
+          const themeWithValue = ComplexTheme(
+            requiredInt: 30,
+            requiredDouble: 3.5,
+            requiredString: 'goodbye',
+            requiredBool: false,
+            requiredDuration: Duration(seconds: 15),
+            requiredColor: Color(0xFF00FF00),
+            requiredBorderSide: BorderSide(width: 4),
+            requiredTheme: EmptyTheme(),
+            requiredThemeExtension: EmptyThemeExtension(),
+            optionalInt: 40,
+            optionalDouble: 4.5,
+            optionalString: 'universe',
+            optionalBool: true,
+            optionalDuration: Duration(seconds: 20),
+            optionalColor: Color(0xFF00FFFF),
+            optionalBorderSide: BorderSide(width: 5),
+            optionalTheme: EmptyTheme(),
+            optionalThemeExtension: EmptyThemeExtension(),
+            optionalLerpableWithOptionalResult: LerpableWithOptionalResult(8),
+          );
+
+          final result = ComplexTheme.lerp(themeWithNull, themeWithValue, 0.5);
+
+          expect(result, isNotNull);
+          // When lerp is called on null with ?.lerp, it returns null
+          expect(result!.optionalLerpableWithOptionalResult, isNull);
+        },
+      );
+    });
+
     group('equality', () {
       test('same values are equal', () {
         const theme1 = ComplexTheme(
@@ -238,6 +319,7 @@ void main() {
           optionalBorderSide: null,
           optionalTheme: null,
           optionalThemeExtension: null,
+          optionalLerpableWithOptionalResult: null,
         );
 
         const theme2 = ComplexTheme(
@@ -259,6 +341,7 @@ void main() {
           optionalBorderSide: null,
           optionalTheme: null,
           optionalThemeExtension: null,
+          optionalLerpableWithOptionalResult: null,
         );
 
         expect(theme1, equals(theme2));

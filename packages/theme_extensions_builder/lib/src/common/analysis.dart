@@ -72,6 +72,65 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
 
   final params = method.formalParameters;
 
+  // WidgetStateProperty and WidgetStateColor use a different signature for
+  // lerp. Check for 4-parameter version first, as WidgetStateProperty has
+  //both 3 and 4 parameter versions
+  if (params case [final p1, final p2, final p3, final p4]
+      // Check for static lerp method with 4 parameters
+      // - first two parameters should have the same type as the class type
+      // - third parameter should be double
+      // - fourth parameter is a lerp function for the inner type
+      when type is InterfaceType &&
+          method.isStatic &&
+          p3.type.isDartCoreDouble &&
+          _checkSubtype(p1, type) &&
+          _checkSubtype(p2, type)) {
+    // Check p4 is a function type having signature:
+    // R Function(T? a, T? b, double t)
+    if (p4.type case FunctionType(
+      formalParameters: [final f1, final f2, final f3],
+    )) {
+      // For generic functions like T? Function(T?, T?, double), we can't easily
+      // check exact type compatibility without type substitution.
+      // Just verify the structure: 3 parameters where the third is double.
+      // The first two parameters should be nullable to match the lerp pattern.
+      final isValidSignature =
+          f1.type.nullabilitySuffix == .question &&
+          f2.type.nullabilitySuffix == .question &&
+          f3.type.isDartCoreDouble;
+
+      if (!isValidSignature) {
+        // Unsupported lerp function signature
+        return const NoLerp();
+      }
+    }
+
+    final innerType = type.typeArguments.single;
+
+    // Check that the generic type is nullable
+    if (!innerType.hasNullableSuffix) {
+      final typeName = type.getDisplayString();
+      final innerTypeName = innerType.getDisplayString();
+      throw StateError(
+        'WidgetStateProperty must have a nullable generic type for field '
+        '${fieldElement.name}. Found: $typeName\n'
+        'The generic type must be nullable because WidgetStateProperty.lerp '
+        'requires a lerp function with nullable parameters.\n'
+        'Change the field type from $typeName to '
+        'WidgetStateProperty<$innerTypeName?> to fix this issue.',
+      );
+    }
+
+    final baseTypeName = type.element.displayName;
+    final genericType = innerType.baseType;
+
+    return WidgetStatePropertyLerp(
+      baseTypeName: baseTypeName,
+      genericType: genericType,
+      isNullableGeneric: innerType.hasNullableSuffix,
+    );
+  }
+
   if (params case [final p1, final p2, final p3]
       // Check for static lerp method
       // - should have three parameters
@@ -81,9 +140,11 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
           p3.type.isDartCoreDouble &&
           _checkSubtype(p1, type) &&
           _checkSubtype(p2, type)) {
+    final args = _mapArgs(params);
+
     return StaticLerp(
       optionalResult: method.returnType.hasNullableSuffix,
-      args: _mapArgs(params),
+      args: args,
     );
   } else if (params case [final p1, final p2]
       // Check for instance lerp method:
@@ -93,9 +154,11 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
       when !method.isStatic &&
           p2.type.isDartCoreDouble &&
           _checkSubtype(p1, type)) {
+    final args = _mapArgs(params);
+
     return InstanceLerp(
       optionalResult: method.returnType.hasNullableSuffix,
-      args: _mapArgs(params),
+      args: args,
     );
   }
 
@@ -128,7 +191,9 @@ bool _checkSubtype(FormalParameterElement param, DartType type) {
     return false;
   }
 
-  final paramTypeElement = param.type.element;
+  final parameterType = param.type;
+
+  final paramTypeElement = parameterType.element;
   if (paramTypeElement is! InterfaceElement) {
     return false;
   }

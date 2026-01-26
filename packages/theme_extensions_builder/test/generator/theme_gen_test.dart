@@ -6,23 +6,32 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 Future<void> main() async {
   initializeBuildLogTracking();
 
+  const generator = ThemeGenGenerator();
+
   final emptyReader = await initializeLibraryReaderForDirectory(
     'test/theme_gen',
     'empty_theme.dart',
   );
+
+  group('Empty', () {
+    testAnnotatedElements<ThemeGen>(emptyReader, generator);
+  });
 
   final complexReader = await initializeLibraryReaderForDirectory(
     'test/theme_gen',
     'complex_theme.dart',
   );
 
-  group('ThemeGenGenerator', () {
-    group('Empty', () {
-      testAnnotatedElements<ThemeGen>(emptyReader, ThemeGenGenerator());
-    });
+  group('Complex', () {
+    testAnnotatedElements<ThemeGen>(complexReader, generator);
+  });
 
-    group('Complex', () {
-      testAnnotatedElements<ThemeGen>(complexReader, ThemeGenGenerator());
-    });
+  final wspReader = await initializeLibraryReaderForDirectory(
+    'test/theme_gen',
+    'widget_state_property_theme.dart',
+  );
+
+  group('WidgetStateProperty', () {
+    testAnnotatedElements<ThemeGen>(wspReader, generator);
   });
 }

@@ -38,8 +38,7 @@ final class ComplexThemeInternal with _$ComplexThemeInternal {
     required this.optionalBorderSide,
     required this.optionalTheme,
     required this.optionalThemeExtension,
-
-    // ignore: unused_element_parameter
+    required this.optionalLerpableWithOptionalResult,
     this.ignoredField,
   });
 
@@ -63,6 +62,7 @@ final class ComplexThemeInternal with _$ComplexThemeInternal {
         optionalBorderSide: null,
         optionalTheme: null,
         optionalThemeExtension: null,
+        optionalLerpableWithOptionalResult: null,
         ignoredField: 'defaults',
       );
 
@@ -87,6 +87,7 @@ final class ComplexThemeInternal with _$ComplexThemeInternal {
   final BorderSide? optionalBorderSide;
   final EmptyTheme? optionalTheme;
   final EmptyThemeExtension? optionalThemeExtension;
+  final LerpableWithOptionalResult? optionalLerpableWithOptionalResult;
 
   // Ignored field - should not be in generated code
   @ignore
@@ -125,6 +126,7 @@ final class ComplexTheme with _$ComplexTheme {
     required this.optionalBorderSide,
     required this.optionalTheme,
     required this.optionalThemeExtension,
+    required this.optionalLerpableWithOptionalResult,
     this.ignoredField = 'ignored',
   });
 
@@ -149,6 +151,7 @@ final class ComplexTheme with _$ComplexTheme {
   final BorderSide? optionalBorderSide;
   final EmptyTheme? optionalTheme;
   final EmptyThemeExtension? optionalThemeExtension;
+  final LerpableWithOptionalResult? optionalLerpableWithOptionalResult;
 
   @ignore
   final String ignoredField;

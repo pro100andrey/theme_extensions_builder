@@ -287,7 +287,8 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
         t,
       ),
       optionalThemeExtension:
-          (_this.optionalThemeExtension?.lerp as EmptyThemeExtension?),
+          (_this.optionalThemeExtension?.lerp(other.optionalThemeExtension, t)
+              as EmptyThemeExtension?),
     );
   }
 

@@ -27,7 +27,7 @@ import 'code_builder.dart';
 /// ```
 class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
   /// Creates a [ThemeExtensionsGenerator] with optional [builderOptions].
-  ThemeExtensionsGenerator({this.builderOptions});
+  const ThemeExtensionsGenerator({this.builderOptions});
 
   /// Optional build configuration options.
   final BuilderOptions? builderOptions;

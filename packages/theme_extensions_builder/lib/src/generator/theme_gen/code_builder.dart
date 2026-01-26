@@ -333,10 +333,11 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         if (field.lerp case InstanceLerp(
           optionalResult: true,
         ) when field.isNullable) {
-          // value: a.field.lerp(b.field, t)
-          argsResult[field.name] = aProp
-              .prop('lerp', nullSafe: true)([bProp, 't'.ref])
-              .asA(field.typeName.typeRef(isNullable: field.isNullable));
+          // value: a.field?.lerp(b.field, t)
+          argsResult[field.name] = aProp.prop('lerp', nullSafe: true)([
+            bProp,
+            't'.ref,
+          ]);
 
           continue;
         }
@@ -348,6 +349,41 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
           argsResult[field.name] = aProp
               .prop('lerp')([bProp, 't'.ref])
               .asA(field.typeName.typeRef());
+
+          continue;
+        }
+
+        // WidgetStateProperty lerp with inner lerp function
+        if (field.lerp case WidgetStatePropertyLerp(
+          :final baseTypeName,
+          :final genericType,
+          :final isNullableGeneric,
+          :final genericIsDouble,
+          :final genericIsDuration,
+        )) {
+          // Get the inner lerp function reference
+          final innerLerpFn = genericIsDouble
+              ? r'lerpDouble$'.ref
+              : genericIsDuration
+              ? r'lerpDuration$'.ref
+              : genericType.ref.prop('lerp');
+
+          // WidgetStateProperty.lerp<Color?>(
+          // a.field,
+          // b.field,
+          // t,
+          // Color.lerp
+          // )
+
+          final expression = baseTypeName.ref.prop('lerp')(
+            [aProp, bProp, 't'.ref, innerLerpFn],
+            {},
+            [genericType.typeRef(isNullable: isNullableGeneric)],
+          );
+
+          argsResult[field.name] = field.isNullable
+              ? expression
+              : expression.nullChecked;
 
           continue;
         }

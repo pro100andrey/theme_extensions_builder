@@ -249,11 +249,25 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
         }
 
         // Handle InstanceLerp with optional field
-        if (field.lerp case InstanceLerp() when field.isNullable) {
+        if (field.lerp case InstanceLerp(
+          optionalResult: true,
+        ) when field.isNullable) {
+          // _this.field?.lerp(other.field, t)
+          args[field.name] = tProp.prop('lerp', nullSafe: true)([
+            oProp,
+            't'.ref,
+          ]);
+          continue;
+        }
+
+        // Handle InstanceLerp with non-optional result and nullable field
+        if (field.lerp case InstanceLerp(
+          optionalResult: false,
+        ) when field.isNullable) {
           // _this.field?.lerp(other.field, t) as FieldType?
           args[field.name] = tProp
-              .prop('lerp', nullSafe: true)
-              .asA(field.typeName.typeRef(isNullable: field.isNullable));
+              .prop('lerp', nullSafe: true)([oProp, 't'.ref])
+              .asA(field.typeName.typeRef(isNullable: true));
           continue;
         }
 
@@ -262,7 +276,41 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
           // _this.field.lerp(other.field, t) as FieldType
           args[field.name] = tProp
               .prop('lerp')([oProp, 't'.ref])
-              .asA(field.typeName.typeRef(isNullable: field.isNullable));
+              .asA(field.typeName.typeRef());
+          continue;
+        }
+
+        // Handle WidgetStateProperty lerp with inner lerp function
+        if (field.lerp case WidgetStatePropertyLerp(
+          :final baseTypeName,
+          :final genericType,
+          :final isNullableGeneric,
+          :final genericIsDouble,
+          :final genericIsDuration,
+        )) {
+          // Get the inner lerp function reference
+          final innerLerpFn = genericIsDouble
+              ? r'lerpDouble$'.ref
+              : genericIsDuration
+              ? r'lerpDuration$'.ref
+              : genericType.ref.prop('lerp');
+
+          // WidgetStateProperty.lerp<Color?>(
+          //   _this.field,
+          //   other.field,
+          //   t,
+          //   Color.lerp
+          // )
+          final expression = baseTypeName.ref.prop('lerp')(
+            [tProp, oProp, 't'.ref, innerLerpFn],
+            {},
+            [genericType.typeRef(isNullable: isNullableGeneric)],
+          );
+
+          args[field.name] = field.isNullable
+              ? expression
+              : expression.nullChecked;
+
           continue;
         }
 

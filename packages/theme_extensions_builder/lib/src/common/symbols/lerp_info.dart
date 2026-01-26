@@ -89,6 +89,52 @@ final class InstanceLerp extends LerpInfo {
       'InstanceLerp(optionalResult: $optionalResult, args: $args)';
 }
 
+final class WidgetStatePropertyLerp extends LerpInfo {
+  /// Creates a [WidgetStatePropertyLerp] with the specified properties.
+  const WidgetStatePropertyLerp({
+    required this.baseTypeName,
+    required this.genericType,
+    required this.isNullableGeneric,
+  });
+
+  /// The base type name without generics.
+  /// For `WidgetStateProperty<Color?>` this is 'WidgetStateProperty'.
+  final String baseTypeName;
+
+  /// The generic type with nullability.
+  /// For `WidgetStateProperty<Color?>` this is 'Color'.
+  final String genericType;
+
+  final bool isNullableGeneric;
+
+  bool get genericIsDouble => genericType == 'double';
+
+  bool get genericIsDuration => genericType == 'Duration';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WidgetStatePropertyLerp &&
+          runtimeType == other.runtimeType &&
+          baseTypeName == other.baseTypeName &&
+          genericType == other.genericType;
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+
+    baseTypeName,
+    genericType,
+  );
+
+  @override
+  String toString() =>
+      'WidgetStatePropertyLerp('
+      'baseTypeName: $baseTypeName, '
+      'genericType: $genericType, '
+      ')';
+}
+
 /// Indicates that no lerp method is available for the field type.
 ///
 /// When this is used, the generator will fall back to a simple conditional

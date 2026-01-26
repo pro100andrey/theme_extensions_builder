@@ -1,4 +1,16 @@
 
+## 7.2.0
+
+- **New Feature**: Added support for `WidgetStateProperty.lerp` with 4-parameter signature - [#33](https://github.com/pro100andrey/theme_extensions_builder/issues/33)
+- **New Feature**: Added `WidgetStatePropertyLerp` class for proper code generation of `WidgetStateProperty` types with validation for nullable generics
+- **Improvement**: Enhanced lerp method handling for instance methods with optional results, ensuring correct null safety and type casting
+- **Improvement**: Updated code generation logic in both `@ThemeExtensions` and `@ThemeGen` to handle `WidgetStateProperty` fields with appropriate inner lerp functions
+- **Improvement**: Refactored internal analysis logic to better validate parameter types and method signatures for lerp methods
+- **Improvement**: Added validation that throws descriptive errors when `WidgetStateProperty` is used with non-nullable generic types
+- **Testing**: Expanded test suite with new test cases for `WidgetStateProperty` and instance lerp with optional results
+- **Code Quality**: Made generator constructors const and cleaned up imports
+- **Updated**: Dependencies to latest versions for improved compatibility
+
 ## 7.1.0
 
 - **Documentation**: Improved internal code comments for better understanding of the codebase

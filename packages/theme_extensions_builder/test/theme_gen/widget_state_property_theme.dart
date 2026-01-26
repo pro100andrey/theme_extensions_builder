@@ -19,7 +19,6 @@ final class WidgetStatePropertyTheme with _$WidgetStatePropertyTheme {
     required this.rBackgroundColor,
     required this.rWidth,
     required this.rDuration,
-    // required this.notLerpedField,
   });
 
   final WidgetStateProperty<Color?>? backgroundColor;
@@ -30,7 +29,6 @@ final class WidgetStatePropertyTheme with _$WidgetStatePropertyTheme {
   final WidgetStateProperty<double?> rWidth;
   final WidgetStateProperty<Duration?> rDuration;
 
-  // final WidgetStateProperty<int> notLerpedField;
 
   @override
   bool get canMerge => true;

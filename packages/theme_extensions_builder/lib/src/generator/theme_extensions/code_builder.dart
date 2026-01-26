@@ -280,6 +280,40 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
           continue;
         }
 
+        // Handle WidgetStateProperty lerp with inner lerp function
+        if (field.lerp case WidgetStatePropertyLerp(
+          :final baseTypeName,
+          :final genericType,
+          :final isNullableGeneric,
+          :final genericIsDouble,
+          :final genericIsDuration,
+        )) {
+          // Get the inner lerp function reference
+          final innerLerpFn = genericIsDouble
+              ? r'lerpDouble$'.ref
+              : genericIsDuration
+              ? r'lerpDuration$'.ref
+              : genericType.ref.prop('lerp');
+
+          // WidgetStateProperty.lerp<Color?>(
+          //   _this.field,
+          //   other.field,
+          //   t,
+          //   Color.lerp
+          // )
+          final expression = baseTypeName.ref.prop('lerp')(
+            [tProp, oProp, 't'.ref, innerLerpFn],
+            {},
+            [genericType.typeRef(isNullable: isNullableGeneric)],
+          );
+
+          args[field.name] = field.isNullable
+              ? expression
+              : expression.nullChecked;
+
+          continue;
+        }
+
         throw UnimplementedError(
           'Lerp method not implemented for field: ${field.name}',
         );

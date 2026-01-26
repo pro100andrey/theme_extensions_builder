@@ -100,22 +100,27 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
           f3.type.isDartCoreDouble;
 
       if (!isValidSignature) {
-        final typeName = type.getDisplayString();
-        final f1TypeName = f1.type.getDisplayString();
-        final f2TypeName = f2.type.getDisplayString();
-        final f3TypeName = f3.type.getDisplayString();
-
-        throw StateError(
-          'Lerp method has invalid signature for type '
-          '$typeName of field ${fieldElement.name} '
-          'method: ${method.displayName} - fourth parameter function must have '
-          'signature R Function(T? a, T? b, double t), got '
-          'Function($f1TypeName, $f2TypeName, $f3TypeName)',
-        );
+        // Unsupported lerp function signature
+        return const NoLerp();
       }
     }
 
     final innerType = type.typeArguments.single;
+
+    // Check that the generic type is nullable
+    if (!innerType.hasNullableSuffix) {
+      final typeName = type.getDisplayString();
+      final innerTypeName = innerType.getDisplayString();
+      throw StateError(
+        'WidgetStateProperty must have a nullable generic type for field '
+        '${fieldElement.name}. Found: $typeName\n'
+        'The generic type must be nullable because WidgetStateProperty.lerp '
+        'requires a lerp function with nullable parameters.\n'
+        'Change the field type from $typeName to '
+        'WidgetStateProperty<$innerTypeName?> to fix this issue.',
+      );
+    }
+
     final baseTypeName = type.element.displayName;
     final genericType = innerType.baseType;
 

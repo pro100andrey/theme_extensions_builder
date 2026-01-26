@@ -6,29 +6,22 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 Future<void> main() async {
   initializeBuildLogTracking();
 
+  const generator = ThemeExtensionsGenerator();
+
   final emptyReader = await initializeLibraryReaderForDirectory(
     'test/theme_extensions',
     'empty_theme_extension.dart',
   );
 
+  group('Empty', () {
+    testAnnotatedElements<ThemeExtensions>(emptyReader, generator);
+  });
+
   final complexReader = await initializeLibraryReaderForDirectory(
     'test/theme_extensions',
     'complex_theme_extension.dart',
   );
-
-  group('ThemeExtensionsGenerator', () {
-    group('Empty', () {
-      testAnnotatedElements<ThemeExtensions>(
-        emptyReader,
-        ThemeExtensionsGenerator(),
-      );
-    });
-
-    group('Complex', () {
-      testAnnotatedElements<ThemeExtensions>(
-        complexReader,
-        ThemeExtensionsGenerator(),
-      );
-    });
+  group('Complex', () {
+    testAnnotatedElements<ThemeExtensions>(complexReader, generator);
   });
 }

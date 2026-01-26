@@ -27,7 +27,7 @@ import 'code_builder.dart';
 /// ```
 class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
   /// Creates a [ThemeGenGenerator] with optional [builderOptions].
-  ThemeGenGenerator({this.builderOptions});
+  const ThemeGenGenerator({this.builderOptions});
 
   /// Optional build configuration options.
   final BuilderOptions? builderOptions;

@@ -29,11 +29,11 @@ Or add manually to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  theme_extensions_builder_annotation: ^7.0.0
+  theme_extensions_builder_annotation: ^7.2.1
 
 dev_dependencies:
-  build_runner: ^2.4.0
-  theme_extensions_builder: ^7.0.0
+  build_runner: ^2.13.0
+  theme_extensions_builder: ^7.2.1
 ```
 
 ## 🚀 Quick Start
@@ -57,7 +57,7 @@ part 'app_theme.g.theme.dart';
 
 ```dart
 @ThemeExtensions()
-class AppTheme extends ThemeExtension<AppTheme> with _$AppThemeMixin {
+class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
   const AppTheme({
     required this.primaryColor,
     required this.secondaryColor,
@@ -143,7 +143,7 @@ The primary annotation for generating `ThemeExtension` classes with full functio
 
 ```dart
 @ThemeExtensions()
-class ButtonTheme extends ThemeExtension<ButtonTheme> with _$ButtonThemeMixin {
+class ButtonTheme extends ThemeExtension<ButtonTheme> with _$ButtonTheme {
   const ButtonTheme({
     required this.backgroundColor,
     required this.foregroundColor,
@@ -162,7 +162,7 @@ class ButtonTheme extends ThemeExtension<ButtonTheme> with _$ButtonThemeMixin {
 
 ```dart
 @ThemeExtensions(contextAccessorName: 'customButtonTheme')
-class ButtonTheme extends ThemeExtension<ButtonTheme> with _$ButtonThemeMixin {
+class ButtonTheme extends ThemeExtension<ButtonTheme> with _$ButtonTheme {
   // ...
 }
 
@@ -174,7 +174,7 @@ final theme = context.customButtonTheme; // Instead of context.buttonTheme
 
 ```dart
 @ThemeExtensions(buildContextExtension: false)
-class ButtonTheme extends ThemeExtension<ButtonTheme> with _$ButtonThemeMixin {
+class ButtonTheme extends ThemeExtension<ButtonTheme> with _$ButtonTheme {
   // ...
 }
 
@@ -186,7 +186,7 @@ final theme = Theme.of(context).extension<ButtonTheme>()!;
 
 ```dart
 @ThemeExtensions(constructor: '_internal')
-class ButtonTheme extends ThemeExtension<ButtonTheme> with _$ButtonThemeMixin {
+class ButtonTheme extends ThemeExtension<ButtonTheme> with _$ButtonTheme {
   const ButtonTheme._internal({
     required this.backgroundColor,
     required this.foregroundColor,
@@ -211,15 +211,12 @@ Alternative annotation for theme data classes that don't extend `ThemeExtension`
 @ThemeGen()
 class AlertThemeData with _$AlertThemeData {
   const AlertThemeData({
-    this.canMerge = true,
     this.transitionDuration = const Duration(milliseconds: 300),
     this.iconPadding,
     this.titleTextStyle,
     this.borderRadius,
   });
 
-  @override
-  final bool canMerge;
   final Duration transitionDuration;
   final EdgeInsetsGeometry? iconPadding;
   final TextStyle? titleTextStyle;
@@ -229,6 +226,27 @@ class AlertThemeData with _$AlertThemeData {
       _$AlertThemeData.lerp(a, b, t);
 }
 ```
+
+### @ignore Annotation
+
+Use `@ignore` on individual fields to exclude them from all generated methods (`copyWith`, `lerp`, `merge`, `==`, `hashCode`).
+
+```dart
+@ThemeExtensions()
+class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
+  const AppTheme({
+    required this.primaryColor,
+    this.debugLabel = '',
+  });
+
+  final Color primaryColor;
+
+  @ignore
+  final String debugLabel; // excluded from generated code
+}
+```
+
+Works with both `@ThemeExtensions` and `@ThemeGen` classes.
 
 ### Generated Code
 
@@ -257,46 +275,51 @@ mixin _$AlertThemeData {
   bool get canMerge => true;
 
   static AlertThemeData? lerp(AlertThemeData? a, AlertThemeData? b, double t) {
-    if (a == null && b == null) {
-      return null;
+    if (identical(a, b)) {
+      return a;
+    }
+
+    if (a == null) {
+      return t == 1.0 ? b : null;
+    }
+
+    if (b == null) {
+      return t == 0.0 ? a : null;
     }
 
     return AlertThemeData(
-      canMerge: b?.canMerge ?? true,
       transitionDuration: lerpDuration$(
-        a?.transitionDuration,
-        b?.transitionDuration,
+        a.transitionDuration,
+        b.transitionDuration,
         t,
       )!,
-      iconPadding: EdgeInsetsGeometry.lerp(a?.iconPadding, b?.iconPadding, t),
-      titleTextStyle: TextStyle.lerp(a?.titleTextStyle, b?.titleTextStyle, t),
-      borderRadius: lerpDouble$(a?.borderRadius, b?.borderRadius, t),
+      iconPadding: EdgeInsetsGeometry.lerp(a.iconPadding, b.iconPadding, t),
+      titleTextStyle: TextStyle.lerp(a.titleTextStyle, b.titleTextStyle, t),
+      borderRadius: lerpDouble$(a.borderRadius, b.borderRadius, t),
     );
   }
 
   AlertThemeData copyWith({
-    bool? canMerge,
     Duration? transitionDuration,
     EdgeInsetsGeometry? iconPadding,
     TextStyle? titleTextStyle,
     double? borderRadius,
   }) {
-    final a = (this as AlertThemeData);
+    final _this = (this as AlertThemeData);
 
     return AlertThemeData(
-      canMerge: canMerge ?? a.canMerge,
-      transitionDuration: transitionDuration ?? a.transitionDuration,
-      iconPadding: iconPadding ?? a.iconPadding,
-      titleTextStyle: titleTextStyle ?? a.titleTextStyle,
-      borderRadius: borderRadius ?? a.borderRadius,
+      transitionDuration: transitionDuration ?? _this.transitionDuration,
+      iconPadding: iconPadding ?? _this.iconPadding,
+      titleTextStyle: titleTextStyle ?? _this.titleTextStyle,
+      borderRadius: borderRadius ?? _this.borderRadius,
     );
   }
 
   AlertThemeData merge(AlertThemeData? other) {
-    final current = (this as AlertThemeData);
+    final _this = (this as AlertThemeData);
 
-    if (other == null) {
-      return current;
+    if (other == null || identical(_this, other)) {
+      return _this;
     }
 
     if (!other.canMerge) {
@@ -304,11 +327,10 @@ mixin _$AlertThemeData {
     }
 
     return copyWith(
-      canMerge: other.canMerge,
       transitionDuration: other.transitionDuration,
       iconPadding: other.iconPadding,
       titleTextStyle:
-          current.titleTextStyle?.merge(other.titleTextStyle) ??
+          _this.titleTextStyle?.merge(other.titleTextStyle) ??
           other.titleTextStyle,
       borderRadius: other.borderRadius,
     );
@@ -320,30 +342,29 @@ mixin _$AlertThemeData {
       return true;
     }
 
-    if (other is! AlertThemeData) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final value = (this as AlertThemeData);
+    final _this = (this as AlertThemeData);
+    final _other = (other as AlertThemeData);
 
-    return other.canMerge == value.canMerge &&
-        other.transitionDuration == value.transitionDuration &&
-        other.iconPadding == value.iconPadding &&
-        other.titleTextStyle == value.titleTextStyle &&
-        other.borderRadius == value.borderRadius;
+    return _other.transitionDuration == _this.transitionDuration &&
+        _other.iconPadding == _this.iconPadding &&
+        _other.titleTextStyle == _this.titleTextStyle &&
+        _other.borderRadius == _this.borderRadius;
   }
 
   @override
   int get hashCode {
-    final value = (this as AlertThemeData);
+    final _this = (this as AlertThemeData);
 
     return Object.hash(
       runtimeType,
-      value.canMerge,
-      value.transitionDuration,
-      value.iconPadding,
-      value.titleTextStyle,
-      value.borderRadius,
+      _this.transitionDuration,
+      _this.iconPadding,
+      _this.titleTextStyle,
+      _this.borderRadius,
     );
   }
 }
@@ -357,7 +378,7 @@ You can define multiple theme extensions in the same file:
 
 ```dart
 @ThemeExtensions()
-class AppColors extends ThemeExtension<AppColors> with _$AppColorsMixin {
+class AppColors extends ThemeExtension<AppColors> with _$AppColors {
   const AppColors({
     required this.primary,
     required this.secondary,
@@ -370,7 +391,7 @@ class AppColors extends ThemeExtension<AppColors> with _$AppColorsMixin {
 }
 
 @ThemeExtensions()
-class AppTypography extends ThemeExtension<AppTypography> with _$AppTypographyMixin {
+class AppTypography extends ThemeExtension<AppTypography> with _$AppTypography {
   const AppTypography({
     required this.heading,
     required this.body,

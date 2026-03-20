@@ -1,4 +1,8 @@
 
+## 7.2.1
+
+- *Update*: Improved documentation.
+
 ## 7.1.0
 
 - *Update*: Improved documentation.

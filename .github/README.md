@@ -48,7 +48,7 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 part 'app_theme.g.theme.dart';
 
 @ThemeExtensions()
-class AppTheme extends ThemeExtension<AppTheme> with _$AppThemeMixin {
+class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
   const AppTheme({
     required this.primaryColor,
     required this.spacing,

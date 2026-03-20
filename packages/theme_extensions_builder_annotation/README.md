@@ -21,7 +21,7 @@ Or manually in `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  theme_extensions_builder_annotation: ^7.0.0
+  theme_extensions_builder_annotation: ^7.2.1
 ```
 
 **Note**: You also need to add `theme_extensions_builder` as a dev dependency. See the [theme_extensions_builder documentation](https://pub.dev/packages/theme_extensions_builder) for complete setup instructions.
@@ -41,7 +41,7 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 part 'my_theme.g.theme.dart';
 
 @ThemeExtensions()
-class MyTheme extends ThemeExtension<MyTheme> with _$MyThemeMixin {
+class MyTheme extends ThemeExtension<MyTheme> with _$MyTheme {
   const MyTheme({
     required this.primaryColor,
     required this.spacing,
@@ -63,19 +63,19 @@ class MyTheme extends ThemeExtension<MyTheme> with _$MyThemeMixin {
 ```dart
 // Custom context accessor name
 @ThemeExtensions(contextAccessorName: 'customTheme')
-class MyTheme extends ThemeExtension<MyTheme> with _$MyThemeMixin {
+class MyTheme extends ThemeExtension<MyTheme> with _$MyTheme {
   // Access via: context.customTheme
 }
 
 // Disable BuildContext extension
 @ThemeExtensions(buildContextExtension: false)
-class MyTheme extends ThemeExtension<MyTheme> with _$MyThemeMixin {
+class MyTheme extends ThemeExtension<MyTheme> with _$MyTheme {
   // Manual access: Theme.of(context).extension<MyTheme>()!
 }
 
 // Custom constructor
 @ThemeExtensions(constructor: '_internal')
-class MyTheme extends ThemeExtension<MyTheme> with _$MyThemeMixin {
+class MyTheme extends ThemeExtension<MyTheme> with _$MyTheme {
   const MyTheme._internal({required this.primaryColor});
   
   final Color primaryColor;
@@ -124,7 +124,7 @@ For convenience, you can use the constant annotation:
 ```dart
 // Instead of @ThemeExtensions()
 @themeExtensions
-class MyTheme extends ThemeExtension<MyTheme> with _$MyThemeMixin {
+class MyTheme extends ThemeExtension<MyTheme> with _$MyTheme {
   // ...
 }
 
@@ -134,6 +134,27 @@ class MyThemeData with _$MyThemeData {
   // ...
 }
 ```
+
+### @ignore
+
+Use `@ignore` on a field to exclude it from all generated methods (`copyWith`, `lerp`, `merge`, `==`, `hashCode`).
+
+```dart
+@ThemeExtensions()
+class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
+  const AppTheme({
+    required this.primaryColor,
+    this.debugLabel = '',
+  });
+
+  final Color primaryColor;
+
+  @ignore
+  final String debugLabel; // excluded from generated code
+}
+```
+
+Works with both `@ThemeExtensions` and `@ThemeGen` classes.
 
 ## 🔗 Related Packages
 

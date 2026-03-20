@@ -1,4 +1,8 @@
 
+## 7.2.1
+
+- *Update*: Improved documentation.
+
 ## 7.2.0
 
 - **New Feature**: Added support for `WidgetStateProperty.lerp` with 4-parameter signature - [#33](https://github.com/pro100andrey/theme_extensions_builder/issues/33)

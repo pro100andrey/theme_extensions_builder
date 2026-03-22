@@ -28,11 +28,11 @@ Or add to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  theme_extensions_builder_annotation: ^7.0.0
+  theme_extensions_builder_annotation: ^7.3.0
 
 dev_dependencies:
-  build_runner: ^2.10.4
-  theme_extensions_builder: ^7.0.0
+  build_runner: ^2.13.0
+  theme_extensions_builder: ^7.3.0
 ```
 
 ## 🚀 Quick Start

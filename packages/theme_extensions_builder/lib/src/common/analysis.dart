@@ -336,7 +336,8 @@ List<String> getMixinsNames({required ClassElement element}) {
   outerLoop:
   for (final unit in library.units) {
     for (final decl in unit.unit.declarations) {
-      if (decl is ClassDeclaration && decl.name.lexeme == element.displayName) {
+      if (decl is ClassDeclaration &&
+          decl.namePart.typeName.lexeme == element.displayName) {
         classDeclaration = decl;
         break outerLoop;
       }

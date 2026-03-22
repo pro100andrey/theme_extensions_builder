@@ -64,8 +64,8 @@ class FieldsVisitor extends BaseClassVisitor {
       return;
     }
 
-    // Only process explicitly declared fields
-    if (!element.isSynthetic) {
+    // Only process non-synthetic fields (explicitly declared in source code)
+    if (element.isOriginDeclaration) {
       final field = fieldSymbol(element, config: config);
       _fields.add(field);
     }

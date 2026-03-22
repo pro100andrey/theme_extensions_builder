@@ -21,7 +21,7 @@ Or manually in `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  theme_extensions_builder_annotation: ^7.2.0
+  theme_extensions_builder_annotation: ^7.3.0
 ```
 
 **Note**: You also need to add `theme_extensions_builder` as a dev dependency. See the [theme_extensions_builder documentation](https://pub.dev/packages/theme_extensions_builder) for complete setup instructions.

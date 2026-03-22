@@ -1,4 +1,9 @@
 
+## 7.3.0
+
+- *Updated*: Analyzer dependency to ">=9.0.0 <11.0.0".
+- *Updated*: Dependencies in example and annotation packages.
+
 ## 7.2.1
 
 - *Update*: Improved documentation.

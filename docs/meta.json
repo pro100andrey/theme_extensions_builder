@@ -1,6 +1,6 @@
 {
   "title": "Theme Extensions Builder",
-  "description": "A code generator for Flutter that creates theme extensions with `copyWith`, `lerp`, `merge`, equality, and `hashCode` methods, along with optional `BuildContext` extensions for easy theme access.",
+  "description": "Comprehensive documentation for theme_extensions_builder: installation, annotations, generation workflow, practical examples, and troubleshooting.",
   "draft": false,
   "category": "dart-flutter",
   "slug": "theme_extensions_builder",
@@ -26,6 +26,34 @@
       "draft": false,
       "weight": 3,
       "tags": ["usage", "examples", "best_practices"]
+    },
+    "usage/annotations.md": {
+      "title": "Annotations Reference",
+      "slug": "usage/annotations",
+      "draft": false,
+      "weight": 4,
+      "tags": ["api", "annotations", "reference"]
+    },
+    "usage/build_runner.md": {
+      "title": "Build Runner Guide",
+      "slug": "usage/build_runner",
+      "draft": false,
+      "weight": 5,
+      "tags": ["generation", "build_runner", "workflow"]
+    },
+    "usage/examples.md": {
+      "title": "Examples and Patterns",
+      "slug": "usage/examples",
+      "draft": false,
+      "weight": 6,
+      "tags": ["patterns", "architecture", "examples"]
+    },
+    "troubleshooting.md": {
+      "title": "Troubleshooting",
+      "slug": "troubleshooting",
+      "draft": false,
+      "weight": 7,
+      "tags": ["errors", "debugging", "faq"]
     }
   }
 }

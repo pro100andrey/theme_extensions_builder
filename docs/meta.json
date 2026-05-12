@@ -1,6 +1,6 @@
 {
   "title": "Theme Extensions Builder",
-  "description": "Comprehensive documentation for theme_extensions_builder: installation, annotations, generation workflow, practical examples, and troubleshooting.",
+  "description": "A Flutter code generator for ThemeExtension classes.",
   "draft": false,
   "category": "dart-flutter",
   "slug": "theme_extensions_builder",

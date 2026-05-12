@@ -1,0 +1,31 @@
+{
+  "title": "Theme Extensions Builder",
+  "description": "A code generator for Flutter that creates theme extensions with `copyWith`, `lerp`, `merge`, equality, and `hashCode` methods, along with optional `BuildContext` extensions for easy theme access.",
+  "draft": false,
+  "category": "dart-flutter",
+  "slug": "theme_extensions_builder",
+  "type": "docs",
+  "pages": {
+    "overview.md": {
+      "title": "Overview",
+      "slug": "overview",
+      "draft": false,
+      "weight": 1,
+      "tags": ["introduction", "features", "usage"]
+    },
+    "installation.md": {
+      "title": "Installation",
+      "slug": "installation",
+      "draft": false,
+      "weight": 2,
+      "tags": ["setup", "dependencies"]
+    },
+    "usage/getting_started.md": {
+      "title": "Getting Started",
+      "slug": "usage/getting_started",
+      "draft": false,
+      "weight": 3,
+      "tags": ["usage", "examples", "best_practices"]
+    }
+  }
+}

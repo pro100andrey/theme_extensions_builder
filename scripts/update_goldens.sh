@@ -7,7 +7,7 @@ function build_runner() {
 	pushd "$dir" || return 1
 
 	echo "Running build_runner to update generated files..."
-	if dart run build_runner build --delete-conflicting-outputs; then
+	if dart run build_runner build; then
 		echo "build_runner completed successfully."
 	else
 		echo "build_runner failed." >&2

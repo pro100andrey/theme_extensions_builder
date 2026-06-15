@@ -33,7 +33,7 @@ dependencies:
 
 dev_dependencies:
   build_runner: ^2.13.0
-  theme_extensions_builder: ^7.3.0
+  theme_extensions_builder: ^7.4.0
 ```
 
 ## 🚀 Quick Start

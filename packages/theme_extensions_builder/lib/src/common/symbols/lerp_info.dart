@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 
 import 'parameter_info.dart';
 
-const _listEquality = ListEquality();
+const _listEquality = ListEquality<dynamic>();
 
 /// Base sealed class representing information about a lerp (linear
 /// interpolation) method.

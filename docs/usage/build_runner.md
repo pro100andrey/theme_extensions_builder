@@ -43,7 +43,7 @@ dart run build_runner build
 Run generation in CI to ensure committed generated files are up to date:
 
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 ```
 
 ## Troubleshooting Build Issues
@@ -51,7 +51,6 @@ dart run build_runner build --delete-conflicting-outputs
 - Missing `part` directive: add `part '<name>.g.theme.dart';`
 - Wrong part filename: must match source filename
 - Outdated cache: run `build_runner clean`
-- Conflicting outputs: run with `--delete-conflicting-outputs`
 
 ## Optional Builder Config
 

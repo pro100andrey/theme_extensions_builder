@@ -95,7 +95,7 @@ function build_runner() {
 	fi
 
 	log_begin "Running 'dart run build_runner build' in $package_path"
-	if (cd "$package_path" && dart run build_runner build --delete-conflicting-outputs); then
+	if (cd "$package_path" && dart run build_runner build); then
 		log_success "build_runner completed for $package_path"
 		return 0
 	else

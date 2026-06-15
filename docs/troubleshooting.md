@@ -11,7 +11,7 @@ Checklist:
 Command:
 
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 ```
 
 ## Error About Missing Part File
@@ -48,7 +48,7 @@ Run:
 
 ```bash
 dart run build_runner clean
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 ```
 
 ## Analyzer Errors In Generated Files
@@ -64,7 +64,7 @@ Checklist:
 Use a CI step:
 
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 ```
 
 Fail the build when generated files differ from committed sources.

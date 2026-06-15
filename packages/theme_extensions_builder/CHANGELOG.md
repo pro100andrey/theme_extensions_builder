@@ -1,5 +1,4 @@
-
-## Unreleased
+## 7.4.0
 
 - *Updated*: Analyzer dependency to ">=9.0.0 <14.0.0"
 - *Updated*: `source_gen` lower bound to ">=4.2.3" for analyzer 12/13 compatibility.

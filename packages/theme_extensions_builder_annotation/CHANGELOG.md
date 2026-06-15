@@ -1,4 +1,9 @@
+## 7.4.0
+
+- *Updated*: Dependencies.
+
 ## 7.3.0
+
 - *Updated*: Dependencies.
 
 ## 7.2.0

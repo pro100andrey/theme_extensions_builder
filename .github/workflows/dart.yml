@@ -36,7 +36,11 @@ jobs:
 
       - name: Run formatter check (builder)
         working-directory: packages/theme_extensions_builder
-        run: dart format --set-exit-if-changed .
+        # Goldens hold byte-exact source_gen_test output, so they cannot be
+        # reformatted. They are excluded from the analyzer for the same reason.
+        run: |
+          dart format --set-exit-if-changed \
+            $(git ls-files '*.dart' | grep -v '/goldens/')
 
       - name: Run tests (builder)
         working-directory: packages/theme_extensions_builder

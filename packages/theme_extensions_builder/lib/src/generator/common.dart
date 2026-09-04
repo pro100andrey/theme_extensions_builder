@@ -121,24 +121,19 @@ Method hashMethod(BaseConfig config) => Method((m) {
     });
 });
 
-/// Generates an if-else statement as code.
+/// Generates an if statement as code.
 ///
 /// Creates a code block with the given [condition], executing [ifBlock] when
-/// true and optionally [elseBlock] when false.
+/// true.
 ///
 /// This is a utility function for generating conditional code when using
-/// code_builder, as it doesn't provide a built-in if-else construct.
-Code ifStatement(Expression condition, Block ifBlock, [Block? elseBlock]) {
+/// code_builder, as it doesn't provide a built-in if construct.
+Code ifStatement(Expression condition, Block ifBlock) {
   final visiter = DartEmitter();
   final conditionV = condition.accept(visiter);
   final ifBlockV = ifBlock.accept(visiter);
-  final elseBlockV = elseBlock?.accept(visiter);
 
-  final ifElse =
-      'if($conditionV){$ifBlockV}'
-      '${elseBlockV != null ? 'else {$elseBlockV}' : ''}';
-
-  return Code(ifElse);
+  return Code('if($conditionV){$ifBlockV}');
 }
 
 /// A wrapper around [Reference] that guarantees a non-null symbol.

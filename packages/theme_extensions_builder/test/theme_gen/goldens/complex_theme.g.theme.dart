@@ -33,9 +33,10 @@ mixin _$ComplexTheme {
         t,
       ),
       requiredTheme: EmptyTheme.lerp(a.requiredTheme, b.requiredTheme, t)!,
-      requiredThemeExtension:
-          (a.requiredThemeExtension.lerp(b.requiredThemeExtension, t)
-              as EmptyThemeExtension),
+      requiredThemeExtension: (a.requiredThemeExtension.lerp(
+        b.requiredThemeExtension,
+        t,
+      ) as EmptyThemeExtension),
       optionalInt: t < 0.5 ? a.optionalInt : b.optionalInt,
       optionalDouble: lerpDouble$(a.optionalDouble, b.optionalDouble, t),
       optionalString: t < 0.5 ? a.optionalString : b.optionalString,
@@ -52,9 +53,10 @@ mixin _$ComplexTheme {
           ? a.optionalBorderSide
           : BorderSide.lerp(a.optionalBorderSide!, b.optionalBorderSide!, t),
       optionalTheme: EmptyTheme.lerp(a.optionalTheme, b.optionalTheme, t),
-      optionalThemeExtension: t < 0.5
-          ? a.optionalThemeExtension
-          : b.optionalThemeExtension,
+      optionalThemeExtension: (a.optionalThemeExtension?.lerp(
+        b.optionalThemeExtension,
+        t,
+      ) as EmptyThemeExtension?),
       optionalLerpableWithOptionalResult: a.optionalLerpableWithOptionalResult
           ?.lerp(b.optionalLerpableWithOptionalResult, t),
     );

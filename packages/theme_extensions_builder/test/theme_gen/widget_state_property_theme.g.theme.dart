@@ -48,19 +48,19 @@ mixin _$WidgetStatePropertyTheme {
         b.optionalColor,
         t,
         Color.lerp,
-      )!,
+      ),
       optionalWidth: WidgetStateProperty.lerp<double?>(
         a.optionalWidth,
         b.optionalWidth,
         t,
         lerpDouble$,
-      )!,
+      ),
       optionalDuration: WidgetStateProperty.lerp<Duration?>(
         a.optionalDuration,
         b.optionalDuration,
         t,
         lerpDuration$,
-      )!,
+      ),
     );
   }
 

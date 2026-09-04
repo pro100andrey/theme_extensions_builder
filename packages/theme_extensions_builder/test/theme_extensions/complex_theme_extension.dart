@@ -129,6 +129,7 @@ final class ComplexThemeExtension extends ThemeExtension<ComplexThemeExtension>
     required this.optionalTheme,
     required this.optionalThemeExtension,
 
+    this.optionalLerpableWithOptionalResult,
     this.computedValue = 'computed',
   });
 
@@ -153,6 +154,7 @@ final class ComplexThemeExtension extends ThemeExtension<ComplexThemeExtension>
   final BorderSide? optionalBorderSide;
   final EmptyTheme? optionalTheme;
   final EmptyThemeExtension? optionalThemeExtension;
+  final LerpableWithOptionalResult? optionalLerpableWithOptionalResult;
 
   @ignore
   final String computedValue;

@@ -155,168 +155,127 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
       for (final field in fields) {
         final tProp = '_this'.ref.prop(field.name);
         final oProp = 'other'.ref.prop(field.name);
-
-        // Handle NoLerp with double field
-        if (field.lerp case NoLerp() when field.isDouble) {
-          // lerpDouble$(_this.field, other.field, t) or
-          // lerpDouble$(_this.field, other.field, t)!
-          final expression = r'lerpDouble$'.ref([tProp, oProp, 't'.ref]);
-
-          args[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
-          continue;
-        }
-
-        // Handle NoLerp with duration field
-        if (field.lerp case NoLerp() when field.isDuration) {
-          // lerpDuration$(_this.field, other.field, t) or
-          // lerpDuration$(_this.field, other.field, t)!
-          final expression = r'lerpDuration$'.ref([tProp, oProp, 't'.ref]);
-
-          args[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
-          continue;
-        }
-
-        if (field.lerp case NoLerp()) {
-          // Default conditional expression
-
-          args[field.name] = 't'.ref
-              .lessThan(literalNum(0.5))
-              .conditional(
-                '_this'.ref.prop(field.name),
-                'other'.ref.prop(field.name),
-              );
-
-          continue;
-        }
-
         final sLerp = field.typeName.ref.prop('lerp');
 
-        // Handle StaticLerp with non-nullable signature and optional
-        // field
-        if (field.lerp case StaticLerp(
-          isNullableSignature: false,
-        ) when field.isNullable) {
-          // _this.side == null
-          // ? other.side
-          // : other.side == null
-          // ? _this.side
-          // : Side.lerp(_this.side!, other.side!, t),
-          args[field.name] = tProp
-              .equalTo(literalNull)
-              .conditional(
-                oProp,
-                oProp
-                    .equalTo(literalNull)
-                    .conditional(
-                      tProp,
-                      sLerp([tProp.nullChecked, oProp.nullChecked, 't'.ref]),
-                    ),
-              );
-          continue;
+        switch (field.lerp) {
+          // Handle NoLerp with double field
+          case NoLerp() when field.isDouble:
+            // lerpDouble$(_this.field, other.field, t) or
+            // lerpDouble$(_this.field, other.field, t)!
+            final expression = r'lerpDouble$'.ref([tProp, oProp, 't'.ref]);
+
+            args[field.name] = field.isNullable
+                ? expression
+                : expression.nullChecked;
+
+          // Handle NoLerp with duration field
+          case NoLerp() when field.isDuration:
+            // lerpDuration$(_this.field, other.field, t) or
+            // lerpDuration$(_this.field, other.field, t)!
+            final expression = r'lerpDuration$'.ref([tProp, oProp, 't'.ref]);
+
+            args[field.name] = field.isNullable
+                ? expression
+                : expression.nullChecked;
+
+          // Default conditional expression
+          case NoLerp():
+            // t < 0.5 ? _this.field : other.field
+            args[field.name] = 't'.ref
+                .lessThan(literalNum(0.5))
+                .conditional(tProp, oProp);
+
+          // Handle StaticLerp with non-nullable signature and optional
+          // field
+          case StaticLerp(isNullableSignature: false) when field.isNullable:
+            // _this.side == null
+            // ? other.side
+            // : other.side == null
+            // ? _this.side
+            // : Side.lerp(_this.side!, other.side!, t),
+            args[field.name] = tProp
+                .equalTo(literalNull)
+                .conditional(
+                  oProp,
+                  oProp
+                      .equalTo(literalNull)
+                      .conditional(
+                        tProp,
+                        sLerp([tProp.nullChecked, oProp.nullChecked, 't'.ref]),
+                      ),
+                );
+
+          // Handle StaticLerp with non-nullable signature and
+          // non-optional field
+          case StaticLerp(isNullableSignature: false):
+            // FieldType.lerp(_this.field, other.field, t)
+            args[field.name] = sLerp([tProp, oProp, 't'.ref]);
+
+          // Handle StaticLerp with nullable signature and
+          // non-optional field
+          case StaticLerp() when !field.isNullable:
+            // FieldType.lerp(_this.field, other.field, t)!
+            args[field.name] = sLerp([tProp, oProp, 't'.ref]).nullChecked;
+
+          // Handle StaticLerp with nullable signature and optional
+          // field
+          case StaticLerp():
+            // FieldType.lerp(_this.field, other.field, t)
+            args[field.name] = sLerp([tProp, oProp, 't'.ref]);
+
+          // Handle InstanceLerp with optional result and optional field
+          case InstanceLerp(optionalResult: true) when field.isNullable:
+            // _this.field?.lerp(other.field, t)
+            args[field.name] = tProp.prop('lerp', nullSafe: true)([
+              oProp,
+              't'.ref,
+            ]);
+
+          // Handle InstanceLerp with non-optional result and nullable field
+          case InstanceLerp(optionalResult: false) when field.isNullable:
+            // _this.field?.lerp(other.field, t) as FieldType?
+            args[field.name] = tProp
+                .prop('lerp', nullSafe: true)([oProp, 't'.ref])
+                .asA(field.typeName.typeRef(isNullable: true));
+
+          // Handle InstanceLerp with non-optional field
+          case InstanceLerp():
+            // _this.field.lerp(other.field, t) as FieldType
+            args[field.name] = tProp
+                .prop('lerp')([oProp, 't'.ref])
+                .asA(field.typeName.typeRef());
+
+          // Handle WidgetStateProperty lerp with inner lerp function
+          case WidgetStatePropertyLerp(
+            :final baseTypeName,
+            :final genericType,
+            :final isNullableGeneric,
+            :final genericIsDouble,
+            :final genericIsDuration,
+          ):
+            // Get the inner lerp function reference
+            final innerLerpFn = genericIsDouble
+                ? r'lerpDouble$'.ref
+                : genericIsDuration
+                ? r'lerpDuration$'.ref
+                : genericType.ref.prop('lerp');
+
+            // WidgetStateProperty.lerp<Color?>(
+            //   _this.field,
+            //   other.field,
+            //   t,
+            //   Color.lerp
+            // )
+            final expression = baseTypeName.ref.prop('lerp')(
+              [tProp, oProp, 't'.ref, innerLerpFn],
+              {},
+              [genericType.typeRef(isNullable: isNullableGeneric)],
+            );
+
+            args[field.name] = field.isNullable
+                ? expression
+                : expression.nullChecked;
         }
-        // Handle StaticLerp with non-nullable signature and
-        // non-optional field
-        if (field.lerp case StaticLerp(
-          isNullableSignature: false,
-        ) when !field.isNullable) {
-          // FieldType.lerp(_this.field, other.field, t)
-          args[field.name] = sLerp([tProp, oProp, 't'.ref]);
-          continue;
-        }
-
-        // Handle StaticLerp with nullable signature and
-        // non-optional field
-        if (field.lerp case StaticLerp(
-          isNullableSignature: true,
-        ) when !field.isNullable) {
-          // FieldType.lerp(_this.field!, other.field!, t)!
-          args[field.name] = sLerp([tProp, oProp, 't'.ref]).nullChecked;
-          continue;
-        }
-
-        // Handle StaticLerp with nullable signature and optional
-        // field
-        if (field.lerp case StaticLerp(
-          isNullableSignature: true,
-        ) when field.isNullable) {
-          // FieldType.lerp(_this.field, other.field, t)
-          args[field.name] = sLerp([tProp, oProp, 't'.ref]);
-          continue;
-        }
-
-        // Handle InstanceLerp with optional field
-        if (field.lerp case InstanceLerp(
-          optionalResult: true,
-        ) when field.isNullable) {
-          // _this.field?.lerp(other.field, t)
-          args[field.name] = tProp.prop('lerp', nullSafe: true)([
-            oProp,
-            't'.ref,
-          ]);
-          continue;
-        }
-
-        // Handle InstanceLerp with non-optional result and nullable field
-        if (field.lerp case InstanceLerp(
-          optionalResult: false,
-        ) when field.isNullable) {
-          // _this.field?.lerp(other.field, t) as FieldType?
-          args[field.name] = tProp
-              .prop('lerp', nullSafe: true)([oProp, 't'.ref])
-              .asA(field.typeName.typeRef(isNullable: true));
-          continue;
-        }
-
-        // Handle InstanceLerp with non-optional field
-        if (field.lerp case InstanceLerp() when !field.isNullable) {
-          // _this.field.lerp(other.field, t) as FieldType
-          args[field.name] = tProp
-              .prop('lerp')([oProp, 't'.ref])
-              .asA(field.typeName.typeRef());
-          continue;
-        }
-
-        // Handle WidgetStateProperty lerp with inner lerp function
-        if (field.lerp case WidgetStatePropertyLerp(
-          :final baseTypeName,
-          :final genericType,
-          :final isNullableGeneric,
-          :final genericIsDouble,
-          :final genericIsDuration,
-        )) {
-          // Get the inner lerp function reference
-          final innerLerpFn = genericIsDouble
-              ? r'lerpDouble$'.ref
-              : genericIsDuration
-              ? r'lerpDuration$'.ref
-              : genericType.ref.prop('lerp');
-
-          // WidgetStateProperty.lerp<Color?>(
-          //   _this.field,
-          //   other.field,
-          //   t,
-          //   Color.lerp
-          // )
-          final expression = baseTypeName.ref.prop('lerp')(
-            [tProp, oProp, 't'.ref, innerLerpFn],
-            {},
-            [genericType.typeRef(isNullable: isNullableGeneric)],
-          );
-
-          args[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
-
-          continue;
-        }
-
-        throw UnimplementedError(
-          'Lerp method not implemented for field: ${field.name}',
-        );
       }
 
       b.addExpression(

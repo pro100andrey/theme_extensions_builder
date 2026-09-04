@@ -25,9 +25,9 @@ final class WidgetStatePropertyTheme with _$WidgetStatePropertyTheme {
   final WidgetStateProperty<double?> width;
   final WidgetStateProperty<Duration?> duration;
 
-  final WidgetStateProperty<Color?> optionalColor;
-  final WidgetStateProperty<double?> optionalWidth;
-  final WidgetStateProperty<Duration?> optionalDuration;
+  final WidgetStateProperty<Color?>? optionalColor;
+  final WidgetStateProperty<double?>? optionalWidth;
+  final WidgetStateProperty<Duration?>? optionalDuration;
 
   @override
   bool get canMerge => true;

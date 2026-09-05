@@ -121,6 +121,18 @@ Method hashMethod(BaseConfig config) => Method((m) {
     });
 });
 
+/// Wraps [lerpCall] so that it only runs when both sides are present.
+///
+/// An interpolation that cannot accept a null falls back to the value the
+/// timeline is closest to, which keeps `t == 0` on [a] and `t == 1` on [b].
+Expression nullGuardedLerp(Expression a, Expression b, Expression lerpCall) => a
+    .equalTo(literalNull)
+    .or(b.equalTo(literalNull))
+    .conditional(
+      't'.ref.lessThan(literalNum(0.5)).conditional(a, b),
+      lerpCall,
+    );
+
 /// Generates an if statement as code.
 ///
 /// Creates a code block with the given [condition], executing [ifBlock] when

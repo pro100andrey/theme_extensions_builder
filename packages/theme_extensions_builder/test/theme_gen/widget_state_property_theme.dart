@@ -5,10 +5,15 @@ import 'mock.dart';
 
 part 'widget_state_property_theme.g.theme.dart';
 
+const _labelWarning =
+    'The `lerp` method of String has an unsupported signature, so the field '
+    '`label` switches over at t = 0.5 instead of being interpolated.';
+
 /// Empty Theme - testing edge case with no fields
 @ShouldGenerateFile(
   'goldens/widget_state_property_theme.g.theme.dart',
   partOfCurrent: true,
+  expectedLogItems: [_labelWarning],
 )
 @themeGen
 final class WidgetStatePropertyTheme with _$WidgetStatePropertyTheme {
@@ -19,6 +24,7 @@ final class WidgetStatePropertyTheme with _$WidgetStatePropertyTheme {
     required this.optionalColor,
     required this.optionalWidth,
     required this.optionalDuration,
+    required this.label,
   });
 
   final WidgetStateProperty<Color?> color;
@@ -28,6 +34,9 @@ final class WidgetStatePropertyTheme with _$WidgetStatePropertyTheme {
   final WidgetStateProperty<Color?>? optionalColor;
   final WidgetStateProperty<double?>? optionalWidth;
   final WidgetStateProperty<Duration?>? optionalDuration;
+
+  /// `String` has no static lerp, so this one cannot be interpolated.
+  final WidgetStateProperty<String?> label;
 
   @override
   bool get canMerge => true;

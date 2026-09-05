@@ -29,8 +29,7 @@ final class StaticLerp extends LerpInfo {
 
   /// Returns `true` if the lerp method accepts nullable arguments.
   ///
-  /// A method that doesn't has to be guarded against null arguments at the
-  /// call site.
+  /// When it doesn't, the call site has to guard against a null itself.
   bool get isNullableParameter =>
       args.length >= 2 && args[0].isNullable && args[1].isNullable;
 
@@ -57,7 +56,11 @@ final class StaticLerp extends LerpInfo {
 /// `T lerp(T other, double t)`
 final class InstanceLerp extends LerpInfo {
   /// Creates an [InstanceLerp] with the specified properties.
-  const InstanceLerp({required this.optionalResult, required this.args});
+  const InstanceLerp({
+    required this.optionalResult,
+    required this.args,
+    this.needsCast = false,
+  });
 
   /// The parameters of the lerp method.
   final List<ParameterInfo> args;
@@ -65,21 +68,35 @@ final class InstanceLerp extends LerpInfo {
   /// Whether the return type of the lerp method is nullable.
   final bool optionalResult;
 
+  /// Whether the result has to be cast back to the field type.
+  ///
+  /// A method declared on a supertype returns that supertype: the generated
+  /// `lerp` of a theme extension returns `ThemeExtension<T>`, not `T`. A
+  /// method that already returns the field type needs no cast, and adding one
+  /// would trip `unnecessary_cast` in the generated file.
+  final bool needsCast;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is InstanceLerp &&
           runtimeType == other.runtimeType &&
           optionalResult == other.optionalResult &&
+          needsCast == other.needsCast &&
           _listEquality.equals(args, other.args);
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, optionalResult, _listEquality.hash(args));
+  int get hashCode => Object.hash(
+    runtimeType,
+    optionalResult,
+    needsCast,
+    _listEquality.hash(args),
+  );
 
   @override
   String toString() =>
-      'InstanceLerp(optionalResult: $optionalResult, args: $args)';
+      'InstanceLerp(optionalResult: $optionalResult, '
+      'needsCast: $needsCast, args: $args)';
 }
 
 final class WidgetStatePropertyLerp extends LerpInfo {
@@ -88,6 +105,8 @@ final class WidgetStatePropertyLerp extends LerpInfo {
     required this.baseTypeName,
     required this.genericType,
     required this.isNullableGeneric,
+    required this.genericIsDouble,
+    required this.genericIsDuration,
   });
 
   /// The base type name without generics.
@@ -100,9 +119,22 @@ final class WidgetStatePropertyLerp extends LerpInfo {
 
   final bool isNullableGeneric;
 
-  bool get genericIsDouble => genericType == 'double';
+  /// Whether the generic is `double` from `dart:core`.
+  final bool genericIsDouble;
 
-  bool get genericIsDuration => genericType == 'Duration';
+  /// Whether the generic is `Duration` from `dart:core`.
+  final bool genericIsDuration;
+
+  /// The generic without its own type arguments.
+  ///
+  /// The inner lerp is reached through the class, so a generic generic —
+  /// `WidgetStateProperty<Box<int>?>` — has to call `Box.lerp`, not
+  /// `Box<int>.lerp`.
+  String get genericBaseTypeName {
+    final index = genericType.indexOf('<');
+
+    return index == -1 ? genericType : genericType.substring(0, index);
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -123,6 +155,9 @@ final class WidgetStatePropertyLerp extends LerpInfo {
       'baseTypeName: $baseTypeName, '
       'genericType: $genericType, '
       'isNullableGeneric: $isNullableGeneric)';
+
+  // genericIsDouble and genericIsDuration follow from genericType, so they
+  // take no part in equality.
 }
 
 /// Indicates that no lerp method is available for the field type.

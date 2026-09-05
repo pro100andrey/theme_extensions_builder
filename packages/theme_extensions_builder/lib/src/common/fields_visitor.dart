@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor2.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
@@ -7,13 +8,16 @@ import 'analysis.dart';
 import 'fields_visitor_config.dart';
 import 'symbols/field_info.dart';
 
-/// Collects the fields of [element] together with the fields of all its
-/// supertypes.
+/// Collects the fields of [element] together with the fields it inherits.
 ///
-/// The first declaration of a name wins, so [element] is visited before its
-/// supertypes, and supertypes are visited nearest first. A field redeclared
-/// by a subclass therefore keeps the subclass' type instead of being
-/// overwritten by the inherited declaration.
+/// Only the superclass chain and the applied mixins contribute: an interface
+/// reached through `implements` has to be satisfied by [element] itself, so
+/// its declarations would shadow nothing and cannot be constructed.
+///
+/// Types are visited in Dart's own resolution order — the class first, then
+/// its mixins from last applied to first, then the superclass chain — and the
+/// first declaration of a name wins, so the declaration actually in effect is
+/// the one that is collected.
 ///
 /// The [config] controls what information is collected for each field.
 List<FieldInfo> collectFields(
@@ -24,13 +28,26 @@ List<FieldInfo> collectFields(
 
   element.visitChildren(visitor);
 
-  for (final supertype in element.allSupertypes) {
-    if (!supertype.isDartCoreObject) {
-      supertype.element.visitChildren(visitor);
-    }
+  for (final inherited in _inheritedTypes(element.thisType)) {
+    inherited.element.visitChildren(visitor);
   }
 
   return visitor.fields;
+}
+
+/// Yields the types [type] inherits members from, nearest first.
+Iterable<InterfaceType> _inheritedTypes(InterfaceType type) sync* {
+  // A mixin is applied on top of the superclass, so a member it declares wins
+  // over the same member further up the chain. The last mixin applied wins
+  // over the ones before it.
+  yield* type.mixins.reversed;
+
+  final superclass = type.superclass;
+
+  if (superclass != null && !superclass.isDartCoreObject) {
+    yield superclass;
+    yield* _inheritedTypes(superclass);
+  }
 }
 
 /// A visitor that collects field information from a class element.
@@ -68,6 +85,12 @@ class FieldsVisitor extends SimpleElementVisitor2<void> {
   /// makes the nearest declaration the first one.
   final Map<String, FieldInfo> _fields = {};
 
+  /// Names already decided on, including the ones that were skipped.
+  ///
+  /// An `@ignore` on a redeclaration has to suppress the inherited
+  /// declaration too, so a skipped name still claims its place.
+  final Set<String> _claimed = {};
+
   /// Returns an immutable list of collected field information.
   ///
   /// The list is created from the internal map, preserving the order in which
@@ -89,17 +112,28 @@ class FieldsVisitor extends SimpleElementVisitor2<void> {
   /// not be included in the collected field information.
   @override
   void visitFieldElement(FieldElement element) {
+    // Only process non-synthetic fields (explicitly declared in source code)
+    if (!element.isOriginDeclaration) {
+      return;
+    }
+
+    // A private field cannot be passed to a generated constructor call, and a
+    // private name is not a valid named parameter either.
+    if (element.isPrivate) {
+      return;
+    }
+
+    final name = element.displayName;
+
+    if (!_claimed.add(name)) {
+      return;
+    }
+
     // Skip fields annotated with @ignore
     if (ignoreAnnotationTypeChecker.hasAnnotationOf(element)) {
       return;
     }
 
-    // Only process non-synthetic fields (explicitly declared in source code)
-    if (element.isOriginDeclaration) {
-      _fields.putIfAbsent(
-        element.displayName,
-        () => fieldSymbol(element, config: config),
-      );
-    }
+    _fields[name] = fieldSymbol(element, config: config);
   }
 }

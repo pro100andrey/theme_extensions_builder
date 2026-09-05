@@ -43,4 +43,13 @@ Future<void> main() async {
   group('MethodLookup', () {
     testAnnotatedElements<ThemeGen>(lookupReader, generator);
   });
+
+  final inheritedReader = await initializeLibraryReaderForDirectory(
+    'test/theme_gen',
+    'inherited_theme.dart',
+  );
+
+  group('Inheritance', () {
+    testAnnotatedElements<ThemeGen>(inheritedReader, generator);
+  });
 }

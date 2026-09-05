@@ -175,7 +175,22 @@ void main() {
     test('toString returns correct format', () {
       const lerp = InstanceLerp(optionalResult: false, args: []);
 
-      expect(lerp.toString(), 'InstanceLerp(optionalResult: false, args: [])');
+      expect(
+        lerp.toString(),
+        'InstanceLerp(optionalResult: false, needsCast: false, args: [])',
+      );
+    });
+
+    test('needsCast takes part in equality', () {
+      final plain = InstanceLerp(optionalResult: true, args: []);
+      final cast = InstanceLerp(
+        optionalResult: true,
+        args: [],
+        needsCast: true,
+      );
+
+      expect(plain, isNot(equals(cast)));
+      expect(plain.hashCode, isNot(equals(cast.hashCode)));
     });
   });
 
@@ -183,17 +198,26 @@ void main() {
     WidgetStatePropertyLerp build({
       String genericType = 'Color',
       bool isNullableGeneric = true,
+      bool genericIsDouble = false,
+      bool genericIsDuration = false,
     }) => WidgetStatePropertyLerp(
       baseTypeName: 'WidgetStateProperty',
       genericType: genericType,
       isNullableGeneric: isNullableGeneric,
+      genericIsDouble: genericIsDouble,
+      genericIsDuration: genericIsDuration,
     );
 
     test('reports the generic type', () {
       expect(build().genericIsDouble, isFalse);
       expect(build().genericIsDuration, isFalse);
-      expect(build(genericType: 'double').genericIsDouble, isTrue);
-      expect(build(genericType: 'Duration').genericIsDuration, isTrue);
+      expect(build(genericIsDouble: true).genericIsDouble, isTrue);
+      expect(build(genericIsDuration: true).genericIsDuration, isTrue);
+    });
+
+    test('the inner lerp receiver drops the type arguments', () {
+      expect(build().genericBaseTypeName, 'Color');
+      expect(build(genericType: 'Box<int>').genericBaseTypeName, 'Box');
     });
 
     test('equality works correctly', () {

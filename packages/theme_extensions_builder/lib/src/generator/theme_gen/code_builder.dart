@@ -98,19 +98,6 @@ Method copyWith(ThemeGenConfig config) => Method((m) {
     });
 });
 
-/// Wraps [lerpCall] so that it only runs when both sides are present.
-///
-/// An interpolation that cannot accept a null falls back to the value the
-/// timeline is closest to, which keeps `t == 0` on [a] and `t == 1` on [b].
-Expression _nullGuardedLerp(Expression a, Expression b, Expression lerpCall) =>
-    a
-        .equalTo(literalNull)
-        .or(b.equalTo(literalNull))
-        .conditional(
-          't'.ref.lessThan(literalNum(0.5)).conditional(a, b),
-          lerpCall,
-        );
-
 /// Generates a `merge` method for the theme class.
 Method merge(ThemeGenConfig config) => Method((m) {
   m
@@ -332,30 +319,18 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
             // value: a.field == null || b.field == null
             //     ? (t < 0.5 ? a.field : b.field)
             //     : Class.lerp(a.field!, b.field!, t)
-            argsResult[field.name] = _nullGuardedLerp(
+            argsResult[field.name] = nullGuardedLerp(
               aProp,
               bProp,
               lerp([aProp.nullChecked, bProp.nullChecked, 't'.ref]),
             );
 
-          // Instance lerp with a nullable field, returning an optional
-          // result that needs no cast
-          case InstanceLerp(optionalResult: true) when field.isNullable:
-            // value: a.field == null || b.field == null
-            //     ? (t < 0.5 ? a.field : b.field)
-            //     : a.field!.lerp(b.field!, t)
-            argsResult[field.name] = _nullGuardedLerp(
-              aProp,
-              bProp,
-              aProp.nullChecked.property('lerp')([bProp.nullChecked, 't'.ref]),
-            );
-
-          // Instance lerp with a nullable field
-          case InstanceLerp() when field.isNullable:
+          // Instance lerp with a nullable field, returning a supertype
+          case InstanceLerp(needsCast: true) when field.isNullable:
             // value: a.field == null || b.field == null
             //     ? (t < 0.5 ? a.field : b.field)
             //     : a.field!.lerp(b.field!, t) as Class?
-            argsResult[field.name] = _nullGuardedLerp(
+            argsResult[field.name] = nullGuardedLerp(
               aProp,
               bProp,
               aProp.nullChecked
@@ -363,17 +338,34 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
                   .asA(field.typeName.typeRef(isNullable: true)),
             );
 
-          // Instance lerp method with non-nullable field
-          case InstanceLerp():
+          // Instance lerp with a nullable field
+          case InstanceLerp() when field.isNullable:
+            // value: a.field == null || b.field == null
+            //     ? (t < 0.5 ? a.field : b.field)
+            //     : a.field!.lerp(b.field!, t)
+            argsResult[field.name] = nullGuardedLerp(
+              aProp,
+              bProp,
+              aProp.nullChecked.property('lerp')([bProp.nullChecked, 't'.ref]),
+            );
+
+          // Instance lerp returning a supertype, non-nullable field
+          case InstanceLerp(needsCast: true):
             // value: a.field.lerp(b.field, t) as Class
             argsResult[field.name] = aProp
                 .prop('lerp')([bProp, 't'.ref])
                 .asA(field.typeName.typeRef());
 
+          // Instance lerp method with non-nullable field
+          case InstanceLerp():
+            // value: a.field.lerp(b.field, t)
+            argsResult[field.name] = aProp.prop('lerp')([bProp, 't'.ref]);
+
           // WidgetStateProperty lerp with inner lerp function
           case WidgetStatePropertyLerp(
             :final baseTypeName,
             :final genericType,
+            :final genericBaseTypeName,
             :final isNullableGeneric,
             :final genericIsDouble,
             :final genericIsDuration,
@@ -383,7 +375,7 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
                 ? r'lerpDouble$'.ref
                 : genericIsDuration
                 ? r'lerpDuration$'.ref
-                : genericType.ref.prop('lerp');
+                : genericBaseTypeName.ref.prop('lerp');
 
             // WidgetStateProperty.lerp<Color?>(
             // a.field,

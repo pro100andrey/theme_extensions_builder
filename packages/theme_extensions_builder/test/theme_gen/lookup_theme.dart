@@ -90,6 +90,50 @@ class Strict {
   Strict merge(Strict other, {required bool deep}) => other;
 }
 
+/// Generic class whose `lerp` and `merge` are declared with the class' own
+/// type parameter, so they only match once the type arguments are substituted.
+class Box<T> {
+  const Box(this.value);
+
+  final T value;
+
+  Box<T> lerp(Box<T> other, double t) => other;
+
+  Box<T> merge(Box<T> other) => other;
+}
+
+/// Declares the `lerp` that [Special] inherits, and returns this supertype.
+class Animatable {
+  const Animatable(this.value);
+
+  final int value;
+
+  Animatable? lerp(Animatable other, double t) => other;
+}
+
+/// Uses the inherited `lerp`, whose result has to be cast back.
+class Special extends Animatable {
+  const Special(super.value);
+}
+
+/// A `lerp` returning something unrelated to the class it is declared on.
+class Fade {
+  const Fade(this.value);
+
+  final double value;
+
+  double? lerp(Fade? other, double t) => value;
+}
+
+/// A static `lerp` whose result cannot stand in for the class.
+class Ratio {
+  const Ratio(this.value);
+
+  final double value;
+
+  static double? lerp(Ratio? a, Ratio? b, double t) => a?.value;
+}
+
 /// Base class declaring a field that [LookupTheme]'s superclass narrows.
 class Base {
   const Base({required this.narrowed});
@@ -108,33 +152,45 @@ class Middle extends Base {
   final int narrowed;
 }
 
+const _lerpFallback = 'switches over at t = 0.5 instead of being interpolated.';
+
+const _mergeFallback = 'is overwritten instead of being merged.';
+
 const _curveWarning =
     'The `lerp` method of Curve has an unsupported signature, so the field '
-    '`curve` is left out of `lerp`.';
+    '`curve` $_lerpFallback';
 
 const _flagsWarning =
     'The `merge` method of Flags has an unsupported signature, so the field '
-    '`flags` is left out of `merge`.';
+    '`flags` $_mergeFallback';
 
 const _clampedWarning =
     'The `lerp` method of Clamped has an unsupported signature, so the field '
-    '`clamped` is left out of `lerp`.';
+    '`clamped` $_lerpFallback';
 
 const _unrelatedWarning =
     'The `merge` method of Unrelated has an unsupported signature, so the '
-    'field `unrelated` is left out of `merge`.';
+    'field `unrelated` $_mergeFallback';
 
 const _modeWarning =
     'The `lerp` method of Mode has an unsupported signature, so the field '
-    '`mode` is left out of `lerp`.';
+    '`mode` $_lerpFallback';
 
 const _pairWarning =
     'The `lerp` method of Pair has an unsupported signature, so the field '
-    '`pair` is left out of `lerp`.';
+    '`pair` $_lerpFallback';
 
 const _strictWarning =
     'The `merge` method of Strict has an unsupported signature, so the field '
-    '`strict` is left out of `merge`.';
+    '`strict` $_mergeFallback';
+
+const _fadeWarning =
+    'The `lerp` method of Fade has an unsupported signature, so the field '
+    '`fade` $_lerpFallback';
+
+const _ratioWarning =
+    'The `lerp` method of Ratio has an unsupported signature, so the field '
+    '`ratio` $_lerpFallback';
 
 /// Theme whose field types are inspected by method lookup rather than by an
 /// annotation: only [Settings] offers a signature the generator can call.
@@ -149,6 +205,8 @@ const _strictWarning =
     _modeWarning,
     _pairWarning,
     _strictWarning,
+    _fadeWarning,
+    _ratioWarning,
   ],
 )
 @themeGen
@@ -163,8 +221,16 @@ final class LookupTheme extends Middle with _$LookupTheme {
     required this.mode,
     required this.pair,
     required this.strict,
+    required this.box,
+    required this.special,
+    required this.fade,
+    required this.ratio,
     required super.narrowed,
   });
+
+  /// Static fields are left out of the generated code, so they are not
+  /// inspected either.
+  static const unused = Curve(0);
 
   final Curve curve;
   final Settings settings;
@@ -175,6 +241,10 @@ final class LookupTheme extends Middle with _$LookupTheme {
   final Mode mode;
   final Pair pair;
   final Strict strict;
+  final Box<int> box;
+  final Special? special;
+  final Fade? fade;
+  final Ratio ratio;
 
   @override
   bool get canMerge => true;

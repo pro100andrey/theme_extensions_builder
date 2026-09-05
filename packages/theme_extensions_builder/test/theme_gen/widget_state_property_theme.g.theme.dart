@@ -61,6 +61,7 @@ mixin _$WidgetStatePropertyTheme {
         t,
         lerpDuration$,
       ),
+      label: t < 0.5 ? a.label : b.label,
     );
   }
 
@@ -71,6 +72,7 @@ mixin _$WidgetStatePropertyTheme {
     WidgetStateProperty<Color?>? optionalColor,
     WidgetStateProperty<double?>? optionalWidth,
     WidgetStateProperty<Duration?>? optionalDuration,
+    WidgetStateProperty<String?>? label,
   }) {
     final _this = (this as WidgetStatePropertyTheme);
 
@@ -81,6 +83,7 @@ mixin _$WidgetStatePropertyTheme {
       optionalColor: optionalColor ?? _this.optionalColor,
       optionalWidth: optionalWidth ?? _this.optionalWidth,
       optionalDuration: optionalDuration ?? _this.optionalDuration,
+      label: label ?? _this.label,
     );
   }
 
@@ -102,6 +105,7 @@ mixin _$WidgetStatePropertyTheme {
       optionalColor: other.optionalColor,
       optionalWidth: other.optionalWidth,
       optionalDuration: other.optionalDuration,
+      label: other.label,
     );
   }
 
@@ -123,7 +127,8 @@ mixin _$WidgetStatePropertyTheme {
         _other.duration == _this.duration &&
         _other.optionalColor == _this.optionalColor &&
         _other.optionalWidth == _this.optionalWidth &&
-        _other.optionalDuration == _this.optionalDuration;
+        _other.optionalDuration == _this.optionalDuration &&
+        _other.label == _this.label;
   }
 
   @override
@@ -138,6 +143,7 @@ mixin _$WidgetStatePropertyTheme {
       _this.optionalColor,
       _this.optionalWidth,
       _this.optionalDuration,
+      _this.label,
     );
   }
 }

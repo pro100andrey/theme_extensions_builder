@@ -47,11 +47,29 @@ void main() {
         _field(
           'value',
           typeName: 'Lerpable',
-          lerp: const InstanceLerp(optionalResult: true, args: [_nullableArg]),
+          lerp: const InstanceLerp(
+            optionalResult: true,
+            args: [_nullableArg],
+            needsCast: true,
+          ),
         ),
       ]);
 
       expect(code, contains('(a.value.lerp(b.value, t) as Lerpable)'));
+    });
+
+    test('a result that already has the field type is not cast', () {
+      final code = _generate([
+        _field(
+          'value',
+          typeName: 'Lerpable',
+          isNullable: true,
+          lerp: const InstanceLerp(optionalResult: true, args: [_nullableArg]),
+        ),
+      ]);
+
+      expect(code, contains('a.value!.lerp(b.value!, t)'));
+      expect(code, isNot(contains('as Lerpable?')));
     });
 
     test('instance lerp on a nullable field keeps the endpoints', () {
@@ -60,7 +78,11 @@ void main() {
           'value',
           typeName: 'Lerpable',
           isNullable: true,
-          lerp: const InstanceLerp(optionalResult: false, args: [_nullableArg]),
+          lerp: const InstanceLerp(
+            optionalResult: false,
+            args: [_nullableArg],
+            needsCast: true,
+          ),
         ),
       ]);
 
@@ -114,6 +136,7 @@ void main() {
           lerp: const InstanceLerp(
             optionalResult: false,
             args: [_nonNullableArg],
+            needsCast: true,
           ),
         ),
       ]);
@@ -126,6 +149,19 @@ void main() {
           '(_this.value!.lerp(other.value!, t) as Lerpable?)',
         ),
       );
+    });
+
+    test('a theme extension does not cast a result of the field type', () {
+      final code = _generateExtension([
+        _field(
+          'value',
+          typeName: 'Lerpable',
+          lerp: const InstanceLerp(optionalResult: false, args: [_nullableArg]),
+        ),
+      ]);
+
+      expect(code, contains('value: _this.value.lerp(other.value, t)'));
+      expect(code, isNot(contains('as Lerpable')));
     });
 
     test('a static call receiver drops the type arguments', () {

@@ -13,6 +13,10 @@ void main() {
     mode: Mode(1),
     pair: Pair(1),
     strict: Strict(1),
+    box: Box(1),
+    special: Special(1),
+    fade: Fade(1),
+    ratio: Ratio(1),
     narrowed: 1,
   );
 
@@ -26,6 +30,10 @@ void main() {
     mode: Mode(2),
     pair: Pair(2),
     strict: Strict(2),
+    box: Box(2),
+    special: Special(2),
+    fade: Fade(2),
+    ratio: Ratio(2),
     narrowed: 2,
   );
 
@@ -54,6 +62,19 @@ void main() {
       expect(a.merge(b).strict, same(b.strict));
     });
 
+    test('a generic type resolves its methods through the instantiation', () {
+      expect(LookupTheme.lerp(a, b, 0.5)!.box.value, same(b.box.value));
+      expect(a.merge(b).box.value, same(b.box.value));
+    });
+
+    test('an inherited lerp returning a supertype is cast back', () {
+      expect(LookupTheme.lerp(a, b, 0.5)!.special, isA<Special>());
+    });
+
+    test('a lerp returning an unrelated type is ignored', () {
+      expect(LookupTheme.lerp(a, b, 0.4)!.fade, same(a.fade));
+    });
+
     test('a field narrowed by a superclass keeps the narrowed type', () {
       expect(a.copyWith(narrowed: 7).narrowed, 7);
     });
@@ -69,6 +90,10 @@ void main() {
         mode: Mode(1),
         pair: Pair(1),
         strict: Strict(1),
+        box: Box(1),
+        special: Special(1),
+        fade: Fade(1),
+        ratio: Ratio(1),
         narrowed: 1,
       );
 

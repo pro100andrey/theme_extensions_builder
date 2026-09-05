@@ -29,6 +29,22 @@ FieldInfo fieldSymbol(
   final isDouble = elementType.isDartCoreDouble;
   final isDuration = elementType.isDuration;
 
+  // A static field is dropped by `BaseConfig.filteredFields`, so looking up
+  // how to interpolate or merge it would only produce noise, or fail the
+  // build over a field that is never emitted.
+  if (element.isStatic) {
+    return FieldInfo(
+      name: name,
+      typeName: baseType,
+      isNullable: isNullable,
+      isDouble: isDouble,
+      isDuration: isDuration,
+      isStatic: true,
+      merge: const NoMerge(),
+      lerp: const NoLerp(),
+    );
+  }
+
   return FieldInfo(
     name: name,
     typeName: baseType,
@@ -54,13 +70,11 @@ FieldInfo fieldSymbol(
 /// Throws [InvalidGenerationSourceError] for a `WidgetStateProperty` field
 /// with a non-nullable generic, which is a mistake we can point at.
 LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
-  final typeElement = type.element;
-
-  if (typeElement is! InterfaceElement) {
+  if (type is! InterfaceType) {
     return const NoLerp();
   }
 
-  final method = _lookupMethod(typeElement, 'lerp');
+  final method = _lookupMethod(type, 'lerp');
 
   if (method == null) {
     return const NoLerp();
@@ -92,8 +106,7 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
       // - first two parameters should have the same type as the class type
       // - third parameter should be double
       // - fourth parameter is a lerp function for the inner type
-      when type is InterfaceType &&
-          method.isStatic &&
+      when method.isStatic &&
           p3.type.isDartCoreDouble &&
           _checkSubtype(p1, type, strict: strictSignature) &&
           _checkSubtype(p2, type, strict: strictSignature)) {
@@ -143,10 +156,29 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
         );
       }
 
+      final genericIsDouble = innerType.isDartCoreDouble;
+      final genericIsDuration = innerType.isDuration;
+
+      // Anything else is interpolated by a static lerp on the generic itself,
+      // which `WidgetStateProperty.lerp` calls with nullable arguments.
+      if (!genericIsDouble && !genericIsDuration) {
+        final innerLerp = _lerpInfo(innerType, fieldElement);
+
+        if (innerLerp is! StaticLerp ||
+            !innerLerp.optionalResult ||
+            !innerLerp.isNullableParameter) {
+          _warnUnsupported('lerp', innerType, fieldElement);
+
+          return const NoLerp();
+        }
+      }
+
       return WidgetStatePropertyLerp(
         baseTypeName: baseTypeName,
         genericType: innerType.baseType,
         isNullableGeneric: innerType.hasNullableSuffix,
+        genericIsDouble: genericIsDouble,
+        genericIsDuration: genericIsDuration,
       );
     }
 
@@ -166,6 +198,12 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
           p3.type.isDartCoreDouble &&
           _checkSubtype(p1, type, strict: strictSignature) &&
           _checkSubtype(p2, type, strict: strictSignature)) {
+    if (!_isUsableAs(method.returnType, type, type)) {
+      _warnUnsupported('lerp', type, fieldElement);
+
+      return const NoLerp();
+    }
+
     final args = _mapArgs(params);
 
     return StaticLerp(
@@ -180,11 +218,23 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
       when !method.isStatic &&
           p2.type.isDartCoreDouble &&
           _checkSubtype(p1, type, strict: strictSignature)) {
+    // A method declared on a supertype returns that supertype, which the
+    // generated code casts back to the field type. Anything else is not a
+    // result we can use.
+    final needsCast = !_isUsableAs(method.returnType, type, type);
+
+    if (needsCast && !_isUsableAs(type, method.returnType, type)) {
+      _warnUnsupported('lerp', type, fieldElement);
+
+      return const NoLerp();
+    }
+
     final args = _mapArgs(params);
 
     return InstanceLerp(
       optionalResult: method.returnType.hasNullableSuffix,
       args: args,
+      needsCast: needsCast,
     );
   }
 
@@ -204,11 +254,17 @@ void _warnUnsupported(
   String methodName,
   DartType type,
   FieldElement fieldElement,
-) => log.warning(
-  'The `$methodName` method of ${type.getDisplayString()} has an unsupported '
-  'signature, so the field `${fieldElement.displayName}` is left out of '
-  '`$methodName`.',
-);
+) {
+  final fallback = methodName == 'lerp'
+      ? 'switches over at t = 0.5 instead of being interpolated'
+      : 'is overwritten instead of being merged';
+
+  log.warning(
+    'The `$methodName` method of ${type.baseType} has an '
+    'unsupported signature, so the field `${fieldElement.displayName}` '
+    '$fallback.',
+  );
+}
 
 /// Checks that a value of [type] can be passed to [param].
 ///
@@ -257,21 +313,16 @@ bool _checkSubtype(
   return typeSystem.isSubtypeOf(nonNullType, supertypeInstance);
 }
 
-/// Checks that [method] returns something usable where [type] is expected.
+/// Checks that a value of [subtype] can be used where [supertype] is expected.
 ///
 /// Nullability is ignored on both sides: a `T? merge(T other)` is still a
 /// merge method, the generated code just has to cope with the null.
-bool _returnsSubtypeOf(MethodElement method, DartType type) {
-  final typeElement = type.element;
-  if (typeElement is! InterfaceElement) {
-    return false;
-  }
-
-  final typeSystem = typeElement.library.typeSystem;
+bool _isUsableAs(DartType subtype, DartType supertype, InterfaceType context) {
+  final typeSystem = context.element.library.typeSystem;
 
   return typeSystem.isSubtypeOf(
-    typeSystem.promoteToNonNull(method.returnType),
-    typeSystem.promoteToNonNull(type),
+    typeSystem.promoteToNonNull(subtype),
+    typeSystem.promoteToNonNull(supertype),
   );
 }
 
@@ -288,40 +339,34 @@ ParameterInfo _mapArg(FormalParameterElement parameter) {
   return ParameterInfo(name: name, type: type, isNullable: isNullable);
 }
 
-/// Cache for method lookups to avoid repeated expensive lookups.
+/// Cache for static method lookups to avoid repeated expensive lookups.
+///
+/// Only the static lookup is cached: it reads the declaration off the element,
+/// which is the same for every instantiation. The instance lookup goes through
+/// the [InterfaceType] so that type arguments are substituted, and its result
+/// differs between `Box<int>` and `Box<String>`.
+///
 /// Using Expando to avoid memory leaks - entries are automatically removed
 /// when InterfaceElement is garbage collected.
-final _methodCache = Expando<Map<String, MethodElement?>>('method_cache');
+final _staticMethodCache = Expando<Map<String, MethodElement?>>('method_cache');
 
-/// Looks up a method with the given [name] in the [typeElement].
-/// If the method is not found directly on the type, it looks up
-/// inherited methods as well.
-/// Results are cached to avoid repeated expensive lookups.
-MethodElement? _lookupMethod(InterfaceElement typeElement, String name) {
-  var cache = _methodCache[typeElement];
-  if (cache == null) {
-    cache = <String, MethodElement?>{};
-    _methodCache[typeElement] = cache;
+/// Looks up a method with the given [name] on [type].
+///
+/// Instance methods are resolved against the instantiated type, including
+/// inherited ones, so their parameter and return types have the type
+/// arguments of [type] substituted in. Static methods are neither inherited
+/// nor substituted, so they are read off the element.
+MethodElement? _lookupMethod(InterfaceType type, String name) {
+  final instanceMethod = type.lookUpMethod(name, type.element.library);
+
+  if (instanceMethod != null) {
+    return instanceMethod;
   }
 
-  if (cache.containsKey(name)) {
-    return cache[name];
-  }
+  final typeElement = type.element;
+  final cache = _staticMethodCache[typeElement] ??= <String, MethodElement?>{};
 
-  final method = typeElement.getMethod(name);
-
-  if (method != null) {
-    cache[name] = method;
-    return method;
-  }
-
-  final inheritedMethod = typeElement.lookUpInheritedMethod(
-    methodName: name,
-    library: typeElement.library,
-  );
-
-  cache[name] = inheritedMethod;
-  return inheritedMethod;
+  return cache.putIfAbsent(name, () => typeElement.getMethod(name));
 }
 
 /// Gets information about the merge method for the given [type].
@@ -329,11 +374,11 @@ MethodElement? _lookupMethod(InterfaceElement typeElement, String name) {
 /// Returns [NoMerge] when the type is not an interface, has no merge method,
 /// or declares one whose signature we cannot call.
 MergeInfo _mergeInfo(DartType type, FieldElement fieldElement) {
-  final typeElement = type.element;
-
-  if (typeElement is! InterfaceElement) {
+  if (type is! InterfaceType) {
     return const NoMerge();
   }
+
+  final typeElement = type.element;
 
   // Check if element or its supertypes have @ThemeGen annotation.
   // Using the annotation implies that the merge method exists, as it is
@@ -345,7 +390,7 @@ MergeInfo _mergeInfo(DartType type, FieldElement fieldElement) {
     return const InstanceMerge();
   }
 
-  final method = _lookupMethod(typeElement, 'merge');
+  final method = _lookupMethod(type, 'merge');
   if (method == null) {
     return const NoMerge();
   }
@@ -374,7 +419,7 @@ MergeInfo _mergeInfo(DartType type, FieldElement fieldElement) {
       when method.isStatic &&
           _checkSubtype(p1, type, strict: strictSignature) &&
           _checkSubtype(p2, type, strict: strictSignature) &&
-          _returnsSubtypeOf(method, type)) {
+          _isUsableAs(method.returnType, type, type)) {
     return const StaticMerge();
   }
 
@@ -385,7 +430,7 @@ MergeInfo _mergeInfo(DartType type, FieldElement fieldElement) {
       // - the result should be usable as the class type
       when !method.isStatic &&
           _checkSubtype(p1, type, strict: strictSignature) &&
-          _returnsSubtypeOf(method, type)) {
+          _isUsableAs(method.returnType, type, type)) {
     return InstanceMerge(isNullableParameter: p1.type.hasNullableSuffix);
   }
 

@@ -35,6 +35,14 @@ mixin _$LookupTheme {
       mode: t < 0.5 ? a.mode : b.mode,
       pair: t < 0.5 ? a.pair : b.pair,
       strict: t < 0.5 ? a.strict : b.strict,
+      box: a.box.lerp(b.box, t),
+      special: a.special == null || b.special == null
+          ? t < 0.5
+                ? a.special
+                : b.special
+          : (a.special!.lerp(b.special!, t) as Special?),
+      fade: t < 0.5 ? a.fade : b.fade,
+      ratio: t < 0.5 ? a.ratio : b.ratio,
       narrowed: t < 0.5 ? a.narrowed : b.narrowed,
     );
   }
@@ -49,6 +57,10 @@ mixin _$LookupTheme {
     Mode? mode,
     Pair? pair,
     Strict? strict,
+    Box<int>? box,
+    Special? special,
+    Fade? fade,
+    Ratio? ratio,
     int? narrowed,
   }) {
     final _this = (this as LookupTheme);
@@ -63,6 +75,10 @@ mixin _$LookupTheme {
       mode: mode ?? _this.mode,
       pair: pair ?? _this.pair,
       strict: strict ?? _this.strict,
+      box: box ?? _this.box,
+      special: special ?? _this.special,
+      fade: fade ?? _this.fade,
+      ratio: ratio ?? _this.ratio,
       narrowed: narrowed ?? _this.narrowed,
     );
   }
@@ -92,6 +108,10 @@ mixin _$LookupTheme {
       mode: other.mode,
       pair: other.pair,
       strict: other.strict,
+      box: _this.box.merge(other.box),
+      special: other.special,
+      fade: other.fade,
+      ratio: other.ratio,
       narrowed: other.narrowed,
     );
   }
@@ -118,6 +138,10 @@ mixin _$LookupTheme {
         _other.mode == _this.mode &&
         _other.pair == _this.pair &&
         _other.strict == _this.strict &&
+        _other.box == _this.box &&
+        _other.special == _this.special &&
+        _other.fade == _this.fade &&
+        _other.ratio == _this.ratio &&
         _other.narrowed == _this.narrowed;
   }
 
@@ -136,6 +160,10 @@ mixin _$LookupTheme {
       _this.mode,
       _this.pair,
       _this.strict,
+      _this.box,
+      _this.special,
+      _this.fade,
+      _this.ratio,
       _this.narrowed,
     );
   }

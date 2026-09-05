@@ -50,8 +50,8 @@ class _LerpShowcaseState extends State<LerpShowcase>
   AppThemeExtension get _current =>
       _from.lerp(_to, _controller.value) as AppThemeExtension;
 
-  /// What the generator emitted before 7.5.0: the null side won outright, at
-  /// every `t` including the endpoints.
+  /// What the generator emitted before 7.5.0: whichever side was not null won
+  /// outright, at every `t` including the endpoints.
   BorderSide? get _previousBorderSide {
     final a = _from.optionalBorderSide;
     final b = _to.optionalBorderSide;

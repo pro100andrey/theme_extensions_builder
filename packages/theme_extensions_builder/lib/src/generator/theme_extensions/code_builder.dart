@@ -207,30 +207,18 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
             // _this.side == null || other.side == null
             //     ? (t < 0.5 ? _this.side : other.side)
             //     : Side.lerp(_this.side!, other.side!, t)
-            args[field.name] = _nullGuardedLerp(
+            args[field.name] = nullGuardedLerp(
               tProp,
               oProp,
               sLerp([tProp.nullChecked, oProp.nullChecked, 't'.ref]),
             );
 
-          // Handle InstanceLerp with an optional field, returning an
-          // optional result that needs no cast
-          case InstanceLerp(optionalResult: true) when field.isNullable:
-            // _this.field == null || other.field == null
-            //     ? (t < 0.5 ? _this.field : other.field)
-            //     : _this.field!.lerp(other.field!, t)
-            args[field.name] = _nullGuardedLerp(
-              tProp,
-              oProp,
-              tProp.nullChecked.property('lerp')([oProp.nullChecked, 't'.ref]),
-            );
-
-          // Handle InstanceLerp with an optional field
-          case InstanceLerp() when field.isNullable:
+          // Handle InstanceLerp with an optional field, returning a supertype
+          case InstanceLerp(needsCast: true) when field.isNullable:
             // _this.field == null || other.field == null
             //     ? (t < 0.5 ? _this.field : other.field)
             //     : _this.field!.lerp(other.field!, t) as FieldType?
-            args[field.name] = _nullGuardedLerp(
+            args[field.name] = nullGuardedLerp(
               tProp,
               oProp,
               tProp.nullChecked
@@ -238,17 +226,34 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
                   .asA(field.typeName.typeRef(isNullable: true)),
             );
 
-          // Handle InstanceLerp with non-optional field
-          case InstanceLerp():
+          // Handle InstanceLerp with an optional field
+          case InstanceLerp() when field.isNullable:
+            // _this.field == null || other.field == null
+            //     ? (t < 0.5 ? _this.field : other.field)
+            //     : _this.field!.lerp(other.field!, t)
+            args[field.name] = nullGuardedLerp(
+              tProp,
+              oProp,
+              tProp.nullChecked.property('lerp')([oProp.nullChecked, 't'.ref]),
+            );
+
+          // Handle InstanceLerp returning a supertype, non-optional field
+          case InstanceLerp(needsCast: true):
             // _this.field.lerp(other.field, t) as FieldType
             args[field.name] = tProp
                 .prop('lerp')([oProp, 't'.ref])
                 .asA(field.typeName.typeRef());
 
+          // Handle InstanceLerp with non-optional field
+          case InstanceLerp():
+            // _this.field.lerp(other.field, t)
+            args[field.name] = tProp.prop('lerp')([oProp, 't'.ref]);
+
           // Handle WidgetStateProperty lerp with inner lerp function
           case WidgetStatePropertyLerp(
             :final baseTypeName,
             :final genericType,
+            :final genericBaseTypeName,
             :final isNullableGeneric,
             :final genericIsDouble,
             :final genericIsDuration,
@@ -258,7 +263,7 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
                 ? r'lerpDouble$'.ref
                 : genericIsDuration
                 ? r'lerpDuration$'.ref
-                : genericType.ref.prop('lerp');
+                : genericBaseTypeName.ref.prop('lerp');
 
             // WidgetStateProperty.lerp<Color?>(
             //   _this.field,
@@ -292,19 +297,6 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
       );
     });
 });
-
-/// Wraps [lerpCall] so that it only runs when both sides are present.
-///
-/// An interpolation that cannot accept a null falls back to the value the
-/// timeline is closest to, which keeps `t == 0` on [a] and `t == 1` on [b].
-Expression _nullGuardedLerp(Expression a, Expression b, Expression lerpCall) =>
-    a
-        .equalTo(literalNull)
-        .or(b.equalTo(literalNull))
-        .conditional(
-          't'.ref.lessThan(literalNum(0.5)).conditional(a, b),
-          lerpCall,
-        );
 
 // Returns a type reference for `ThemeExtension<T>` based on [config].
 TypeReference _buildThemeExtensionRef(

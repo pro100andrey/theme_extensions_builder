@@ -6,6 +6,8 @@ import '../theme/extensions/spacing_theme.dart';
 import 'widgets/base_card.dart';
 import 'widgets/button_showcase.dart';
 import 'widgets/custom_button.dart';
+import 'widgets/input_showcase.dart';
+import 'widgets/lerp_showcase.dart';
 import 'widgets/typography_showcase.dart';
 
 class HomePage extends StatefulWidget {
@@ -46,6 +48,8 @@ class _HomePageState extends State<HomePage> {
           _buildButtonsPage(context),
           _buildTypographyPage(context),
           _buildCardsPage(context),
+          _buildInputsPage(context),
+          _buildLerpPage(context),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -75,6 +79,16 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.dashboard_outlined),
             selectedIcon: Icon(Icons.dashboard),
             label: 'Cards',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.edit_outlined),
+            selectedIcon: Icon(Icons.edit),
+            label: 'Inputs',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.animation_outlined),
+            selectedIcon: Icon(Icons.animation),
+            label: 'Lerp',
           ),
         ],
       ),
@@ -186,6 +200,28 @@ class _HomePageState extends State<HomePage> {
           const TypographyShowcase(),
         ],
       ),
+    );
+  }
+
+  Widget _buildInputsPage(BuildContext context) {
+    final spacing = context.spacingTheme;
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(
+        horizontal: spacing.pageHorizontal,
+        vertical: spacing.pageVertical,
+      ),
+      child: const InputShowcase(),
+    );
+  }
+
+  Widget _buildLerpPage(BuildContext context) {
+    final spacing = context.spacingTheme;
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(
+        horizontal: spacing.pageHorizontal,
+        vertical: spacing.pageVertical,
+      ),
+      child: const LerpShowcase(),
     );
   }
 

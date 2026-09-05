@@ -5,6 +5,7 @@ import 'extensions/spacing_theme.dart';
 import 'extensions/typography_theme.dart';
 import 'extensions/widgets/button_theme.dart';
 import 'extensions/widgets/card_theme.dart';
+import 'extensions/widgets/input_theme.dart';
 
 ThemeData get lightTheme => ThemeData(
   brightness: .light,
@@ -92,6 +93,34 @@ ThemeData get lightTheme => ThemeData(
         color: Colors.purple,
         backgroundColor: .fromRGBO(245, 245, 245, 1),
       ),
+    ),
+    const InputThemeExtension(
+      borderColor: WidgetStateProperty<Color?>.fromMap({
+        WidgetState.disabled: Colors.black12,
+        WidgetState.error: Colors.redAccent,
+        WidgetState.focused: Colors.orange,
+        WidgetState.any: Colors.black26,
+      }),
+      fillColor: WidgetStateProperty<Color?>.fromMap({
+        WidgetState.disabled: Color(0x0A000000),
+        WidgetState.focused: Color(0x14FF9800),
+        WidgetState.any: Colors.white,
+      }),
+      labelColor: WidgetStateProperty<Color?>.fromMap({
+        WidgetState.disabled: Colors.black26,
+        WidgetState.error: Colors.redAccent,
+        WidgetState.focused: Colors.orange,
+        WidgetState.any: Colors.black54,
+      }),
+      borderRadius: BorderRadius.all(Radius.circular(8)),
+      borderWidth: 1,
+      focusedBorderWidth: 2,
+      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+      helperStyle: TextStyle(fontSize: 12, color: Colors.black54),
+      errorStyle: TextStyle(fontSize: 12, color: Colors.redAccent),
+      focusDuration: Duration(milliseconds: 150),
+      hintColor: Colors.black38,
     ),
     const SpacingThemeExtension(
       xs: 4,

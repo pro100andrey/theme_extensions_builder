@@ -65,12 +65,6 @@ final class InstanceLerp extends LerpInfo {
   /// Whether the return type of the lerp method is nullable.
   final bool optionalResult;
 
-  /// Returns `true` if the lerp method accepts a nullable argument.
-  ///
-  /// A method that doesn't has to be guarded against a null `other` at the
-  /// call site.
-  bool get isNullableParameter => args.isNotEmpty && args[0].isNullable;
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

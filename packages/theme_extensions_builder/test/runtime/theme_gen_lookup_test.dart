@@ -10,6 +10,9 @@ void main() {
     flags: Flags(1),
     clamped: Clamped(1),
     unrelated: Unrelated(1),
+    mode: Mode(1),
+    pair: Pair(1),
+    strict: Strict(1),
     narrowed: 1,
   );
 
@@ -20,6 +23,9 @@ void main() {
     flags: Flags(2),
     clamped: Clamped(2),
     unrelated: Unrelated(2),
+    mode: Mode(2),
+    pair: Pair(2),
+    strict: Strict(2),
     narrowed: 2,
   );
 
@@ -42,7 +48,10 @@ void main() {
 
     test('an uncallable lerp or merge signature is ignored', () {
       expect(LookupTheme.lerp(a, b, 0.4)!.clamped, same(a.clamped));
+      expect(LookupTheme.lerp(a, b, 0.4)!.mode, same(a.mode));
+      expect(LookupTheme.lerp(a, b, 0.4)!.pair, same(a.pair));
       expect(a.merge(b).unrelated, same(b.unrelated));
+      expect(a.merge(b).strict, same(b.strict));
     });
 
     test('a field narrowed by a superclass keeps the narrowed type', () {
@@ -57,6 +66,9 @@ void main() {
         flags: Flags(1),
         clamped: Clamped(1),
         unrelated: Unrelated(1),
+        mode: Mode(1),
+        pair: Pair(1),
+        strict: Strict(1),
         narrowed: 1,
       );
 

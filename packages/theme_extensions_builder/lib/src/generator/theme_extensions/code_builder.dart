@@ -155,7 +155,7 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
       for (final field in fields) {
         final tProp = '_this'.ref.prop(field.name);
         final oProp = 'other'.ref.prop(field.name);
-        final sLerp = field.typeName.ref.prop('lerp');
+        final sLerp = field.baseTypeName.ref.prop('lerp');
 
         switch (field.lerp) {
           // Handle NoLerp with double field
@@ -204,61 +204,39 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
 
           // Handle StaticLerp taking non-nullable arguments, optional field
           case StaticLerp():
-            // _this.side == null
-            // ? other.side
-            // : other.side == null
-            // ? _this.side
-            // : Side.lerp(_this.side!, other.side!, t),
-            args[field.name] = tProp
-                .equalTo(literalNull)
-                .conditional(
-                  oProp,
-                  oProp
-                      .equalTo(literalNull)
-                      .conditional(
-                        tProp,
-                        sLerp([tProp.nullChecked, oProp.nullChecked, 't'.ref]),
-                      ),
-                );
-
-          // Handle InstanceLerp taking a nullable argument, with an optional
-          // result and an optional field
-          case InstanceLerp(optionalResult: true, isNullableParameter: true)
-              when field.isNullable:
-            // _this.field?.lerp(other.field, t)
-            args[field.name] = tProp.prop('lerp', nullSafe: true)([
+            // _this.side == null || other.side == null
+            //     ? (t < 0.5 ? _this.side : other.side)
+            //     : Side.lerp(_this.side!, other.side!, t)
+            args[field.name] = _nullGuardedLerp(
+              tProp,
               oProp,
-              't'.ref,
-            ]);
+              sLerp([tProp.nullChecked, oProp.nullChecked, 't'.ref]),
+            );
 
-          // Handle InstanceLerp taking a nullable argument, with a
-          // non-optional result and a nullable field
-          case InstanceLerp(isNullableParameter: true) when field.isNullable:
-            // _this.field?.lerp(other.field, t) as FieldType?
-            args[field.name] = tProp
-                .prop('lerp', nullSafe: true)([oProp, 't'.ref])
-                .asA(field.typeName.typeRef(isNullable: true));
+          // Handle InstanceLerp with an optional field, returning an
+          // optional result that needs no cast
+          case InstanceLerp(optionalResult: true) when field.isNullable:
+            // _this.field == null || other.field == null
+            //     ? (t < 0.5 ? _this.field : other.field)
+            //     : _this.field!.lerp(other.field!, t)
+            args[field.name] = _nullGuardedLerp(
+              tProp,
+              oProp,
+              tProp.nullChecked.property('lerp')([oProp.nullChecked, 't'.ref]),
+            );
 
-          // Handle InstanceLerp taking a non-nullable argument, nullable field
+          // Handle InstanceLerp with an optional field
           case InstanceLerp() when field.isNullable:
-            // _this.field == null
-            // ? other.field
-            // : other.field == null
-            // ? _this.field
-            // : _this.field!.lerp(other.field!, t) as FieldType?
-            args[field.name] = tProp
-                .equalTo(literalNull)
-                .conditional(
-                  oProp,
-                  oProp
-                      .equalTo(literalNull)
-                      .conditional(
-                        tProp,
-                        tProp.nullChecked
-                            .property('lerp')([oProp.nullChecked, 't'.ref])
-                            .asA(field.typeName.typeRef(isNullable: true)),
-                      ),
-                );
+            // _this.field == null || other.field == null
+            //     ? (t < 0.5 ? _this.field : other.field)
+            //     : _this.field!.lerp(other.field!, t) as FieldType?
+            args[field.name] = _nullGuardedLerp(
+              tProp,
+              oProp,
+              tProp.nullChecked
+                  .property('lerp')([oProp.nullChecked, 't'.ref])
+                  .asA(field.typeName.typeRef(isNullable: true)),
+            );
 
           // Handle InstanceLerp with non-optional field
           case InstanceLerp():
@@ -314,6 +292,20 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
       );
     });
 });
+
+/// Wraps [lerpCall] so that it only runs when both sides are present.
+///
+/// An interpolation that cannot accept a null falls back to the value the
+/// timeline is closest to, which keeps `t == 0` on [a] and `t == 1` on [b].
+Expression _nullGuardedLerp(Expression a, Expression b, Expression lerpCall) =>
+    a
+        .equalTo(literalNull)
+        .or(b.equalTo(literalNull))
+        .conditional(
+          't'.ref.lessThan(literalNum(0.5)).conditional(a, b),
+          lerpCall,
+        );
+
 // Returns a type reference for `ThemeExtension<T>` based on [config].
 TypeReference _buildThemeExtensionRef(
   ThemeExtensionsConfig config, {

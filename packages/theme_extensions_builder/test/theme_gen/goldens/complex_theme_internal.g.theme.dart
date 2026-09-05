@@ -51,18 +51,30 @@ mixin _$ComplexThemeInternal {
         t,
       ),
       optionalColor: Color.lerp(a.optionalColor, b.optionalColor, t),
-      optionalBorderSide: a.optionalBorderSide == null
-          ? b.optionalBorderSide
-          : b.optionalBorderSide == null
-          ? a.optionalBorderSide
+      optionalBorderSide:
+          a.optionalBorderSide == null || b.optionalBorderSide == null
+          ? t < 0.5
+                ? a.optionalBorderSide
+                : b.optionalBorderSide
           : BorderSide.lerp(a.optionalBorderSide!, b.optionalBorderSide!, t),
       optionalTheme: EmptyTheme.lerp(a.optionalTheme, b.optionalTheme, t),
-      optionalThemeExtension: (a.optionalThemeExtension?.lerp(
-        b.optionalThemeExtension,
-        t,
-      ) as EmptyThemeExtension?),
-      optionalLerpableWithOptionalResult: a.optionalLerpableWithOptionalResult
-          ?.lerp(b.optionalLerpableWithOptionalResult, t),
+      optionalThemeExtension:
+          a.optionalThemeExtension == null || b.optionalThemeExtension == null
+          ? t < 0.5
+                ? a.optionalThemeExtension
+                : b.optionalThemeExtension
+          : (a.optionalThemeExtension!.lerp(b.optionalThemeExtension!, t)
+                as EmptyThemeExtension?),
+      optionalLerpableWithOptionalResult:
+          a.optionalLerpableWithOptionalResult == null ||
+              b.optionalLerpableWithOptionalResult == null
+          ? t < 0.5
+                ? a.optionalLerpableWithOptionalResult
+                : b.optionalLerpableWithOptionalResult
+          : a.optionalLerpableWithOptionalResult!.lerp(
+              b.optionalLerpableWithOptionalResult!,
+              t,
+            ),
     );
   }
 
@@ -146,13 +158,14 @@ mixin _$ComplexThemeInternal {
       optionalBool: other.optionalBool,
       optionalDuration: other.optionalDuration,
       optionalColor: other.optionalColor,
-      optionalBorderSide:
-          _this.optionalBorderSide != null && other.optionalBorderSide != null
-          ? BorderSide.merge(
+      optionalBorderSide: _this.optionalBorderSide == null
+          ? other.optionalBorderSide
+          : other.optionalBorderSide == null
+          ? _this.optionalBorderSide
+          : BorderSide.merge(
               _this.optionalBorderSide!,
               other.optionalBorderSide!,
-            )
-          : other.optionalBorderSide,
+            ),
       optionalTheme:
           _this.optionalTheme?.merge(other.optionalTheme) ??
           other.optionalTheme,

@@ -54,7 +54,7 @@ void main() {
       expect(code, contains('(a.value.lerp(b.value, t) as Lerpable)'));
     });
 
-    test('instance lerp with non-optional result on a nullable field', () {
+    test('instance lerp on a nullable field keeps the endpoints', () {
       final code = _generate([
         _field(
           'value',
@@ -64,26 +64,11 @@ void main() {
         ),
       ]);
 
-      expect(code, contains('(a.value?.lerp(b.value, t) as Lerpable?)'));
-    });
-
-    test('instance lerp taking a non-nullable argument is guarded', () {
-      final code = _generate([
-        _field(
-          'value',
-          typeName: 'Lerpable',
-          isNullable: true,
-          lerp: const InstanceLerp(
-            optionalResult: false,
-            args: [_nonNullableArg],
-          ),
-        ),
-      ]);
-
       expect(
         code,
         contains(
-          'a.value == null ? b.value : b.value == null ? a.value : '
+          'a.value == null || b.value == null ? '
+          't < 0.5 ? a.value : b.value : '
           '(a.value!.lerp(b.value!, t) as Lerpable?)',
         ),
       );
@@ -136,10 +121,27 @@ void main() {
       expect(
         code,
         contains(
-          '_this.value == null ? other.value : other.value == null ? '
-          '_this.value : (_this.value!.lerp(other.value!, t) as Lerpable?)',
+          '_this.value == null || other.value == null ? '
+          't < 0.5 ? _this.value : other.value : '
+          '(_this.value!.lerp(other.value!, t) as Lerpable?)',
         ),
       );
+    });
+
+    test('a static call receiver drops the type arguments', () {
+      final code = _generate([
+        _field(
+          'value',
+          typeName: 'Box<int>',
+          lerp: const StaticLerp(
+            optionalResult: true,
+            args: [_nullableArg, _nullableArg],
+          ),
+        ),
+      ]);
+
+      expect(code, contains('Box.lerp(a.value, b.value, t)!'));
+      expect(code, contains('Box<int>? value'));
     });
   });
 }

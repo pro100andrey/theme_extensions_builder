@@ -23,7 +23,21 @@ final class FieldInfo {
   final String name;
 
   /// The type name of the field without nullability suffix.
+  ///
+  /// Type arguments are part of it, so this is the name to declare a variable
+  /// or write a cast with. Use [baseTypeName] to call a static member.
   final String typeName;
+
+  /// The type name without type arguments.
+  ///
+  /// A static member is reached through the class, not through an
+  /// instantiation of it: `Box.lerp(...)` is valid where `Box<int>.lerp(...)`
+  /// is not.
+  String get baseTypeName {
+    final index = typeName.indexOf('<');
+
+    return index == -1 ? typeName : typeName.substring(0, index);
+  }
 
   /// Whether the field type is nullable.
   final bool isNullable;

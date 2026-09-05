@@ -153,40 +153,6 @@ void main() {
       expect(lerp.args.length, 2);
     });
 
-    test('isNullableParameter is independent of the result nullability', () {
-      const nullableArgs = [
-        ParameterInfo(name: 'other', type: 'Color', isNullable: true),
-        ParameterInfo(name: 't', type: 'double', isNullable: false),
-      ];
-
-      const optional = InstanceLerp(optionalResult: true, args: nullableArgs);
-      const nonOptional = InstanceLerp(
-        optionalResult: false,
-        args: nullableArgs,
-      );
-
-      expect(optional.isNullableParameter, true);
-      expect(nonOptional.isNullableParameter, true);
-    });
-
-    test('isNullableParameter returns false for a non-nullable argument', () {
-      const lerp = InstanceLerp(
-        optionalResult: true,
-        args: [
-          ParameterInfo(name: 'other', type: 'Color', isNullable: false),
-          ParameterInfo(name: 't', type: 'double', isNullable: false),
-        ],
-      );
-
-      expect(lerp.isNullableParameter, false);
-    });
-
-    test('isNullableParameter handles empty args safely', () {
-      const lerp = InstanceLerp(optionalResult: true, args: []);
-
-      expect(lerp.isNullableParameter, false);
-    });
-
     test('equality works correctly', () {
       final lerp1 = InstanceLerp(
         optionalResult: true,

@@ -4,6 +4,7 @@ library;
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
@@ -36,7 +37,7 @@ FieldInfo fieldSymbol(
     isDuration: isDuration,
     isStatic: element.isStatic,
     merge: config.includeMergeLookup
-        ? _mergeInfo(elementType)
+        ? _mergeInfo(elementType, element)
         : const NoMerge(),
     lerp: _lerpInfo(elementType, element),
   );
@@ -67,6 +68,8 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
 
   // A required named parameter cannot be filled in by the generated call.
   if (method.formalParameters.any((p) => p.isRequiredNamed)) {
+    _warnUnsupported('lerp', type, fieldElement);
+
     return const NoLerp();
   }
 
@@ -75,6 +78,11 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
   final params = method.formalParameters
       .where((p) => p.isRequiredPositional)
       .toList(growable: false);
+
+  // A generic method's parameter types mention its own type parameters, which
+  // can't be substituted here, so those are matched on the declaring class
+  // only.
+  final strictSignature = method.typeParameters.isEmpty;
 
   // WidgetStateProperty and WidgetStateColor use a different signature for
   // lerp. Check for the 4-parameter version first, as WidgetStateProperty has
@@ -87,8 +95,8 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
       when type is InterfaceType &&
           method.isStatic &&
           p3.type.isDartCoreDouble &&
-          _checkSubtype(p1, type) &&
-          _checkSubtype(p2, type)) {
+          _checkSubtype(p1, type, strict: strictSignature) &&
+          _checkSubtype(p2, type, strict: strictSignature)) {
     // The fourth parameter has to be a lerp function itself, with the
     // signature `R Function(T? a, T? b, double t)`.
     //
@@ -106,18 +114,17 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
       // type, so that a non-generic subclass such as `WidgetStateColor`
       // resolves to `WidgetStateProperty<Color>`.
       final declaringElement = p1.type.element;
-
-      if (declaringElement is! InterfaceElement) {
-        return const NoLerp();
-      }
-
-      final declaringType = type.asInstanceOf(declaringElement);
+      final declaringType = declaringElement is InterfaceElement
+          ? type.asInstanceOf(declaringElement)
+          : null;
 
       if (declaringType == null || declaringType.typeArguments.length != 1) {
+        _warnUnsupported('lerp', type, fieldElement);
+
         return const NoLerp();
       }
 
-      final baseTypeName = declaringElement.displayName;
+      final baseTypeName = declaringType.element.displayName;
       final innerType = declaringType.typeArguments.single;
 
       // Check that the generic type is nullable
@@ -145,6 +152,8 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
 
     // A four parameter lerp whose last parameter isn't a lerp function is not
     // something we know how to call.
+    _warnUnsupported('lerp', type, fieldElement);
+
     return const NoLerp();
   }
 
@@ -155,8 +164,8 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
       // - third parameter should be double
       when method.isStatic &&
           p3.type.isDartCoreDouble &&
-          _checkSubtype(p1, type) &&
-          _checkSubtype(p2, type)) {
+          _checkSubtype(p1, type, strict: strictSignature) &&
+          _checkSubtype(p2, type, strict: strictSignature)) {
     final args = _mapArgs(params);
 
     return StaticLerp(
@@ -170,7 +179,7 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
       // - second parameter should be double
       when !method.isStatic &&
           p2.type.isDartCoreDouble &&
-          _checkSubtype(p1, type)) {
+          _checkSubtype(p1, type, strict: strictSignature)) {
     final args = _mapArgs(params);
 
     return InstanceLerp(
@@ -180,26 +189,44 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
   }
 
   // The type declares a `lerp` we don't know how to call.
+  _warnUnsupported('lerp', type, fieldElement);
+
   return const NoLerp();
 }
 
-/// Checks if a parameter type is a subtype of the given [type].
+/// Reports a [methodName] method that exists but cannot be called.
 ///
-/// This function performs a type compatibility check between a formal parameter
-/// and a target type. It handles nullability by promoting the type to non-null
-/// before checking subtype relationships.
+/// A type is free to declare an unrelated `lerp` or `merge`, so this is not an
+/// error, but it is worth saying out loud: without the warning "the type has
+/// no such method" and "the method is not one I can call" look the same in the
+/// generated code.
+void _warnUnsupported(
+  String methodName,
+  DartType type,
+  FieldElement fieldElement,
+) => log.warning(
+  'The `$methodName` method of ${type.getDisplayString()} has an unsupported '
+  'signature, so the field `${fieldElement.displayName}` is left out of '
+  '`$methodName`.',
+);
+
+/// Checks that a value of [type] can be passed to [param].
 ///
-/// Returns `true` if:
-/// - Both [FormalParameterElement.type] and [type] are interface types
-/// - [type] can be used as an instance of the parameter's type
-/// - The non-null version of [type] is a subtype of that instance
+/// Nullability is ignored on both sides: a lerp method taking `T?` accepts a
+/// non-nullable field, and a nullable field is null checked at the call site.
+///
+/// When [strict] is `true` the parameter type is compared as written, type
+/// arguments included. It has to be `false` for a generic method, whose
+/// parameter type mentions type parameters we cannot substitute here; only
+/// the declaring class is checked then.
 ///
 /// Returns `false` if either type is not an interface type or if the subtype
 /// relationship doesn't hold.
-///
-/// This is primarily used to validate lerp method signatures, ensuring that
-/// parameters accept the correct types for interpolation.
-bool _checkSubtype(FormalParameterElement param, DartType type) {
+bool _checkSubtype(
+  FormalParameterElement param,
+  DartType type, {
+  required bool strict,
+}) {
   final typeElement = type.element;
   if (typeElement is! InterfaceElement) {
     return false;
@@ -212,13 +239,20 @@ bool _checkSubtype(FormalParameterElement param, DartType type) {
     return false;
   }
 
+  final typeSystem = typeElement.library.typeSystem;
+  final nonNullType = typeSystem.promoteToNonNull(type);
+
+  if (strict) {
+    return typeSystem.isSubtypeOf(
+      nonNullType,
+      typeSystem.promoteToNonNull(parameterType),
+    );
+  }
+
   final supertypeInstance = type.asInstanceOf(paramTypeElement);
   if (supertypeInstance == null) {
     return false;
   }
-
-  final typeSystem = typeElement.library.typeSystem;
-  final nonNullType = typeSystem.promoteToNonNull(type);
 
   return typeSystem.isSubtypeOf(nonNullType, supertypeInstance);
 }
@@ -294,7 +328,7 @@ MethodElement? _lookupMethod(InterfaceElement typeElement, String name) {
 ///
 /// Returns [NoMerge] when the type is not an interface, has no merge method,
 /// or declares one whose signature we cannot call.
-MergeInfo _mergeInfo(DartType type) {
+MergeInfo _mergeInfo(DartType type, FieldElement fieldElement) {
   final typeElement = type.element;
 
   if (typeElement is! InterfaceElement) {
@@ -318,6 +352,8 @@ MergeInfo _mergeInfo(DartType type) {
 
   // A required named parameter cannot be filled in by the generated call.
   if (method.formalParameters.any((p) => p.isRequiredNamed)) {
+    _warnUnsupported('merge', type, fieldElement);
+
     return const NoMerge();
   }
 
@@ -325,14 +361,19 @@ MergeInfo _mergeInfo(DartType type) {
       .where((p) => p.isRequiredPositional)
       .toList(growable: false);
 
+  // A generic method's parameter types mention its own type parameters, which
+  // can't be substituted here, so those are matched on the declaring class
+  // only.
+  final strictSignature = method.typeParameters.isEmpty;
+
   if (params case [final p1, final p2]
       // Check for static merge method
       // - should have two parameters
       // - both parameters should accept the class type
       // - the result should be usable as the class type
       when method.isStatic &&
-          _checkSubtype(p1, type) &&
-          _checkSubtype(p2, type) &&
+          _checkSubtype(p1, type, strict: strictSignature) &&
+          _checkSubtype(p2, type, strict: strictSignature) &&
           _returnsSubtypeOf(method, type)) {
     return const StaticMerge();
   }
@@ -343,12 +384,14 @@ MergeInfo _mergeInfo(DartType type) {
       // - parameter type should accept the class type
       // - the result should be usable as the class type
       when !method.isStatic &&
-          _checkSubtype(p1, type) &&
+          _checkSubtype(p1, type, strict: strictSignature) &&
           _returnsSubtypeOf(method, type)) {
     return InstanceMerge(isNullableParameter: p1.type.hasNullableSuffix);
   }
 
   // The type declares a `merge` we don't know how to call.
+  _warnUnsupported('merge', type, fieldElement);
+
   return const NoMerge();
 }
 

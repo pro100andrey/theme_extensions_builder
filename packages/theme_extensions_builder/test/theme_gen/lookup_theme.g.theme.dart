@@ -32,6 +32,9 @@ mixin _$LookupTheme {
       flags: t < 0.5 ? a.flags : b.flags,
       clamped: t < 0.5 ? a.clamped : b.clamped,
       unrelated: t < 0.5 ? a.unrelated : b.unrelated,
+      mode: t < 0.5 ? a.mode : b.mode,
+      pair: t < 0.5 ? a.pair : b.pair,
+      strict: t < 0.5 ? a.strict : b.strict,
       narrowed: t < 0.5 ? a.narrowed : b.narrowed,
     );
   }
@@ -43,6 +46,9 @@ mixin _$LookupTheme {
     Flags? flags,
     Clamped? clamped,
     Unrelated? unrelated,
+    Mode? mode,
+    Pair? pair,
+    Strict? strict,
     int? narrowed,
   }) {
     final _this = (this as LookupTheme);
@@ -54,6 +60,9 @@ mixin _$LookupTheme {
       flags: flags ?? _this.flags,
       clamped: clamped ?? _this.clamped,
       unrelated: unrelated ?? _this.unrelated,
+      mode: mode ?? _this.mode,
+      pair: pair ?? _this.pair,
+      strict: strict ?? _this.strict,
       narrowed: narrowed ?? _this.narrowed,
     );
   }
@@ -80,6 +89,9 @@ mixin _$LookupTheme {
       flags: other.flags,
       clamped: other.clamped,
       unrelated: other.unrelated,
+      mode: other.mode,
+      pair: other.pair,
+      strict: other.strict,
       narrowed: other.narrowed,
     );
   }
@@ -103,6 +115,9 @@ mixin _$LookupTheme {
         _other.flags == _this.flags &&
         _other.clamped == _this.clamped &&
         _other.unrelated == _this.unrelated &&
+        _other.mode == _this.mode &&
+        _other.pair == _this.pair &&
+        _other.strict == _this.strict &&
         _other.narrowed == _this.narrowed;
   }
 
@@ -118,6 +133,9 @@ mixin _$LookupTheme {
       _this.flags,
       _this.clamped,
       _this.unrelated,
+      _this.mode,
+      _this.pair,
+      _this.strict,
       _this.narrowed,
     );
   }

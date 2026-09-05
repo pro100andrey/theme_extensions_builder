@@ -98,6 +98,19 @@ Method copyWith(ThemeGenConfig config) => Method((m) {
     });
 });
 
+/// Wraps [lerpCall] so that it only runs when both sides are present.
+///
+/// An interpolation that cannot accept a null falls back to the value the
+/// timeline is closest to, which keeps `t == 0` on [a] and `t == 1` on [b].
+Expression _nullGuardedLerp(Expression a, Expression b, Expression lerpCall) =>
+    a
+        .equalTo(literalNull)
+        .or(b.equalTo(literalNull))
+        .conditional(
+          't'.ref.lessThan(literalNum(0.5)).conditional(a, b),
+          lerpCall,
+        );
+
 /// Generates a `merge` method for the theme class.
 Method merge(ThemeGenConfig config) => Method((m) {
   m
@@ -145,7 +158,7 @@ Method merge(ThemeGenConfig config) => Method((m) {
         final thisProp = '_this'.ref.prop(field.name);
         final otherProp = 'other'.ref.prop(field.name);
 
-        final staticMerge = field.typeName.ref.prop('merge');
+        final staticMerge = field.baseTypeName.ref.prop('merge');
         final instanceMerge = thisProp.prop('merge');
 
         // Handle different merge strategies based on field configuration
@@ -157,12 +170,24 @@ Method merge(ThemeGenConfig config) => Method((m) {
 
           // Static merge method with optional field
           case StaticMerge() when field.isNullable:
+            // _this.field == null
+            // ? other.field
+            // : other.field == null
+            // ? _this.field
+            // : Class.merge(_this.field!, other.field!)
             args[field.name] = thisProp
-                .notEqualTo(literalNull)
-                .and(otherProp.notEqualTo(literalNull))
+                .equalTo(literalNull)
                 .conditional(
-                  staticMerge([thisProp.nullChecked, otherProp.nullChecked]),
                   otherProp,
+                  otherProp
+                      .equalTo(literalNull)
+                      .conditional(
+                        thisProp,
+                        staticMerge([
+                          thisProp.nullChecked,
+                          otherProp.nullChecked,
+                        ]),
+                      ),
                 );
 
           // Static merge method with non-optional field
@@ -283,7 +308,7 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
       for (final field in fields) {
         final aProp = 'a'.ref.prop(field.name);
         final bProp = 'b'.ref.prop(field.name);
-        final lerp = field.typeName.ref.prop('lerp');
+        final lerp = field.baseTypeName.ref.prop('lerp');
 
         // Handle different lerp strategies based on field configuration
         switch (field.lerp) {
@@ -304,61 +329,39 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
 
           // Nullable field, lerp taking non-nullable arguments
           case StaticLerp():
-            // value: a.field == null
-            //     ? b.field
-            //     : b.field == null
-            //         ? a.field
-            //         : Class.lerp(a.field!, b.field!, t)
-            argsResult[field.name] = aProp
-                .equalTo(literalNull)
-                .conditional(
-                  bProp,
-                  bProp
-                      .equalTo(literalNull)
-                      .conditional(
-                        aProp,
-                        lerp([aProp.nullChecked, bProp.nullChecked, 't'.ref]),
-                      ),
-                );
-
-          // Instance lerp taking a nullable argument, with an optional
-          // result and a nullable field
-          case InstanceLerp(optionalResult: true, isNullableParameter: true)
-              when field.isNullable:
-            // value: a.field?.lerp(b.field, t)
-            argsResult[field.name] = aProp.prop('lerp', nullSafe: true)([
+            // value: a.field == null || b.field == null
+            //     ? (t < 0.5 ? a.field : b.field)
+            //     : Class.lerp(a.field!, b.field!, t)
+            argsResult[field.name] = _nullGuardedLerp(
+              aProp,
               bProp,
-              't'.ref,
-            ]);
+              lerp([aProp.nullChecked, bProp.nullChecked, 't'.ref]),
+            );
 
-          // Instance lerp taking a nullable argument, with a non-optional
-          // result and a nullable field
-          case InstanceLerp(isNullableParameter: true) when field.isNullable:
-            // value: a.field?.lerp(b.field, t) as Class?
-            argsResult[field.name] = aProp
-                .prop('lerp', nullSafe: true)([bProp, 't'.ref])
-                .asA(field.typeName.typeRef(isNullable: true));
+          // Instance lerp with a nullable field, returning an optional
+          // result that needs no cast
+          case InstanceLerp(optionalResult: true) when field.isNullable:
+            // value: a.field == null || b.field == null
+            //     ? (t < 0.5 ? a.field : b.field)
+            //     : a.field!.lerp(b.field!, t)
+            argsResult[field.name] = _nullGuardedLerp(
+              aProp,
+              bProp,
+              aProp.nullChecked.property('lerp')([bProp.nullChecked, 't'.ref]),
+            );
 
-          // Instance lerp taking a non-nullable argument, nullable field
+          // Instance lerp with a nullable field
           case InstanceLerp() when field.isNullable:
-            // value: a.field == null
-            //     ? b.field
-            //     : b.field == null
-            //         ? a.field
-            //         : a.field!.lerp(b.field!, t) as Class?
-            argsResult[field.name] = aProp
-                .equalTo(literalNull)
-                .conditional(
-                  bProp,
-                  bProp
-                      .equalTo(literalNull)
-                      .conditional(
-                        aProp,
-                        aProp.nullChecked
-                            .property('lerp')([bProp.nullChecked, 't'.ref])
-                            .asA(field.typeName.typeRef(isNullable: true)),
-                      ),
-                );
+            // value: a.field == null || b.field == null
+            //     ? (t < 0.5 ? a.field : b.field)
+            //     : a.field!.lerp(b.field!, t) as Class?
+            argsResult[field.name] = _nullGuardedLerp(
+              aProp,
+              bProp,
+              aProp.nullChecked
+                  .property('lerp')([bProp.nullChecked, 't'.ref])
+                  .asA(field.typeName.typeRef(isNullable: true)),
+            );
 
           // Instance lerp method with non-nullable field
           case InstanceLerp():

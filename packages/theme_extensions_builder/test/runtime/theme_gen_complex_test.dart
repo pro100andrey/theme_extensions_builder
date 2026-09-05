@@ -242,7 +242,7 @@ void main() {
       });
 
       test(
-        'lerps instance lerp with optional result when first value is null',
+        'keeps the endpoints when the first instance lerp value is null',
         () {
           // Create themes where one has null for the lerpable field
           const themeWithNull = ComplexTheme(
@@ -289,11 +289,32 @@ void main() {
             optionalLerpableWithOptionalResult: LerpableWithOptionalResult(8),
           );
 
-          final result = ComplexTheme.lerp(themeWithNull, themeWithValue, 0.5);
-
-          expect(result, isNotNull);
-          // When lerp is called on null with ?.lerp, it returns null
-          expect(result!.optionalLerpableWithOptionalResult, isNull);
+          // An instance lerp cannot run on a null receiver, so the value the
+          // timeline is closest to is taken instead. The endpoints still hold.
+          expect(
+            ComplexTheme.lerp(
+              themeWithNull,
+              themeWithValue,
+              0,
+            )!.optionalLerpableWithOptionalResult,
+            isNull,
+          );
+          expect(
+            ComplexTheme.lerp(
+              themeWithNull,
+              themeWithValue,
+              1,
+            )!.optionalLerpableWithOptionalResult,
+            same(themeWithValue.optionalLerpableWithOptionalResult),
+          );
+          expect(
+            ComplexTheme.lerp(
+              themeWithNull,
+              themeWithValue,
+              0.5,
+            )!.optionalLerpableWithOptionalResult,
+            same(themeWithValue.optionalLerpableWithOptionalResult),
+          );
         },
       );
     });

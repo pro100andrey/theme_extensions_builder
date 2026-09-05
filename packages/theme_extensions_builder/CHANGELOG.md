@@ -1,10 +1,14 @@
 ## 7.5.0
 
 - **Fixed**: `@ThemeGen` now interpolates a nullable field whose type has an instance `lerp` method, instead of falling back to `t < 0.5 ? a : b`.
+- **Fixed**: An interpolation that cannot run on a null now keeps the endpoints: `lerp(a, b, 0)` returns `a`'s value and `lerp(a, b, 1)` returns `b`'s value even when the other side is null. Previously a null on the `a` side either discarded `b` entirely or was taken at any `t`.
+- **Fixed**: `merge` now keeps the current value when the incoming one is null. The static and instance merge branches disagreed on this; the instance behaviour was the correct one.
 - **Fixed**: A nullable field whose type has a `lerp` or `merge` method with a non-nullable parameter is now guarded, instead of generating code that does not compile.
-- **Fixed**: A field type declaring an unrelated `lerp` or `merge` method no longer fails the build, and is no longer mistaken for a supported one: parameter and return types are checked against the field type, a required named parameter disqualifies the method, and optional parameters no longer hide a supported signature.
+- **Fixed**: A field type declaring an unrelated `lerp` or `merge` method no longer fails the build, and is no longer mistaken for a supported one: parameter and return types are checked against the field type, a required named parameter disqualifies the method, and a non-generic method is matched with its type arguments. An unusable method is reported as a build warning.
+- **Fixed**: A static `lerp` or `merge` is now called on the class rather than on an instantiation of it, so a generic field type no longer generates `Box<int>.lerp(...)`.
 - **Fixed**: A `WidgetStateProperty` field with a non-nullable generic now reports an `InvalidGenerationSourceError` pointing at the field instead of a bare `StateError`, and an unrelated generic type with a four parameter `lerp` is no longer treated as a `WidgetStateProperty`.
 - **Fixed**: `Duration` is detected by element rather than by name, and a field narrowed by a subclass keeps the narrowed type in the generated code.
+- **Updated**: Analyzer dependency to ">=13.0.0 <15.0.0" and Dart SDK constraint to ">=3.13.0 <4.0.0".
 - **Code Quality**: Exhaustive switches over `LerpInfo`/`MergeInfo`, `==`/`hashCode` contract fixed for the `LerpInfo` classes, dead code removed (`getMixinsNames`, `BaseClassVisitor`, unused builder options and lerp-lookup flag).
 
 ## 7.4.0

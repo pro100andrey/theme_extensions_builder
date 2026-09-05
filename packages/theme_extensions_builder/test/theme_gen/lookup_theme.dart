@@ -55,6 +55,41 @@ class Unrelated {
   static double merge(double a, double b) => a + b;
 }
 
+/// A plain class with a four parameter `lerp` whose last parameter is not a
+/// lerp function.
+class Mode {
+  const Mode(this.value);
+
+  final int value;
+
+  static Mode? lerp(Mode? a, Mode? b, double t, int mode) => a;
+}
+
+/// A plain class with a `WidgetStateProperty` shaped `lerp` but no generic to
+/// interpolate.
+class Pair {
+  const Pair(this.value);
+
+  final int value;
+
+  static Pair? lerp(
+    Pair? a,
+    Pair? b,
+    double t,
+    int? Function(int?, int?, double) lerpValue,
+  ) => a;
+}
+
+/// A plain class whose `merge` cannot be called with positional arguments
+/// only.
+class Strict {
+  const Strict(this.value);
+
+  final int value;
+
+  Strict merge(Strict other, {required bool deep}) => other;
+}
+
 /// Base class declaring a field that [LookupTheme]'s superclass narrows.
 class Base {
   const Base({required this.narrowed});
@@ -73,9 +108,49 @@ class Middle extends Base {
   final int narrowed;
 }
 
+const _curveWarning =
+    'The `lerp` method of Curve has an unsupported signature, so the field '
+    '`curve` is left out of `lerp`.';
+
+const _flagsWarning =
+    'The `merge` method of Flags has an unsupported signature, so the field '
+    '`flags` is left out of `merge`.';
+
+const _clampedWarning =
+    'The `lerp` method of Clamped has an unsupported signature, so the field '
+    '`clamped` is left out of `lerp`.';
+
+const _unrelatedWarning =
+    'The `merge` method of Unrelated has an unsupported signature, so the '
+    'field `unrelated` is left out of `merge`.';
+
+const _modeWarning =
+    'The `lerp` method of Mode has an unsupported signature, so the field '
+    '`mode` is left out of `lerp`.';
+
+const _pairWarning =
+    'The `lerp` method of Pair has an unsupported signature, so the field '
+    '`pair` is left out of `lerp`.';
+
+const _strictWarning =
+    'The `merge` method of Strict has an unsupported signature, so the field '
+    '`strict` is left out of `merge`.';
+
 /// Theme whose field types are inspected by method lookup rather than by an
 /// annotation: only [Settings] offers a signature the generator can call.
-@ShouldGenerateFile('goldens/lookup_theme.g.theme.dart', partOfCurrent: true)
+@ShouldGenerateFile(
+  'goldens/lookup_theme.g.theme.dart',
+  partOfCurrent: true,
+  expectedLogItems: [
+    _curveWarning,
+    _flagsWarning,
+    _clampedWarning,
+    _unrelatedWarning,
+    _modeWarning,
+    _pairWarning,
+    _strictWarning,
+  ],
+)
 @themeGen
 final class LookupTheme extends Middle with _$LookupTheme {
   const LookupTheme({
@@ -85,6 +160,9 @@ final class LookupTheme extends Middle with _$LookupTheme {
     required this.flags,
     required this.clamped,
     required this.unrelated,
+    required this.mode,
+    required this.pair,
+    required this.strict,
     required super.narrowed,
   });
 
@@ -94,6 +172,9 @@ final class LookupTheme extends Middle with _$LookupTheme {
   final Flags flags;
   final Clamped clamped;
   final Unrelated unrelated;
+  final Mode mode;
+  final Pair pair;
+  final Strict strict;
 
   @override
   bool get canMerge => true;

@@ -106,10 +106,11 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
         t,
       ),
       optionalColor: Color.lerp(_this.optionalColor, other.optionalColor, t),
-      optionalBorderSide: _this.optionalBorderSide == null
-          ? other.optionalBorderSide
-          : other.optionalBorderSide == null
-          ? _this.optionalBorderSide
+      optionalBorderSide:
+          _this.optionalBorderSide == null || other.optionalBorderSide == null
+          ? t < 0.5
+                ? _this.optionalBorderSide
+                : other.optionalBorderSide
           : BorderSide.lerp(
               _this.optionalBorderSide!,
               other.optionalBorderSide!,
@@ -120,13 +121,26 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
         other.optionalTheme,
         t,
       ),
-      optionalThemeExtension: (_this.optionalThemeExtension?.lerp(
-        other.optionalThemeExtension,
-        t,
-      ) as EmptyThemeExtension?),
-      optionalLerpableWithOptionalResult: _this
-          .optionalLerpableWithOptionalResult
-          ?.lerp(other.optionalLerpableWithOptionalResult, t),
+      optionalThemeExtension:
+          _this.optionalThemeExtension == null ||
+              other.optionalThemeExtension == null
+          ? t < 0.5
+                ? _this.optionalThemeExtension
+                : other.optionalThemeExtension
+          : (_this.optionalThemeExtension!.lerp(
+              other.optionalThemeExtension!,
+              t,
+            ) as EmptyThemeExtension?),
+      optionalLerpableWithOptionalResult:
+          _this.optionalLerpableWithOptionalResult == null ||
+              other.optionalLerpableWithOptionalResult == null
+          ? t < 0.5
+                ? _this.optionalLerpableWithOptionalResult
+                : other.optionalLerpableWithOptionalResult
+          : _this.optionalLerpableWithOptionalResult!.lerp(
+              other.optionalLerpableWithOptionalResult!,
+              t,
+            ),
     );
   }
 

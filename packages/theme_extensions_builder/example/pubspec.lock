@@ -393,14 +393,14 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "7.4.0"
+    version: "7.5.0"
   theme_extensions_builder_annotation:
     dependency: "direct main"
     description:
       path: "../../theme_extensions_builder_annotation"
       relative: true
     source: path
-    version: "7.4.0"
+    version: "7.5.0"
   typed_data:
     dependency: transitive
     description:
@@ -458,4 +458,4 @@ packages:
     source: hosted
     version: "3.1.4"
 sdks:
-  dart: ">=3.12.0 <4.0.0"
+  dart: ">=3.13.0 <4.0.0"

@@ -3,7 +3,7 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../../common/fields_visiter.dart';
+import '../../common/fields_visitor.dart';
 import '../../common/fields_visitor_config.dart';
 import '../../config/config.dart';
 import 'code_builder.dart';
@@ -26,11 +26,8 @@ import 'code_builder.dart';
 /// }
 /// ```
 class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
-  /// Creates a [ThemeExtensionsGenerator] with optional [builderOptions].
-  const ThemeExtensionsGenerator({this.builderOptions});
-
-  /// Optional build configuration options.
-  final BuilderOptions? builderOptions;
+  /// Creates a [ThemeExtensionsGenerator].
+  const ThemeExtensionsGenerator();
 
   @override
   Future<String> generateForAnnotatedElement(
@@ -57,28 +54,17 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
         annotation.read('contextAccessorName').literalValue as String?;
 
     // ThemeExtensions needs lerp but doesn't generate merge methods
-    final fieldsVisiter = FieldsVisitor(
+    final fields = collectFields(
+      element,
       config: const FieldsVisitorConfig(includeMergeLookup: false),
     );
-    // Get all supertypes to visit their fields as well
-    final allSupertypes = element.allSupertypes;
-
-    for (final supertype in allSupertypes) {
-      final superElement = supertype.element;
-
-      if (!supertype.isDartCoreObject) {
-        superElement.visitChildren(fieldsVisiter);
-      }
-    }
-
-    element.visitChildren(fieldsVisiter);
 
     // Use naming convention instead of expensive AST parsing
     // Assume the mixin follows the standard pattern: _$ClassName
     final mixinName = '_\$${element.displayName}';
 
     final generatorConfig = ThemeExtensionsConfig(
-      fields: fieldsVisiter.fields,
+      fields: fields,
       className: element.displayName,
       contextAccessorName: contextAccessorName,
       buildContextExtension: buildContextExtension,

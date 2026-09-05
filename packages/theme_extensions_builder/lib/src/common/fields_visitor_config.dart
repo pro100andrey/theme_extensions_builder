@@ -1,4 +1,4 @@
-/// @docImport 'fields_visiter.dart';
+/// @docImport 'fields_visitor.dart';
 
 library;
 
@@ -12,33 +12,18 @@ class FieldsVisitorConfig {
   ///
   /// Example usage:
   /// ```dart
-  /// // For ThemeExtensions (only needs lerp)
-  /// final config = FieldsVisitorConfig(
-  ///   includeMerge: false,
-  ///   includeMergeLookup: false,
-  /// );
+  /// // For ThemeGen, which generates a merge method
+  /// const config = FieldsVisitorConfig();
   ///
-  /// // For ThemeGen (needs both lerp and merge)
-  /// final config = FieldsVisitorConfig.full();
-  ///
-  /// // Minimal config (skip all lookups)
-  /// final config = FieldsVisitorConfig.minimal();
+  /// // For ThemeExtensions, which does not
+  /// const config = FieldsVisitorConfig(includeMergeLookup: false);
   /// ```
-  const FieldsVisitorConfig({
-    this.includeLerpLookup = true,
-    this.includeMergeLookup = true,
-  });
+  const FieldsVisitorConfig({this.includeMergeLookup = true});
 
-  /// Whether to perform method lookups for lerp methods.
+  /// Whether to look up merge methods on field types.
   ///
-  /// When `false`, skips expensive method lookups in _lerpInfo.
-  /// The lerp info will still be collected but without method lookup details.
-  final bool includeLerpLookup;
-
-  /// Whether to perform method lookups for merge methods.
-  ///
-  /// When `false`, skips expensive method lookups in _mergeInfo.
-  /// Only relevant when [includeMergeLookup] is `true`.
+  /// When `false`, the lookup is skipped and every field is reported as
+  /// `NoMerge`. Use it for generators that don't emit a `merge` method.
   final bool includeMergeLookup;
 
   @override
@@ -46,15 +31,12 @@ class FieldsVisitorConfig {
       identical(this, other) ||
       other is FieldsVisitorConfig &&
           runtimeType == other.runtimeType &&
-          includeLerpLookup == other.includeLerpLookup &&
           includeMergeLookup == other.includeMergeLookup;
 
   @override
-  int get hashCode => includeLerpLookup.hashCode ^ includeMergeLookup.hashCode;
+  int get hashCode => Object.hash(runtimeType, includeMergeLookup);
 
   @override
   String toString() =>
-      'FieldsVisitorConfig('
-      'includeLerpLookup: $includeLerpLookup, '
-      'includeMergeLookup: $includeMergeLookup)';
+      'FieldsVisitorConfig(includeMergeLookup: $includeMergeLookup)';
 }

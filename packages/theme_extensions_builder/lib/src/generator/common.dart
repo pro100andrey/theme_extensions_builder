@@ -129,9 +129,9 @@ Method hashMethod(BaseConfig config) => Method((m) {
 /// This is a utility function for generating conditional code when using
 /// code_builder, as it doesn't provide a built-in if construct.
 Code ifStatement(Expression condition, Block ifBlock) {
-  final visiter = DartEmitter();
-  final conditionV = condition.accept(visiter);
-  final ifBlockV = ifBlock.accept(visiter);
+  final visitor = DartEmitter();
+  final conditionV = condition.accept(visitor);
+  final ifBlockV = ifBlock.accept(visitor);
 
   return Code('if($conditionV){$ifBlockV}');
 }

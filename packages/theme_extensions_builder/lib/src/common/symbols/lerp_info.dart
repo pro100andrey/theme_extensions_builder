@@ -47,7 +47,8 @@ final class StaticLerp extends LerpInfo {
           _listEquality.equals(args, other.args);
 
   @override
-  int get hashCode => Object.hash(runtimeType, optionalResult);
+  int get hashCode =>
+      Object.hash(runtimeType, optionalResult, _listEquality.hash(args));
 
   @override
   String toString() =>
@@ -82,7 +83,8 @@ final class InstanceLerp extends LerpInfo {
           _listEquality.equals(args, other.args);
 
   @override
-  int get hashCode => Object.hash(runtimeType, optionalResult, args);
+  int get hashCode =>
+      Object.hash(runtimeType, optionalResult, _listEquality.hash(args));
 
   @override
   String toString() =>

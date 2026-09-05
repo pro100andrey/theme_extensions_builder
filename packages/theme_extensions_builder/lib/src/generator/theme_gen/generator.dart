@@ -3,7 +3,7 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../../common/fields_visiter.dart';
+import '../../common/fields_visitor.dart';
 import '../../config/config.dart';
 import 'code_builder.dart';
 
@@ -26,11 +26,8 @@ import 'code_builder.dart';
 /// }
 /// ```
 class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
-  /// Creates a [ThemeGenGenerator] with optional [builderOptions].
-  const ThemeGenGenerator({this.builderOptions});
-
-  /// Optional build configuration options.
-  final BuilderOptions? builderOptions;
+  /// Creates a [ThemeGenGenerator].
+  const ThemeGenGenerator();
 
   @override
   Future<String> generateForAnnotatedElement(
@@ -49,22 +46,10 @@ class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
     final constructor = annotation.read('constructor').literalValue as String?;
     final constConstructor = element.constructors.any((c) => c.isConst);
 
-    final fieldsVisiter = FieldsVisitor();
-    // Get all supertypes to visit their fields as well
-    final allSupertypes = element.allSupertypes;
-
-    for (final supertype in allSupertypes) {
-      final superElement = supertype.element;
-
-      if (!supertype.isDartCoreObject) {
-        superElement.visitChildren(fieldsVisiter);
-      }
-    }
-    // Finally, visit the original class to get its own fields
-    element.visitChildren(fieldsVisiter);
+    final fields = collectFields(element);
 
     final generatorConfig = ThemeGenConfig(
-      fields: fieldsVisiter.fields,
+      fields: fields,
       className: element.displayName,
       constructor: constructor,
       constConstructor: constConstructor,

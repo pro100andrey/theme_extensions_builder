@@ -1,3 +1,8 @@
+// Several tests build values without `const` on purpose: two identical const
+// expressions are canonicalized into the same object, which would make the
+// equality checks trivially true.
+// ignore_for_file: prefer_const_constructors
+
 import 'package:test/test.dart';
 import 'package:theme_extensions_builder/src/common/symbols/field_info.dart';
 import 'package:theme_extensions_builder/src/common/symbols/lerp_info.dart';
@@ -114,21 +119,35 @@ void main() {
     });
 
     test('equality works correctly', () {
-      const lerp1 = StaticLerp(
+      // Built without `const` so the instances are not canonicalized and
+      // operator== is actually exercised.
+      final lerp1 = StaticLerp(
         optionalResult: true,
         args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
       );
-      const lerp2 = StaticLerp(
+      final lerp2 = StaticLerp(
         optionalResult: true,
         args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
       );
-      const lerp3 = StaticLerp(
+      final lerp3 = StaticLerp(
+        optionalResult: true,
+        args: [ParameterInfo(name: 'b', type: 'int', isNullable: false)],
+      );
+      final lerp4 = StaticLerp(
         optionalResult: false,
         args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
       );
 
       expect(lerp1, equals(lerp2));
+      expect(lerp1.hashCode, equals(lerp2.hashCode));
       expect(lerp1, isNot(equals(lerp3)));
+      expect(lerp1, isNot(equals(lerp4)));
+    });
+
+    test('toString returns correct format', () {
+      const lerp = StaticLerp(optionalResult: true, args: []);
+
+      expect(lerp.toString(), 'StaticLerp(optionalResult: true, args: [])');
     });
   });
 
@@ -177,16 +196,60 @@ void main() {
     });
 
     test('equality works correctly', () {
-      const lerp1 = InstanceLerp(
+      final lerp1 = InstanceLerp(
         optionalResult: true,
         args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
       );
-      const lerp2 = InstanceLerp(
+      final lerp2 = InstanceLerp(
         optionalResult: true,
+        args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
+      );
+      final lerp3 = InstanceLerp(
+        optionalResult: false,
         args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
       );
 
       expect(lerp1, equals(lerp2));
+      expect(lerp1.hashCode, equals(lerp2.hashCode));
+      expect(lerp1, isNot(equals(lerp3)));
+    });
+
+    test('toString returns correct format', () {
+      const lerp = InstanceLerp(optionalResult: false, args: []);
+
+      expect(lerp.toString(), 'InstanceLerp(optionalResult: false, args: [])');
+    });
+  });
+
+  group('WidgetStatePropertyLerp', () {
+    WidgetStatePropertyLerp build({String genericType = 'Color'}) =>
+        WidgetStatePropertyLerp(
+          baseTypeName: 'WidgetStateProperty',
+          genericType: genericType,
+          isNullableGeneric: true,
+        );
+
+    test('reports the generic type', () {
+      expect(build().genericIsDouble, isFalse);
+      expect(build().genericIsDuration, isFalse);
+      expect(build(genericType: 'double').genericIsDouble, isTrue);
+      expect(build(genericType: 'Duration').genericIsDuration, isTrue);
+    });
+
+    test('equality works correctly', () {
+      expect(build(), equals(build()));
+      expect(build().hashCode, equals(build().hashCode));
+      expect(build(), isNot(equals(build(genericType: 'double'))));
+    });
+
+    test('toString returns correct format', () {
+      expect(
+        build().toString(),
+        'WidgetStatePropertyLerp('
+        'baseTypeName: WidgetStateProperty, '
+        'genericType: Color, '
+        ')',
+      );
     });
   });
 
@@ -197,10 +260,11 @@ void main() {
     });
 
     test('equality works correctly', () {
-      const lerp1 = NoLerp();
-      const lerp2 = NoLerp();
+      final lerp1 = NoLerp();
+      final lerp2 = NoLerp();
 
       expect(lerp1, equals(lerp2));
+      expect(lerp1.hashCode, equals(lerp2.hashCode));
     });
 
     test('toString returns correct format', () {
@@ -211,24 +275,29 @@ void main() {
 
   group('MergeInfo', () {
     test('NoMerge equality works', () {
-      const merge1 = NoMerge();
-      const merge2 = NoMerge();
+      final merge1 = NoMerge();
+      final merge2 = NoMerge();
 
       expect(merge1, equals(merge2));
+      expect(merge1.hashCode, equals(merge2.hashCode));
     });
 
     test('StaticMerge equality works', () {
-      const merge1 = StaticMerge();
-      const merge2 = StaticMerge();
+      final merge1 = StaticMerge();
+      final merge2 = StaticMerge();
 
       expect(merge1, equals(merge2));
+      expect(merge1.hashCode, equals(merge2.hashCode));
     });
 
     test('InstanceMerge equality works', () {
-      const merge1 = InstanceMerge();
-      const merge2 = InstanceMerge();
+      final merge1 = InstanceMerge();
+      final merge2 = InstanceMerge();
+      const merge3 = InstanceMerge(isNullableParameter: false);
 
       expect(merge1, equals(merge2));
+      expect(merge1.hashCode, equals(merge2.hashCode));
+      expect(merge1, isNot(equals(merge3)));
     });
 
     test('different merge methods are not equal', () {
@@ -248,7 +317,10 @@ void main() {
 
       expect(noMerge.toString(), 'NoMerge()');
       expect(staticMerge.toString(), 'StaticMerge()');
-      expect(instanceMerge.toString(), 'InstanceMerge()');
+      expect(
+        instanceMerge.toString(),
+        'InstanceMerge(isNullableParameter: true)',
+      );
     });
   });
 

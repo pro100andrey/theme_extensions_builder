@@ -1,11 +1,34 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/visitor2.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 import 'analysis.dart';
-import 'base_class_visiter.dart';
 import 'fields_visitor_config.dart';
 import 'symbols/field_info.dart';
+
+/// Collects the fields of [element] together with the fields of all its
+/// supertypes.
+///
+/// Supertypes are visited first, so a field redeclared by [element] replaces
+/// the inherited one. The [config] controls what information is collected for
+/// each field.
+List<FieldInfo> collectFields(
+  ClassElement element, {
+  FieldsVisitorConfig config = const FieldsVisitorConfig(),
+}) {
+  final visitor = FieldsVisitor(config: config);
+
+  for (final supertype in element.allSupertypes) {
+    if (!supertype.isDartCoreObject) {
+      supertype.element.visitChildren(visitor);
+    }
+  }
+
+  element.visitChildren(visitor);
+
+  return visitor.fields;
+}
 
 /// A visitor that collects field information from a class element.
 ///
@@ -23,7 +46,7 @@ import 'symbols/field_info.dart';
 /// classElement.visitChildren(visitor);
 /// final fields = visitor.fields;
 /// ```
-class FieldsVisitor extends BaseClassVisitor {
+class FieldsVisitor extends SimpleElementVisitor2<void> {
   /// Creates a [FieldsVisitor] with the specified [config].
   ///
   /// The [config] controls what information should be collected during field
@@ -35,14 +58,17 @@ class FieldsVisitor extends BaseClassVisitor {
   /// See [FieldsVisitorConfig] for available options and presets.
   final FieldsVisitorConfig config;
 
-  /// Internal set to store unique field information.
-  final Set<FieldInfo> _fields = {};
+  /// Collected field information, keyed by field name.
+  ///
+  /// Keying by name means a field redeclared by a subclass replaces the one
+  /// declared by its supertype instead of being collected twice.
+  final Map<String, FieldInfo> _fields = {};
 
   /// Returns an immutable list of collected field information.
   ///
-  /// The list is created from the internal set, ensuring no duplicates
-  /// and preventing external modification.
-  List<FieldInfo> get fields => _fields.toList(growable: false);
+  /// The list is created from the internal map, preserving the order in which
+  /// the fields were visited and preventing external modification.
+  List<FieldInfo> get fields => _fields.values.toList(growable: false);
 
   /// Type checker used to identify fields annotated with `@ignore`.
   ///
@@ -66,8 +92,7 @@ class FieldsVisitor extends BaseClassVisitor {
 
     // Only process non-synthetic fields (explicitly declared in source code)
     if (element.isOriginDeclaration) {
-      final field = fieldSymbol(element, config: config);
-      _fields.add(field);
+      _fields[element.displayName] = fieldSymbol(element, config: config);
     }
   }
 }

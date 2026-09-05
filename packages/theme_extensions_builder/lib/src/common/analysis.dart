@@ -2,8 +2,6 @@
 
 library;
 
-import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:source_gen/source_gen.dart';
@@ -17,13 +15,8 @@ import 'symbols/parameter_info.dart';
 
 /// Creates a [FieldInfo] from the given [element].
 ///
-/// The [config] parameter controls what information should be collected:
-/// - When [FieldsVisitorConfig.includeLerpLookup] is `false`, lerp method
-///   lookups are skipped
-/// - When [FieldsVisitorConfig.includeMergeLookup] is `false`, merge method
-///   lookups are skipped
-///
-/// Skipping unnecessary lookups can significantly improve performance.
+/// When [FieldsVisitorConfig.includeMergeLookup] is `false`, the merge method
+/// lookup is skipped, which speeds up generators that don't emit `merge`.
 FieldInfo fieldSymbol(
   FieldElement element, {
   FieldsVisitorConfig config = const FieldsVisitorConfig(),
@@ -45,18 +38,20 @@ FieldInfo fieldSymbol(
     merge: config.includeMergeLookup
         ? _mergeInfo(elementType)
         : const NoMerge(),
-    lerp: config.includeLerpLookup
-        ? _lerpInfo(elementType, element)
-        : const NoLerp(),
+    lerp: _lerpInfo(elementType, element),
   );
 }
 
 /// Gets information about the lerp method for the given [type].
 ///
-/// Returns information about static or instance lerp methods, or [NoLerp]
-/// if no suitable lerp method is found or if the type is not an interface.
+/// Returns information about static or instance lerp methods, or [NoLerp] if
+/// the type is not an interface, has no lerp method, or has one whose
+/// signature we cannot call. A type is free to declare an unrelated `lerp`
+/// method, so an unknown signature falls back to [NoLerp] rather than failing
+/// the build.
 ///
-/// Throws [StateError] if a lerp method exists but has an invalid signature.
+/// Throws [InvalidGenerationSourceError] for a `WidgetStateProperty` field
+/// with a non-nullable generic, which is a mistake we can point at.
 LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
   final typeElement = type.element;
 
@@ -70,7 +65,12 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
     return const NoLerp();
   }
 
-  final params = method.formalParameters;
+  // Optional and named parameters take no part in the signature check: a
+  // method stays callable the way we expect when it has extra defaulted
+  // parameters.
+  final params = method.formalParameters
+      .where((p) => p.isRequiredPositional)
+      .toList(growable: false);
 
   // WidgetStateProperty and WidgetStateColor use a different signature for
   // lerp. Check for 4-parameter version first, as WidgetStateProperty has
@@ -81,6 +81,7 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
       // - third parameter should be double
       // - fourth parameter is a lerp function for the inner type
       when type is InterfaceType &&
+          type.typeArguments.length == 1 &&
           method.isStatic &&
           p3.type.isDartCoreDouble &&
           _checkSubtype(p1, type) &&
@@ -111,13 +112,16 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
     if (!innerType.hasNullableSuffix) {
       final typeName = type.getDisplayString();
       final innerTypeName = innerType.getDisplayString();
-      throw StateError(
-        'WidgetStateProperty must have a nullable generic type for field '
-        '${fieldElement.name}. Found: $typeName\n'
-        'The generic type must be nullable because WidgetStateProperty.lerp '
-        'requires a lerp function with nullable parameters.\n'
-        'Change the field type from $typeName to '
-        'WidgetStateProperty<$innerTypeName?> to fix this issue.',
+      final baseName = type.element.displayName;
+
+      throw InvalidGenerationSourceError(
+        '$baseName must have a nullable generic type, because '
+        '$baseName.lerp requires a lerp function with nullable parameters. '
+        'Found: $typeName',
+        element: fieldElement,
+        todo:
+            'Change the type of ${fieldElement.displayName} to '
+            '$baseName<$innerTypeName?>',
       );
     }
 
@@ -162,11 +166,8 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
     );
   }
 
-  throw StateError(
-    'Lerp method has invalid signature for type '
-    '${type.getDisplayString()} of field ${fieldElement.name} '
-    'method: ${method.displayName} isStatic: ${method.isStatic} ',
-  );
+  // The type declares a `lerp` we don't know how to call.
+  return const NoLerp();
 }
 
 /// Checks if a parameter type is a subtype of the given [type].
@@ -260,7 +261,8 @@ MethodElement? _lookupMethod(InterfaceElement typeElement, String name) {
 
 /// Gets information about the merge method for the given [type].
 ///
-/// This can improve performance when merge details aren't needed.
+/// Returns [NoMerge] when the type is not an interface, has no merge method,
+/// or declares one whose signature we cannot call.
 MergeInfo _mergeInfo(DartType type) {
   final typeElement = type.element;
 
@@ -274,6 +276,7 @@ MergeInfo _mergeInfo(DartType type) {
   // phase.
   const themeGenChecker = TypeChecker.typeNamed(ThemeGen);
   if (themeGenChecker.hasAnnotationOfExact(typeElement)) {
+    // The generated merge method takes a nullable argument.
     return const InstanceMerge();
   }
 
@@ -282,7 +285,9 @@ MergeInfo _mergeInfo(DartType type) {
     return const NoMerge();
   }
 
-  final params = method.formalParameters;
+  final params = method.formalParameters
+      .where((p) => p.isRequiredPositional)
+      .toList(growable: false);
 
   if (params case [final p1, final p2]
       // Check for static merge method
@@ -297,10 +302,11 @@ MergeInfo _mergeInfo(DartType type) {
       // - should have only one parameter
       // - parameter type should match the class type
       when !method.isStatic && p1.type.baseType == type.baseType) {
-    return const InstanceMerge();
+    return InstanceMerge(isNullableParameter: p1.type.hasNullableSuffix);
   }
 
-  throw StateError('Merge method not found');
+  // The type declares a `merge` we don't know how to call.
+  return const NoMerge();
 }
 
 extension DartTypeExtension on DartType {
@@ -317,45 +323,12 @@ extension DartTypeExtension on DartType {
   /// Returns true if the type has a nullable suffix.
   bool get hasNullableSuffix => nullabilitySuffix == .question;
 
-  /// Returns true if the type is Duration.
-  bool get isDuration => baseType == 'Duration';
-}
+  /// Returns true if the type is `Duration` from `dart:core`.
+  bool get isDuration {
+    final typeElement = element;
 
-/// Gets the names of mixins applied to the given [element].
-List<String> getMixinsNames({required ClassElement element}) {
-  final library = element.library.session.getParsedLibraryByElement(
-    element.library,
-  );
-
-  if (library is! ParsedLibraryResult) {
-    throw StateError('Could not get parsed library for element');
+    return typeElement != null &&
+        typeElement.displayName == 'Duration' &&
+        (typeElement.library?.isDartCore ?? false);
   }
-
-  ClassDeclaration? classDeclaration;
-
-  outerLoop:
-  for (final unit in library.units) {
-    for (final decl in unit.unit.declarations) {
-      if (decl is ClassDeclaration &&
-          decl.namePart.typeName.lexeme == element.displayName) {
-        classDeclaration = decl;
-        break outerLoop;
-      }
-    }
-  }
-
-  final withClause = classDeclaration?.withClause;
-
-  if (withClause == null) {
-    throw StateError(
-      'Mixin clause is missing for class ${element.displayName}. '
-      'Try adding "with _\$${element.displayName}" to the class declaration.',
-    );
-  }
-
-  final result = withClause.mixinTypes
-      .map((e) => e.name.lexeme)
-      .toList(growable: false);
-
-  return result;
 }

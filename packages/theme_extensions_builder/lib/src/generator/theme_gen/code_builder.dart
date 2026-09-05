@@ -169,11 +169,34 @@ Method merge(ThemeGenConfig config) => Method((m) {
           case StaticMerge():
             args[field.name] = staticMerge([thisProp, otherProp]);
 
-          // Instance merge method with optional field
-          case InstanceMerge() when field.isNullable:
+          // Instance merge method taking a nullable argument, optional field
+          case InstanceMerge(isNullableParameter: true) when field.isNullable:
+            // _this.field?.merge(other.field) ?? other.field
             args[field.name] = thisProp
                 .nullSafeProperty('merge')([otherProp])
                 .ifNullThen(otherProp);
+
+          // Instance merge method taking a non-nullable argument, optional
+          // field
+          case InstanceMerge() when field.isNullable:
+            // _this.field == null
+            // ? other.field
+            // : other.field == null
+            // ? _this.field
+            // : _this.field!.merge(other.field!)
+            args[field.name] = thisProp
+                .equalTo(literalNull)
+                .conditional(
+                  otherProp,
+                  otherProp
+                      .equalTo(literalNull)
+                      .conditional(
+                        thisProp,
+                        thisProp.nullChecked.property('merge')([
+                          otherProp.nullChecked,
+                        ]),
+                      ),
+                );
 
           // Instance merge method with non-optional field
           case InstanceMerge():

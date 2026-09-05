@@ -34,4 +34,13 @@ Future<void> main() async {
   group('WidgetStateProperty', () {
     testAnnotatedElements<ThemeGen>(wspReader, generator);
   });
+
+  final lookupReader = await initializeLibraryReaderForDirectory(
+    'test/theme_gen',
+    'lookup_theme.dart',
+  );
+
+  group('MethodLookup', () {
+    testAnnotatedElements<ThemeGen>(lookupReader, generator);
+  });
 }

@@ -1,3 +1,12 @@
+## 7.5.0
+
+- **Fixed**: `@ThemeGen` now interpolates a nullable field whose type has an instance `lerp` method, instead of falling back to `t < 0.5 ? a : b`.
+- **Fixed**: `@ThemeGen` now generates compilable `merge` code for a nullable field whose type has a `merge` method with a non-nullable parameter.
+- **Fixed**: A field type declaring an unrelated `lerp` or `merge` method no longer fails the build: an unknown signature falls back to no interpolation / no merge, and optional or named parameters no longer hide a supported signature.
+- **Fixed**: A `WidgetStateProperty` field with a non-nullable generic now reports an `InvalidGenerationSourceError` pointing at the field instead of a bare `StateError`.
+- **Fixed**: `Duration` is detected by element rather than by name, and a field redeclared by a subclass no longer appears twice in the generated `copyWith`.
+- **Code Quality**: Exhaustive switches over `LerpInfo`/`MergeInfo`, `==`/`hashCode` contract fixed for `StaticLerp` and `InstanceLerp`, dead code removed (`getMixinsNames`, `BaseClassVisitor`, unused builder options and lerp-lookup flag).
+
 ## 7.4.0
 
 - *Updated*: Analyzer dependency to ">=9.0.0 <14.0.0"

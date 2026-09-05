@@ -185,9 +185,25 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
                 .lessThan(literalNum(0.5))
                 .conditional(tProp, oProp);
 
-          // Handle StaticLerp with non-nullable signature and optional
-          // field
-          case StaticLerp(isNullableSignature: false) when field.isNullable:
+          // Handle StaticLerp on a non-optional field, returning an
+          // optional result
+          case StaticLerp(optionalResult: true) when !field.isNullable:
+            // FieldType.lerp(_this.field, other.field, t)!
+            args[field.name] = sLerp([tProp, oProp, 't'.ref]).nullChecked;
+
+          // Handle StaticLerp on a non-optional field, returning a
+          // non-optional result
+          case StaticLerp() when !field.isNullable:
+            // FieldType.lerp(_this.field, other.field, t)
+            args[field.name] = sLerp([tProp, oProp, 't'.ref]);
+
+          // Handle StaticLerp taking nullable arguments, optional field
+          case StaticLerp(isNullableParameter: true):
+            // FieldType.lerp(_this.field, other.field, t)
+            args[field.name] = sLerp([tProp, oProp, 't'.ref]);
+
+          // Handle StaticLerp taking non-nullable arguments, optional field
+          case StaticLerp():
             // _this.side == null
             // ? other.side
             // : other.side == null
@@ -205,38 +221,44 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
                       ),
                 );
 
-          // Handle StaticLerp with non-nullable signature and
-          // non-optional field
-          case StaticLerp(isNullableSignature: false):
-            // FieldType.lerp(_this.field, other.field, t)
-            args[field.name] = sLerp([tProp, oProp, 't'.ref]);
-
-          // Handle StaticLerp with nullable signature and
-          // non-optional field
-          case StaticLerp() when !field.isNullable:
-            // FieldType.lerp(_this.field, other.field, t)!
-            args[field.name] = sLerp([tProp, oProp, 't'.ref]).nullChecked;
-
-          // Handle StaticLerp with nullable signature and optional
-          // field
-          case StaticLerp():
-            // FieldType.lerp(_this.field, other.field, t)
-            args[field.name] = sLerp([tProp, oProp, 't'.ref]);
-
-          // Handle InstanceLerp with optional result and optional field
-          case InstanceLerp(optionalResult: true) when field.isNullable:
+          // Handle InstanceLerp taking a nullable argument, with an optional
+          // result and an optional field
+          case InstanceLerp(optionalResult: true, isNullableParameter: true)
+              when field.isNullable:
             // _this.field?.lerp(other.field, t)
             args[field.name] = tProp.prop('lerp', nullSafe: true)([
               oProp,
               't'.ref,
             ]);
 
-          // Handle InstanceLerp with non-optional result and nullable field
-          case InstanceLerp(optionalResult: false) when field.isNullable:
+          // Handle InstanceLerp taking a nullable argument, with a
+          // non-optional result and a nullable field
+          case InstanceLerp(isNullableParameter: true) when field.isNullable:
             // _this.field?.lerp(other.field, t) as FieldType?
             args[field.name] = tProp
                 .prop('lerp', nullSafe: true)([oProp, 't'.ref])
                 .asA(field.typeName.typeRef(isNullable: true));
+
+          // Handle InstanceLerp taking a non-nullable argument, nullable field
+          case InstanceLerp() when field.isNullable:
+            // _this.field == null
+            // ? other.field
+            // : other.field == null
+            // ? _this.field
+            // : _this.field!.lerp(other.field!, t) as FieldType?
+            args[field.name] = tProp
+                .equalTo(literalNull)
+                .conditional(
+                  oProp,
+                  oProp
+                      .equalTo(literalNull)
+                      .conditional(
+                        tProp,
+                        tProp.nullChecked
+                            .property('lerp')([oProp.nullChecked, 't'.ref])
+                            .asA(field.typeName.typeRef(isNullable: true)),
+                      ),
+                );
 
           // Handle InstanceLerp with non-optional field
           case InstanceLerp():

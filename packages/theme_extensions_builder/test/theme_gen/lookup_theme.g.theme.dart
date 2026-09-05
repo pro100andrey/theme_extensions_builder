@@ -30,6 +30,9 @@ mixin _$LookupTheme {
       settings: t < 0.5 ? a.settings : b.settings,
       optionalSettings: t < 0.5 ? a.optionalSettings : b.optionalSettings,
       flags: t < 0.5 ? a.flags : b.flags,
+      clamped: t < 0.5 ? a.clamped : b.clamped,
+      unrelated: t < 0.5 ? a.unrelated : b.unrelated,
+      narrowed: t < 0.5 ? a.narrowed : b.narrowed,
     );
   }
 
@@ -38,6 +41,9 @@ mixin _$LookupTheme {
     Settings? settings,
     Settings? optionalSettings,
     Flags? flags,
+    Clamped? clamped,
+    Unrelated? unrelated,
+    int? narrowed,
   }) {
     final _this = (this as LookupTheme);
 
@@ -46,6 +52,9 @@ mixin _$LookupTheme {
       settings: settings ?? _this.settings,
       optionalSettings: optionalSettings ?? _this.optionalSettings,
       flags: flags ?? _this.flags,
+      clamped: clamped ?? _this.clamped,
+      unrelated: unrelated ?? _this.unrelated,
+      narrowed: narrowed ?? _this.narrowed,
     );
   }
 
@@ -69,6 +78,9 @@ mixin _$LookupTheme {
           ? _this.optionalSettings
           : _this.optionalSettings!.merge(other.optionalSettings!),
       flags: other.flags,
+      clamped: other.clamped,
+      unrelated: other.unrelated,
+      narrowed: other.narrowed,
     );
   }
 
@@ -88,7 +100,10 @@ mixin _$LookupTheme {
     return _other.curve == _this.curve &&
         _other.settings == _this.settings &&
         _other.optionalSettings == _this.optionalSettings &&
-        _other.flags == _this.flags;
+        _other.flags == _this.flags &&
+        _other.clamped == _this.clamped &&
+        _other.unrelated == _this.unrelated &&
+        _other.narrowed == _this.narrowed;
   }
 
   @override
@@ -101,6 +116,9 @@ mixin _$LookupTheme {
       _this.settings,
       _this.optionalSettings,
       _this.flags,
+      _this.clamped,
+      _this.unrelated,
+      _this.narrowed,
     );
   }
 }

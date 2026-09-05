@@ -65,74 +65,87 @@ LerpInfo _lerpInfo(DartType type, FieldElement fieldElement) {
     return const NoLerp();
   }
 
-  // Optional and named parameters take no part in the signature check: a
-  // method stays callable the way we expect when it has extra defaulted
-  // parameters.
+  // A required named parameter cannot be filled in by the generated call.
+  if (method.formalParameters.any((p) => p.isRequiredNamed)) {
+    return const NoLerp();
+  }
+
+  // Optional parameters take no part in the signature check: a method stays
+  // callable the way we expect when it has extra defaulted parameters.
   final params = method.formalParameters
       .where((p) => p.isRequiredPositional)
       .toList(growable: false);
 
   // WidgetStateProperty and WidgetStateColor use a different signature for
-  // lerp. Check for 4-parameter version first, as WidgetStateProperty has
-  //both 3 and 4 parameter versions
+  // lerp. Check for the 4-parameter version first, as WidgetStateProperty has
+  // both 3 and 4 parameter versions
   if (params case [final p1, final p2, final p3, final p4]
       // Check for static lerp method with 4 parameters
       // - first two parameters should have the same type as the class type
       // - third parameter should be double
       // - fourth parameter is a lerp function for the inner type
       when type is InterfaceType &&
-          type.typeArguments.length == 1 &&
           method.isStatic &&
           p3.type.isDartCoreDouble &&
           _checkSubtype(p1, type) &&
           _checkSubtype(p2, type)) {
-    // Check p4 is a function type having signature:
-    // R Function(T? a, T? b, double t)
-    if (p4.type case FunctionType(
-      formalParameters: [final f1, final f2, final f3],
-    )) {
-      // For generic functions like T? Function(T?, T?, double), we can't easily
-      // check exact type compatibility without type substitution.
-      // Just verify the structure: 3 parameters where the third is double.
-      // The first two parameters should be nullable to match the lerp pattern.
-      final isValidSignature =
-          f1.type.nullabilitySuffix == .question &&
-          f2.type.nullabilitySuffix == .question &&
-          f3.type.isDartCoreDouble;
+    // The fourth parameter has to be a lerp function itself, with the
+    // signature `R Function(T? a, T? b, double t)`.
+    //
+    // For generic functions like T? Function(T?, T?, double) we can't easily
+    // check exact type compatibility without type substitution, so only the
+    // structure is verified.
+    if (p4.type
+        case FunctionType(
+          formalParameters: [final f1, final f2, final f3],
+        )
+        when f1.type.hasNullableSuffix &&
+            f2.type.hasNullableSuffix &&
+            f3.type.isDartCoreDouble) {
+      // The generic is read from the declaring type rather than from the field
+      // type, so that a non-generic subclass such as `WidgetStateColor`
+      // resolves to `WidgetStateProperty<Color>`.
+      final declaringElement = p1.type.element;
 
-      if (!isValidSignature) {
-        // Unsupported lerp function signature
+      if (declaringElement is! InterfaceElement) {
         return const NoLerp();
       }
-    }
 
-    final innerType = type.typeArguments.single;
+      final declaringType = type.asInstanceOf(declaringElement);
 
-    // Check that the generic type is nullable
-    if (!innerType.hasNullableSuffix) {
-      final typeName = type.getDisplayString();
-      final innerTypeName = innerType.getDisplayString();
-      final baseName = type.element.displayName;
+      if (declaringType == null || declaringType.typeArguments.length != 1) {
+        return const NoLerp();
+      }
 
-      throw InvalidGenerationSourceError(
-        '$baseName must have a nullable generic type, because '
-        '$baseName.lerp requires a lerp function with nullable parameters. '
-        'Found: $typeName',
-        element: fieldElement,
-        todo:
-            'Change the type of ${fieldElement.displayName} to '
-            '$baseName<$innerTypeName?>',
+      final baseTypeName = declaringElement.displayName;
+      final innerType = declaringType.typeArguments.single;
+
+      // Check that the generic type is nullable
+      if (!innerType.hasNullableSuffix) {
+        final typeName = type.getDisplayString();
+        final innerTypeName = innerType.getDisplayString();
+
+        throw InvalidGenerationSourceError(
+          '$baseTypeName must have a nullable generic type, because '
+          '$baseTypeName.lerp requires a lerp function with nullable '
+          'parameters. Found: $typeName',
+          element: fieldElement,
+          todo:
+              'Change the type of ${fieldElement.displayName} to '
+              '$baseTypeName<$innerTypeName?>',
+        );
+      }
+
+      return WidgetStatePropertyLerp(
+        baseTypeName: baseTypeName,
+        genericType: innerType.baseType,
+        isNullableGeneric: innerType.hasNullableSuffix,
       );
     }
 
-    final baseTypeName = type.element.displayName;
-    final genericType = innerType.baseType;
-
-    return WidgetStatePropertyLerp(
-      baseTypeName: baseTypeName,
-      genericType: genericType,
-      isNullableGeneric: innerType.hasNullableSuffix,
-    );
+    // A four parameter lerp whose last parameter isn't a lerp function is not
+    // something we know how to call.
+    return const NoLerp();
   }
 
   if (params case [final p1, final p2, final p3]
@@ -210,6 +223,24 @@ bool _checkSubtype(FormalParameterElement param, DartType type) {
   return typeSystem.isSubtypeOf(nonNullType, supertypeInstance);
 }
 
+/// Checks that [method] returns something usable where [type] is expected.
+///
+/// Nullability is ignored on both sides: a `T? merge(T other)` is still a
+/// merge method, the generated code just has to cope with the null.
+bool _returnsSubtypeOf(MethodElement method, DartType type) {
+  final typeElement = type.element;
+  if (typeElement is! InterfaceElement) {
+    return false;
+  }
+
+  final typeSystem = typeElement.library.typeSystem;
+
+  return typeSystem.isSubtypeOf(
+    typeSystem.promoteToNonNull(method.returnType),
+    typeSystem.promoteToNonNull(type),
+  );
+}
+
 /// Maps a list of [parameters] to a list of [ParameterInfo] symbols.
 List<ParameterInfo> _mapArgs(List<FormalParameterElement> parameters) =>
     parameters.map(_mapArg).toList(growable: false);
@@ -285,6 +316,11 @@ MergeInfo _mergeInfo(DartType type) {
     return const NoMerge();
   }
 
+  // A required named parameter cannot be filled in by the generated call.
+  if (method.formalParameters.any((p) => p.isRequiredNamed)) {
+    return const NoMerge();
+  }
+
   final params = method.formalParameters
       .where((p) => p.isRequiredPositional)
       .toList(growable: false);
@@ -292,16 +328,23 @@ MergeInfo _mergeInfo(DartType type) {
   if (params case [final p1, final p2]
       // Check for static merge method
       // - should have two parameters
-      // - both parameters should have the same type as the class type
-      when method.isStatic && p1.type.baseType == p2.type.baseType) {
+      // - both parameters should accept the class type
+      // - the result should be usable as the class type
+      when method.isStatic &&
+          _checkSubtype(p1, type) &&
+          _checkSubtype(p2, type) &&
+          _returnsSubtypeOf(method, type)) {
     return const StaticMerge();
   }
 
   if (params case [final p1]
       // Check for instance merge method:
       // - should have only one parameter
-      // - parameter type should match the class type
-      when !method.isStatic && p1.type.baseType == type.baseType) {
+      // - parameter type should accept the class type
+      // - the result should be usable as the class type
+      when !method.isStatic &&
+          _checkSubtype(p1, type) &&
+          _returnsSubtypeOf(method, type)) {
     return InstanceMerge(isNullableParameter: p1.type.hasNullableSuffix);
   }
 

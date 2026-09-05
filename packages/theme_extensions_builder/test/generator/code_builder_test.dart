@@ -4,6 +4,7 @@ import 'package:theme_extensions_builder/src/common/symbols/lerp_info.dart';
 import 'package:theme_extensions_builder/src/common/symbols/merge_info.dart';
 import 'package:theme_extensions_builder/src/common/symbols/parameter_info.dart';
 import 'package:theme_extensions_builder/src/config/config.dart';
+import 'package:theme_extensions_builder/src/generator/theme_extensions/code_builder.dart';
 import 'package:theme_extensions_builder/src/generator/theme_gen/code_builder.dart';
 
 /// Code paths that cannot be reached through the golden fixtures, either
@@ -59,6 +60,19 @@ void main() {
           'value',
           typeName: 'Lerpable',
           isNullable: true,
+          lerp: const InstanceLerp(optionalResult: false, args: [_nullableArg]),
+        ),
+      ]);
+
+      expect(code, contains('(a.value?.lerp(b.value, t) as Lerpable?)'));
+    });
+
+    test('instance lerp taking a non-nullable argument is guarded', () {
+      final code = _generate([
+        _field(
+          'value',
+          typeName: 'Lerpable',
+          isNullable: true,
           lerp: const InstanceLerp(
             optionalResult: false,
             args: [_nonNullableArg],
@@ -66,7 +80,66 @@ void main() {
         ),
       ]);
 
-      expect(code, contains('(a.value?.lerp(b.value, t) as Lerpable?)'));
+      expect(
+        code,
+        contains(
+          'a.value == null ? b.value : b.value == null ? a.value : '
+          '(a.value!.lerp(b.value!, t) as Lerpable?)',
+        ),
+      );
+    });
+
+    test('static lerp with a nullable result is null checked', () {
+      final code = _generate([
+        _field(
+          'value',
+          typeName: 'Lerpable',
+          lerp: const StaticLerp(
+            optionalResult: true,
+            args: [_nonNullableArg, _nonNullableArg],
+          ),
+        ),
+      ]);
+
+      expect(code, contains('Lerpable.lerp(a.value, b.value, t)!'));
+    });
+
+    test('static lerp with a non-nullable result is not null checked', () {
+      final code = _generate([
+        _field(
+          'value',
+          typeName: 'Lerpable',
+          lerp: const StaticLerp(
+            optionalResult: false,
+            args: [_nullableArg, _nullableArg],
+          ),
+        ),
+      ]);
+
+      expect(code, contains('value: Lerpable.lerp(a.value, b.value, t)'));
+      expect(code, isNot(contains('Lerpable.lerp(a.value, b.value, t)!')));
+    });
+
+    test('the same guard is emitted for a theme extension', () {
+      final code = _generateExtension([
+        _field(
+          'value',
+          typeName: 'Lerpable',
+          isNullable: true,
+          lerp: const InstanceLerp(
+            optionalResult: false,
+            args: [_nonNullableArg],
+          ),
+        ),
+      ]);
+
+      expect(
+        code,
+        contains(
+          '_this.value == null ? other.value : other.value == null ? '
+          '_this.value : (_this.value!.lerp(other.value!, t) as Lerpable?)',
+        ),
+      );
     });
   });
 }
@@ -98,10 +171,29 @@ String _generate(List<FieldInfo> fields) {
     ),
   );
 
-  return code
-      .replaceAll(RegExp(r',\s*\)'), ')')
-      .replaceAll(RegExp(r'\s+'), ' ');
+  return _normalize(code);
 }
+
+/// Collapses whitespace and the trailing commas code_builder adds before a
+/// closing paren, so the expectations stay readable.
+String _normalize(String code) =>
+    code.replaceAll(RegExp(r',\s*\)'), ')').replaceAll(RegExp(r'\s+'), ' ');
+
+/// Generates the mixin for a theme extension and normalizes the output the
+/// same way [_generate] does.
+String _generateExtension(List<FieldInfo> fields) => _normalize(
+  const ThemeExtensionsCodeBuilder().generate(
+    ThemeExtensionsConfig(
+      fields: fields,
+      className: 'Theme',
+      constructor: null,
+      buildContextExtension: false,
+      contextAccessorName: null,
+      themeExtensionMixinName: r'_$Theme',
+      constConstructor: true,
+    ),
+  ),
+);
 
 List<FieldInfo> _fields(int count) => [
   for (var i = 0; i < count; i++) _field('field$i'),

@@ -64,33 +64,21 @@ void main() {
       expect(lerp.args.length, 3);
     });
 
-    test('isNullableSignature returns true when all conditions met', () {
-      const lerp = StaticLerp(
-        optionalResult: true,
-        args: [
-          ParameterInfo(name: 'a', type: 'Color', isNullable: true),
-          ParameterInfo(name: 'b', type: 'Color', isNullable: true),
-          ParameterInfo(name: 't', type: 'double', isNullable: false),
-        ],
-      );
+    test('isNullableParameter is independent of the result nullability', () {
+      const nullableArgs = [
+        ParameterInfo(name: 'a', type: 'Color', isNullable: true),
+        ParameterInfo(name: 'b', type: 'Color', isNullable: true),
+        ParameterInfo(name: 't', type: 'double', isNullable: false),
+      ];
 
-      expect(lerp.isNullableSignature, true);
+      const optional = StaticLerp(optionalResult: true, args: nullableArgs);
+      const nonOptional = StaticLerp(optionalResult: false, args: nullableArgs);
+
+      expect(optional.isNullableParameter, true);
+      expect(nonOptional.isNullableParameter, true);
     });
 
-    test('isNullableSignature returns false when optionalResult is false', () {
-      const lerp = StaticLerp(
-        optionalResult: false,
-        args: [
-          ParameterInfo(name: 'a', type: 'Color', isNullable: true),
-          ParameterInfo(name: 'b', type: 'Color', isNullable: true),
-          ParameterInfo(name: 't', type: 'double', isNullable: false),
-        ],
-      );
-
-      expect(lerp.isNullableSignature, false);
-    });
-
-    test('isNullableSignature returns false when first arg not nullable', () {
+    test('isNullableParameter returns false when first arg not nullable', () {
       const lerp = StaticLerp(
         optionalResult: true,
         args: [
@@ -100,22 +88,22 @@ void main() {
         ],
       );
 
-      expect(lerp.isNullableSignature, false);
+      expect(lerp.isNullableParameter, false);
     });
 
-    test('isNullableSignature handles empty args safely', () {
+    test('isNullableParameter handles empty args safely', () {
       const lerp = StaticLerp(optionalResult: true, args: []);
 
-      expect(lerp.isNullableSignature, false);
+      expect(lerp.isNullableParameter, false);
     });
 
-    test('isNullableSignature handles single arg safely', () {
+    test('isNullableParameter handles single arg safely', () {
       const lerp = StaticLerp(
         optionalResult: true,
         args: [ParameterInfo(name: 'a', type: 'Color', isNullable: true)],
       );
 
-      expect(lerp.isNullableSignature, false);
+      expect(lerp.isNullableParameter, false);
     });
 
     test('equality works correctly', () {
@@ -165,34 +153,38 @@ void main() {
       expect(lerp.args.length, 2);
     });
 
-    test('isNullableSignature returns true when all conditions met', () {
+    test('isNullableParameter is independent of the result nullability', () {
+      const nullableArgs = [
+        ParameterInfo(name: 'other', type: 'Color', isNullable: true),
+        ParameterInfo(name: 't', type: 'double', isNullable: false),
+      ];
+
+      const optional = InstanceLerp(optionalResult: true, args: nullableArgs);
+      const nonOptional = InstanceLerp(
+        optionalResult: false,
+        args: nullableArgs,
+      );
+
+      expect(optional.isNullableParameter, true);
+      expect(nonOptional.isNullableParameter, true);
+    });
+
+    test('isNullableParameter returns false for a non-nullable argument', () {
       const lerp = InstanceLerp(
         optionalResult: true,
         args: [
-          ParameterInfo(name: 'other', type: 'Color', isNullable: true),
+          ParameterInfo(name: 'other', type: 'Color', isNullable: false),
           ParameterInfo(name: 't', type: 'double', isNullable: false),
         ],
       );
 
-      expect(lerp.isNullableSignature, true);
+      expect(lerp.isNullableParameter, false);
     });
 
-    test('isNullableSignature returns false when optionalResult is false', () {
-      const lerp = InstanceLerp(
-        optionalResult: false,
-        args: [
-          ParameterInfo(name: 'other', type: 'Color', isNullable: true),
-          ParameterInfo(name: 't', type: 'double', isNullable: false),
-        ],
-      );
-
-      expect(lerp.isNullableSignature, false);
-    });
-
-    test('isNullableSignature handles empty args safely', () {
+    test('isNullableParameter handles empty args safely', () {
       const lerp = InstanceLerp(optionalResult: true, args: []);
 
-      expect(lerp.isNullableSignature, false);
+      expect(lerp.isNullableParameter, false);
     });
 
     test('equality works correctly', () {
@@ -222,12 +214,14 @@ void main() {
   });
 
   group('WidgetStatePropertyLerp', () {
-    WidgetStatePropertyLerp build({String genericType = 'Color'}) =>
-        WidgetStatePropertyLerp(
-          baseTypeName: 'WidgetStateProperty',
-          genericType: genericType,
-          isNullableGeneric: true,
-        );
+    WidgetStatePropertyLerp build({
+      String genericType = 'Color',
+      bool isNullableGeneric = true,
+    }) => WidgetStatePropertyLerp(
+      baseTypeName: 'WidgetStateProperty',
+      genericType: genericType,
+      isNullableGeneric: isNullableGeneric,
+    );
 
     test('reports the generic type', () {
       expect(build().genericIsDouble, isFalse);
@@ -240,6 +234,7 @@ void main() {
       expect(build(), equals(build()));
       expect(build().hashCode, equals(build().hashCode));
       expect(build(), isNot(equals(build(genericType: 'double'))));
+      expect(build(), isNot(equals(build(isNullableGeneric: false))));
     });
 
     test('toString returns correct format', () {
@@ -248,7 +243,7 @@ void main() {
         'WidgetStatePropertyLerp('
         'baseTypeName: WidgetStateProperty, '
         'genericType: Color, '
-        ')',
+        'isNullableGeneric: true)',
       );
     });
   });
@@ -480,7 +475,7 @@ void main() {
         ],
       );
 
-      expect(lerp.isNullableSignature, true);
+      expect(lerp.isNullableParameter, true);
     });
 
     test('StaticLerp with 3+ args checks first two', () {
@@ -494,7 +489,7 @@ void main() {
         ],
       );
 
-      expect(lerp.isNullableSignature, true);
+      expect(lerp.isNullableParameter, true);
     });
 
     test('FieldInfo with isDouble true', () {

@@ -8,6 +8,9 @@ void main() {
     settings: Settings(1),
     optionalSettings: Settings(1),
     flags: Flags(1),
+    clamped: Clamped(1),
+    unrelated: Unrelated(1),
+    narrowed: 1,
   );
 
   const b = LookupTheme(
@@ -15,6 +18,9 @@ void main() {
     settings: Settings(2),
     optionalSettings: Settings(2),
     flags: Flags(2),
+    clamped: Clamped(2),
+    unrelated: Unrelated(2),
+    narrowed: 2,
   );
 
   group('LookupTheme', () {
@@ -34,12 +40,24 @@ void main() {
       expect(merged.optionalSettings!.value, 3);
     });
 
+    test('an uncallable lerp or merge signature is ignored', () {
+      expect(LookupTheme.lerp(a, b, 0.4)!.clamped, same(a.clamped));
+      expect(a.merge(b).unrelated, same(b.unrelated));
+    });
+
+    test('a field narrowed by a superclass keeps the narrowed type', () {
+      expect(a.copyWith(narrowed: 7).narrowed, 7);
+    });
+
     test('a null field on either side skips the merge method', () {
       const withoutSettings = LookupTheme(
         curve: Curve(0),
         settings: Settings(1),
         optionalSettings: null,
         flags: Flags(1),
+        clamped: Clamped(1),
+        unrelated: Unrelated(1),
+        narrowed: 1,
       );
 
       expect(

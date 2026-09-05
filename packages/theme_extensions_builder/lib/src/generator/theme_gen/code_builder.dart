@@ -287,18 +287,23 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
 
         // Handle different lerp strategies based on field configuration
         switch (field.lerp) {
-          // Non-nullable field with non-nullable lerp signature
-          case StaticLerp(isNullableSignature: false) when !field.isNullable:
-            // value: Class.lerp(a.field, b.field, t)
-            argsResult[field.name] = lerp([aProp, bProp, 't'.ref]);
-
-          // Non-nullable field with nullable lerp signature
-          case StaticLerp() when !field.isNullable:
+          // Non-nullable field, lerp returning an optional result
+          case StaticLerp(optionalResult: true) when !field.isNullable:
             // value: Class.lerp(a.field, b.field, t)!
             argsResult[field.name] = lerp([aProp, bProp, 't'.ref]).nullChecked;
 
-          // Nullable field with non-nullable lerp signature
-          case StaticLerp(isNullableSignature: false):
+          // Non-nullable field, lerp returning a non-optional result
+          case StaticLerp() when !field.isNullable:
+            // value: Class.lerp(a.field, b.field, t)
+            argsResult[field.name] = lerp([aProp, bProp, 't'.ref]);
+
+          // Nullable field, lerp taking nullable arguments
+          case StaticLerp(isNullableParameter: true):
+            // value: Class.lerp(a.field, b.field, t)
+            argsResult[field.name] = lerp([aProp, bProp, 't'.ref]);
+
+          // Nullable field, lerp taking non-nullable arguments
+          case StaticLerp():
             // value: a.field == null
             //     ? b.field
             //     : b.field == null
@@ -316,25 +321,44 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
                       ),
                 );
 
-          // Nullable field with nullable lerp signature
-          case StaticLerp():
-            // value: Class.lerp(a.field, b.field, t)
-            argsResult[field.name] = lerp([aProp, bProp, 't'.ref]);
-
-          // Instance lerp method with optional result and nullable field
-          case InstanceLerp(optionalResult: true) when field.isNullable:
+          // Instance lerp taking a nullable argument, with an optional
+          // result and a nullable field
+          case InstanceLerp(optionalResult: true, isNullableParameter: true)
+              when field.isNullable:
             // value: a.field?.lerp(b.field, t)
             argsResult[field.name] = aProp.prop('lerp', nullSafe: true)([
               bProp,
               't'.ref,
             ]);
 
-          // Instance lerp method with non-optional result and nullable field
-          case InstanceLerp(optionalResult: false) when field.isNullable:
+          // Instance lerp taking a nullable argument, with a non-optional
+          // result and a nullable field
+          case InstanceLerp(isNullableParameter: true) when field.isNullable:
             // value: a.field?.lerp(b.field, t) as Class?
             argsResult[field.name] = aProp
                 .prop('lerp', nullSafe: true)([bProp, 't'.ref])
                 .asA(field.typeName.typeRef(isNullable: true));
+
+          // Instance lerp taking a non-nullable argument, nullable field
+          case InstanceLerp() when field.isNullable:
+            // value: a.field == null
+            //     ? b.field
+            //     : b.field == null
+            //         ? a.field
+            //         : a.field!.lerp(b.field!, t) as Class?
+            argsResult[field.name] = aProp
+                .equalTo(literalNull)
+                .conditional(
+                  bProp,
+                  bProp
+                      .equalTo(literalNull)
+                      .conditional(
+                        aProp,
+                        aProp.nullChecked
+                            .property('lerp')([bProp.nullChecked, 't'.ref])
+                            .asA(field.typeName.typeRef(isNullable: true)),
+                      ),
+                );
 
           // Instance lerp method with non-nullable field
           case InstanceLerp():

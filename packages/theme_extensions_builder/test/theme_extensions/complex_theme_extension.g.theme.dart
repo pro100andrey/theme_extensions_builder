@@ -259,9 +259,10 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
         other.requiredTheme,
         t,
       )!,
-      requiredThemeExtension:
-          (_this.requiredThemeExtension.lerp(other.requiredThemeExtension, t)
-              as EmptyThemeExtension),
+      requiredThemeExtension: (_this.requiredThemeExtension.lerp(
+        other.requiredThemeExtension,
+        t,
+      ) as EmptyThemeExtension),
       optionalInt: t < 0.5 ? _this.optionalInt : other.optionalInt,
       optionalDouble: lerpDouble$(
         _this.optionalDouble,
@@ -290,9 +291,10 @@ mixin _$ComplexThemeExtension on ThemeExtension<ComplexThemeExtension> {
         other.optionalTheme,
         t,
       ),
-      optionalThemeExtension:
-          (_this.optionalThemeExtension?.lerp(other.optionalThemeExtension, t)
-              as EmptyThemeExtension?),
+      optionalThemeExtension: (_this.optionalThemeExtension?.lerp(
+        other.optionalThemeExtension,
+        t,
+      ) as EmptyThemeExtension?),
       optionalLerpableWithOptionalResult: _this
           .optionalLerpableWithOptionalResult
           ?.lerp(other.optionalLerpableWithOptionalResult, t),

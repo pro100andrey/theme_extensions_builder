@@ -10,22 +10,25 @@ import 'symbols/field_info.dart';
 /// Collects the fields of [element] together with the fields of all its
 /// supertypes.
 ///
-/// Supertypes are visited first, so a field redeclared by [element] replaces
-/// the inherited one. The [config] controls what information is collected for
-/// each field.
+/// The first declaration of a name wins, so [element] is visited before its
+/// supertypes, and supertypes are visited nearest first. A field redeclared
+/// by a subclass therefore keeps the subclass' type instead of being
+/// overwritten by the inherited declaration.
+///
+/// The [config] controls what information is collected for each field.
 List<FieldInfo> collectFields(
   ClassElement element, {
   FieldsVisitorConfig config = const FieldsVisitorConfig(),
 }) {
   final visitor = FieldsVisitor(config: config);
 
+  element.visitChildren(visitor);
+
   for (final supertype in element.allSupertypes) {
     if (!supertype.isDartCoreObject) {
       supertype.element.visitChildren(visitor);
     }
   }
-
-  element.visitChildren(visitor);
 
   return visitor.fields;
 }
@@ -60,8 +63,9 @@ class FieldsVisitor extends SimpleElementVisitor2<void> {
 
   /// Collected field information, keyed by field name.
   ///
-  /// Keying by name means a field redeclared by a subclass replaces the one
-  /// declared by its supertype instead of being collected twice.
+  /// Keying by name means a redeclared field is collected once. The first
+  /// declaration seen wins; see [collectFields] for the visiting order that
+  /// makes the nearest declaration the first one.
   final Map<String, FieldInfo> _fields = {};
 
   /// Returns an immutable list of collected field information.
@@ -92,7 +96,10 @@ class FieldsVisitor extends SimpleElementVisitor2<void> {
 
     // Only process non-synthetic fields (explicitly declared in source code)
     if (element.isOriginDeclaration) {
-      _fields[element.displayName] = fieldSymbol(element, config: config);
+      _fields.putIfAbsent(
+        element.displayName,
+        () => fieldSymbol(element, config: config),
+      );
     }
   }
 }

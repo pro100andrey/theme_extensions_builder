@@ -275,9 +275,10 @@ void main() {
         optionalThemeExtension: EmptyThemeExtension(),
       );
 
-      final copied =
-          theme.copyWith(requiredInt: 999, requiredString: 'updated')
-              as ComplexThemeExtension;
+      final copied = theme.copyWith(
+        requiredInt: 999,
+        requiredString: 'updated',
+      ) as ComplexThemeExtension;
 
       expect(copied.requiredInt, equals(999));
       expect(copied.requiredString, equals('updated'));
@@ -306,9 +307,10 @@ void main() {
         optionalThemeExtension: EmptyThemeExtension(),
       );
 
-      final copied =
-          theme.copyWith(optionalInt: 500, optionalString: 'new')
-              as ComplexThemeExtension;
+      final copied = theme.copyWith(
+        optionalInt: 500,
+        optionalString: 'new',
+      ) as ComplexThemeExtension;
 
       expect(copied.optionalInt, equals(500));
       expect(copied.optionalString, equals('new'));

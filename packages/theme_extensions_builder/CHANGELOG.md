@@ -1,11 +1,11 @@
 ## 7.5.0
 
 - **Fixed**: `@ThemeGen` now interpolates a nullable field whose type has an instance `lerp` method, instead of falling back to `t < 0.5 ? a : b`.
-- **Fixed**: `@ThemeGen` now generates compilable `merge` code for a nullable field whose type has a `merge` method with a non-nullable parameter.
-- **Fixed**: A field type declaring an unrelated `lerp` or `merge` method no longer fails the build: an unknown signature falls back to no interpolation / no merge, and optional or named parameters no longer hide a supported signature.
-- **Fixed**: A `WidgetStateProperty` field with a non-nullable generic now reports an `InvalidGenerationSourceError` pointing at the field instead of a bare `StateError`.
-- **Fixed**: `Duration` is detected by element rather than by name, and a field redeclared by a subclass no longer appears twice in the generated `copyWith`.
-- **Code Quality**: Exhaustive switches over `LerpInfo`/`MergeInfo`, `==`/`hashCode` contract fixed for `StaticLerp` and `InstanceLerp`, dead code removed (`getMixinsNames`, `BaseClassVisitor`, unused builder options and lerp-lookup flag).
+- **Fixed**: A nullable field whose type has a `lerp` or `merge` method with a non-nullable parameter is now guarded, instead of generating code that does not compile.
+- **Fixed**: A field type declaring an unrelated `lerp` or `merge` method no longer fails the build, and is no longer mistaken for a supported one: parameter and return types are checked against the field type, a required named parameter disqualifies the method, and optional parameters no longer hide a supported signature.
+- **Fixed**: A `WidgetStateProperty` field with a non-nullable generic now reports an `InvalidGenerationSourceError` pointing at the field instead of a bare `StateError`, and an unrelated generic type with a four parameter `lerp` is no longer treated as a `WidgetStateProperty`.
+- **Fixed**: `Duration` is detected by element rather than by name, and a field narrowed by a subclass keeps the narrowed type in the generated code.
+- **Code Quality**: Exhaustive switches over `LerpInfo`/`MergeInfo`, `==`/`hashCode` contract fixed for the `LerpInfo` classes, dead code removed (`getMixinsNames`, `BaseClassVisitor`, unused builder options and lerp-lookup flag).
 
 ## 7.4.0
 

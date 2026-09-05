@@ -27,16 +27,12 @@ final class StaticLerp extends LerpInfo {
   /// Whether the return type of the lerp method is nullable.
   final bool optionalResult;
 
-  /// Returns `true` if the lerp method signature accepts nullable parameters
-  /// and returns a nullable result.
+  /// Returns `true` if the lerp method accepts nullable arguments.
   ///
-  /// This is determined by checking if the result is optional and the first
-  /// two arguments are nullable.
-  bool get isNullableSignature =>
-      optionalResult &&
-      args.length >= 2 &&
-      args[0].isNullable &&
-      args[1].isNullable;
+  /// A method that doesn't has to be guarded against null arguments at the
+  /// call site.
+  bool get isNullableParameter =>
+      args.length >= 2 && args[0].isNullable && args[1].isNullable;
 
   @override
   bool operator ==(Object other) =>
@@ -69,10 +65,11 @@ final class InstanceLerp extends LerpInfo {
   /// Whether the return type of the lerp method is nullable.
   final bool optionalResult;
 
-  /// Returns `true` if the lerp method signature accepts a nullable parameter
-  /// and returns a nullable result.
-  bool get isNullableSignature =>
-      optionalResult && args.isNotEmpty && args[0].isNullable;
+  /// Returns `true` if the lerp method accepts a nullable argument.
+  ///
+  /// A method that doesn't has to be guarded against a null `other` at the
+  /// call site.
+  bool get isNullableParameter => args.isNotEmpty && args[0].isNullable;
 
   @override
   bool operator ==(Object other) =>
@@ -119,22 +116,19 @@ final class WidgetStatePropertyLerp extends LerpInfo {
       other is WidgetStatePropertyLerp &&
           runtimeType == other.runtimeType &&
           baseTypeName == other.baseTypeName &&
-          genericType == other.genericType;
+          genericType == other.genericType &&
+          isNullableGeneric == other.isNullableGeneric;
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-
-    baseTypeName,
-    genericType,
-  );
+  int get hashCode =>
+      Object.hash(runtimeType, baseTypeName, genericType, isNullableGeneric);
 
   @override
   String toString() =>
       'WidgetStatePropertyLerp('
       'baseTypeName: $baseTypeName, '
       'genericType: $genericType, '
-      ')';
+      'isNullableGeneric: $isNullableGeneric)';
 }
 
 /// Indicates that no lerp method is available for the field type.

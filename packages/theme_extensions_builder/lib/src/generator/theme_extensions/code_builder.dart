@@ -4,6 +4,10 @@ import '../../config/config.dart';
 import '../../extensions/string.dart';
 import '../common.dart';
 
+/// The members the generated mixin declares that a field cannot share a name
+/// with.
+const themeExtensionsReservedNames = {'copyWith', 'lerp'};
+
 /// Generates the mixin for a `@ThemeExtensions` class, and the `BuildContext`
 /// extension that reaches it.
 class ThemeExtensionsCodeBuilder {

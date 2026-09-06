@@ -83,7 +83,6 @@ final class WidgetStatePropertyLerp extends LerpInfo {
   const WidgetStatePropertyLerp({
     required this.baseTypeName,
     required this.genericType,
-    required this.isNullableGeneric,
     required this.genericIsDouble,
     required this.genericIsDuration,
   });
@@ -94,10 +93,11 @@ final class WidgetStatePropertyLerp extends LerpInfo {
 
   /// The generic type without its nullability suffix.
   /// For `WidgetStateProperty<Color?>` this is 'Color'.
+  ///
+  /// The generic is always nullable: a non-nullable one is refused before a
+  /// [WidgetStatePropertyLerp] is made, because the lerp function
+  /// `WidgetStateProperty.lerp` takes has to accept a null.
   final String genericType;
-
-  /// Whether the generic type is nullable.
-  final bool isNullableGeneric;
 
   /// Whether the generic is `double` from `dart:core`.
   final bool genericIsDouble;
@@ -116,8 +116,9 @@ final class WidgetStatePropertyLerp extends LerpInfo {
     return index == -1 ? genericType : genericType.substring(0, index);
   }
 
-  // genericIsDouble and genericIsDuration follow from genericType, so they
-  // take no part in equality.
+  // genericIsDouble and genericIsDuration are decided by element, not by
+  // name, so a user type called `Duration` shares genericType with the real
+  // one while being interpolated differently.
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -125,18 +126,25 @@ final class WidgetStatePropertyLerp extends LerpInfo {
           runtimeType == other.runtimeType &&
           baseTypeName == other.baseTypeName &&
           genericType == other.genericType &&
-          isNullableGeneric == other.isNullableGeneric;
+          genericIsDouble == other.genericIsDouble &&
+          genericIsDuration == other.genericIsDuration;
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, baseTypeName, genericType, isNullableGeneric);
+  int get hashCode => Object.hash(
+    runtimeType,
+    baseTypeName,
+    genericType,
+    genericIsDouble,
+    genericIsDuration,
+  );
 
   @override
   String toString() =>
       'WidgetStatePropertyLerp('
       'baseTypeName: $baseTypeName, '
       'genericType: $genericType, '
-      'isNullableGeneric: $isNullableGeneric)';
+      'genericIsDouble: $genericIsDouble, '
+      'genericIsDuration: $genericIsDuration)';
 }
 
 /// No usable lerp method on the field type.

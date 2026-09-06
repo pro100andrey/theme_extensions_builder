@@ -1,10 +1,16 @@
 import 'package:code_builder/code_builder.dart';
 
 import '../../common/symbols/field_info.dart';
-import '../../common/symbols/lerp_info.dart';
 import '../../common/symbols/merge_info.dart';
 import '../../config/config.dart';
 import '../common.dart';
+
+/// The members the generated mixin declares that a field cannot share a name
+/// with.
+///
+/// `canMerge` is left out on purpose: the mixin declares it as a getter, so a
+/// `bool` field is a valid override and is handled by [staticLerp].
+const themeGenReservedNames = {'copyWith', 'merge', 'lerp'};
 
 /// Generates the mixin for a `@ThemeGen` class.
 class ThemeGenCodeBuilder {
@@ -119,6 +125,9 @@ Expression _mergeFieldExpression(
         other.equalTo(literalNull).conditional(current, merge),
       );
 
+  // The result goes through `copyWith`, which reads a null as "keep the
+  // current value": a null `other.field`, or a null returned by the field's
+  // own `merge`, leaves `_this.field` in place.
   return switch (field.merge) {
     // No merge method, just take the other property
     NoMerge() => other,
@@ -231,7 +240,7 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
 
         // A `canMerge` declared as a field rather than a getter is not
         // interpolated: the result takes the value of `b`.
-        args[field.name] = field.name == 'canMerge' && field.lerp is NoLerp
+        args[field.name] = field.name == 'canMerge'
             ? bProp
             : lerpFieldExpression(field, aProp, bProp);
       }

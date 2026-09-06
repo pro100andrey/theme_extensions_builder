@@ -41,6 +41,7 @@ mixin _$LookupTheme {
                 ? a.special
                 : b.special
           : (a.special!.lerp(b.special!, t) as Special?),
+      soft: a.soft.lerp(b.soft, t)!,
       fade: t < 0.5 ? a.fade : b.fade,
       ratio: t < 0.5 ? a.ratio : b.ratio,
       counter: t < 0.5 ? a.counter : b.counter,
@@ -60,6 +61,7 @@ mixin _$LookupTheme {
     Strict? strict,
     Box<int>? box,
     Special? special,
+    Soft? soft,
     Fade? fade,
     Ratio? ratio,
     Counter? counter,
@@ -79,6 +81,7 @@ mixin _$LookupTheme {
       strict: strict ?? _this.strict,
       box: box ?? _this.box,
       special: special ?? _this.special,
+      soft: soft ?? _this.soft,
       fade: fade ?? _this.fade,
       ratio: ratio ?? _this.ratio,
       counter: counter ?? _this.counter,
@@ -117,6 +120,7 @@ mixin _$LookupTheme {
           : other.special == null
           ? _this.special
           : (_this.special!.merge(other.special!) as Special?),
+      soft: other.soft,
       fade: other.fade,
       ratio: other.ratio,
       counter: other.counter,
@@ -148,6 +152,7 @@ mixin _$LookupTheme {
         _other.strict == _this.strict &&
         _other.box == _this.box &&
         _other.special == _this.special &&
+        _other.soft == _this.soft &&
         _other.fade == _this.fade &&
         _other.ratio == _this.ratio &&
         _other.counter == _this.counter &&
@@ -171,6 +176,7 @@ mixin _$LookupTheme {
       _this.strict,
       _this.box,
       _this.special,
+      _this.soft,
       _this.fade,
       _this.ratio,
       _this.counter,

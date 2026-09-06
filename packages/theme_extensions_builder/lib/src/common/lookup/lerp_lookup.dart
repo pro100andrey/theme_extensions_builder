@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 
 import '../dart_type_extension.dart';
@@ -16,7 +17,21 @@ import 'method_lookup.dart';
 ///
 /// Throws [InvalidGenerationSourceError] for a `WidgetStateProperty` field
 /// with a non-nullable generic, which is a mistake we can point at.
-LerpInfo lerpInfo(DartType type, FieldElement fieldElement) {
+LerpInfo lerpInfo(DartType type, FieldElement fieldElement) =>
+    _lerpInfo(type, fieldElement, nested: false);
+
+/// [lerpInfo], for the field type itself or, when [nested], for the generic
+/// of a `WidgetStateProperty` field.
+///
+/// A nested type is reported by the caller as part of the outer field, so
+/// nothing is warned about here, and a mistake in it is a fallback rather
+/// than an error: an error would name the outer field while pointing at a
+/// type that is not its own.
+LerpInfo _lerpInfo(
+  DartType type,
+  FieldElement fieldElement, {
+  required bool nested,
+}) {
   if (type is! InterfaceType) {
     return const NoLerp();
   }
@@ -27,10 +42,16 @@ LerpInfo lerpInfo(DartType type, FieldElement fieldElement) {
     return const NoLerp();
   }
 
+  void warn() {
+    if (!nested) {
+      warnUnsupported('lerp', type, fieldElement);
+    }
+  }
+
   final params = callableParameters(method);
 
   if (params == null) {
-    warnUnsupported('lerp', type, fieldElement);
+    warn();
 
     return const NoLerp();
   }
@@ -49,7 +70,7 @@ LerpInfo lerpInfo(DartType type, FieldElement fieldElement) {
           p3.type.isDartCoreDouble &&
           checkSubtype(p1, type, strict: strict) &&
           checkSubtype(p2, type, strict: strict)) {
-    return _widgetStatePropertyLerp(type, p1, p4, fieldElement);
+    return _widgetStatePropertyLerp(type, p1, p4, fieldElement, nested: nested);
   }
 
   if (params case [final p1, final p2, final p3]
@@ -62,7 +83,7 @@ LerpInfo lerpInfo(DartType type, FieldElement fieldElement) {
           checkSubtype(p1, type, strict: strict) &&
           checkSubtype(p2, type, strict: strict)) {
     if (!isUsableAs(method.returnType, type, type)) {
-      warnUnsupported('lerp', type, fieldElement);
+      warn();
 
       return const NoLerp();
     }
@@ -88,7 +109,7 @@ LerpInfo lerpInfo(DartType type, FieldElement fieldElement) {
     final needsCast = !isUsableAs(method.returnType, type, type);
 
     if (needsCast && !isUsableAs(type, method.returnType, type)) {
-      warnUnsupported('lerp', type, fieldElement);
+      warn();
 
       return const NoLerp();
     }
@@ -100,7 +121,7 @@ LerpInfo lerpInfo(DartType type, FieldElement fieldElement) {
   }
 
   // The type declares a `lerp` we don't know how to call.
-  warnUnsupported('lerp', type, fieldElement);
+  warn();
 
   return const NoLerp();
 }
@@ -108,13 +129,21 @@ LerpInfo lerpInfo(DartType type, FieldElement fieldElement) {
 /// Decides how a `WidgetStateProperty` shaped [type] is interpolated.
 ///
 /// [p1] is the first parameter of the four parameter `lerp`, which names the
-/// declaring type, and [lerpFunction] is its last parameter.
+/// declaring type, and [lerpFunction] is its last parameter. [nested] is
+/// passed through from [_lerpInfo].
 LerpInfo _widgetStatePropertyLerp(
   InterfaceType type,
   FormalParameterElement p1,
   FormalParameterElement lerpFunction,
-  FieldElement fieldElement,
-) {
+  FieldElement fieldElement, {
+  required bool nested,
+}) {
+  void warn() {
+    if (!nested) {
+      warnUnsupported('lerp', type, fieldElement);
+    }
+  }
+
   // The fourth parameter has to be a lerp function itself, with the
   // signature `R Function(T? a, T? b, double t)`.
   //
@@ -135,7 +164,7 @@ LerpInfo _widgetStatePropertyLerp(
         : null;
 
     if (declaringType == null || declaringType.typeArguments.length != 1) {
-      warnUnsupported('lerp', type, fieldElement);
+      warn();
 
       return const NoLerp();
     }
@@ -143,8 +172,14 @@ LerpInfo _widgetStatePropertyLerp(
     final baseTypeName = declaringType.element.displayName;
     final innerType = declaringType.typeArguments.single;
 
-    // Check that the generic type is nullable
+    // Check that the generic type is nullable. Inside another generic this is
+    // one more shape the outer lerp function cannot take, which the caller
+    // reports; on the field itself it is a mistake worth stopping for.
     if (!innerType.hasNullableSuffix) {
+      if (nested) {
+        return const NoLerp();
+      }
+
       final typeName = type.getDisplayString();
       final innerTypeName = innerType.getDisplayString();
 
@@ -165,12 +200,19 @@ LerpInfo _widgetStatePropertyLerp(
     // Anything else is interpolated by a static lerp on the generic itself,
     // which `WidgetStateProperty.lerp` calls with nullable arguments.
     if (!genericIsDouble && !genericIsDuration) {
-      final innerLerp = lerpInfo(innerType, fieldElement);
+      final innerLerp = _lerpInfo(innerType, fieldElement, nested: true);
 
       if (innerLerp is! StaticLerp ||
           !innerLerp.optionalResult ||
           !innerLerp.isNullableParameter) {
-        warnUnsupported('lerp', innerType, fieldElement);
+        if (!nested) {
+          _warnUninterpolatedGeneric(
+            type,
+            baseTypeName,
+            innerType,
+            fieldElement,
+          );
+        }
 
         return const NoLerp();
       }
@@ -179,7 +221,6 @@ LerpInfo _widgetStatePropertyLerp(
     return WidgetStatePropertyLerp(
       baseTypeName: baseTypeName,
       genericType: innerType.baseType,
-      isNullableGeneric: innerType.hasNullableSuffix,
       genericIsDouble: genericIsDouble,
       genericIsDuration: genericIsDuration,
     );
@@ -187,7 +228,30 @@ LerpInfo _widgetStatePropertyLerp(
 
   // A four parameter lerp whose last parameter isn't a lerp function is not
   // something we know how to call.
-  warnUnsupported('lerp', type, fieldElement);
+  warn();
 
   return const NoLerp();
+}
+
+/// Reports a `WidgetStateProperty` shaped [type] whose generic [innerType]
+/// cannot be interpolated.
+///
+/// The lerp function `WidgetStateProperty.lerp` takes is a static `lerp` on
+/// the generic that accepts and returns a null. Whether the generic has no
+/// `lerp` at all or one of another shape, the outcome is the same, so the
+/// message names the signature that is missing rather than the one found.
+void _warnUninterpolatedGeneric(
+  InterfaceType type,
+  String baseTypeName,
+  DartType innerType,
+  FieldElement fieldElement,
+) {
+  final generic = innerType.baseType;
+
+  log.warning(
+    '${type.baseType} cannot be interpolated: `$generic` has no static '
+    '`$generic? lerp($generic?, $generic?, double)` for `$baseTypeName.lerp` '
+    'to call, so the field `${fieldElement.displayName}` switches over at '
+    't = 0.5 instead of being interpolated.',
+  );
 }

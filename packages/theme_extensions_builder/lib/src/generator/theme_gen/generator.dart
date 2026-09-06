@@ -4,6 +4,7 @@ import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 import '../../common/fields_visitor.dart';
+import '../../common/type_checkers.dart';
 import '../../common/validation.dart';
 import '../../config/config.dart';
 import '../annotation_reader.dart';
@@ -29,7 +30,10 @@ import 'code_builder.dart';
 /// ```
 class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
   /// Creates a [ThemeGenGenerator].
-  const ThemeGenGenerator();
+  ///
+  /// The annotation is matched by package as well as by name, so a user class
+  /// called `ThemeGen` does not trigger the generator.
+  const ThemeGenGenerator() : super(inPackage: annotationPackage);
 
   @override
   Future<String> generateForAnnotatedElement(
@@ -45,12 +49,16 @@ class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
       );
     }
 
+    checkNotGeneric(element);
+
     final constructorName = annotation.optionalString('constructor');
     final constructor = resolveConstructor(element, constructorName);
 
     final fields = collectFields(element);
 
     checkConstructorParameters(element, constructor, fields);
+    checkReservedFieldNames(element, fields, reserved: themeGenReservedNames);
+    checkMixinApplied(element);
 
     final config = ThemeGenConfig(
       fields: fields,

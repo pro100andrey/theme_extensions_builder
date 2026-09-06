@@ -15,6 +15,7 @@ void main() {
     strict: Strict(1),
     box: Box(1),
     special: Special(1),
+    soft: Soft(1),
     fade: Fade(1),
     ratio: Ratio(1),
     counter: Counter(1),
@@ -33,6 +34,7 @@ void main() {
     strict: Strict(2),
     box: Box(2),
     special: Special(2),
+    soft: Soft(3),
     fade: Fade(2),
     ratio: Ratio(2),
     counter: Counter(2),
@@ -81,6 +83,10 @@ void main() {
       expect(a.merge(b).special, isA<Special>());
     });
 
+    test('an instance lerp with an optional result is null checked', () {
+      expect(LookupTheme.lerp(a, b, 0.5)!.soft.value, 2);
+    });
+
     test('a lerp returning an unrelated type is ignored', () {
       expect(LookupTheme.lerp(a, b, 0.4)!.fade, same(a.fade));
     });
@@ -102,6 +108,7 @@ void main() {
         strict: Strict(1),
         box: Box(1),
         special: Special(1),
+        soft: Soft(1),
         fade: Fade(1),
         ratio: Ratio(1),
         counter: Counter(1),

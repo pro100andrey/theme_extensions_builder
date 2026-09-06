@@ -495,8 +495,11 @@ The generator checks the annotated class before it writes anything, and stops th
 
 - the constructor named in `constructor:` does not exist, or there is no unnamed constructor to fall back to;
 - a field has no named parameter of the same name in that constructor (mark it `@ignore` if it is not part of the theme);
+- that constructor requires a parameter the generated code does not pass: a positional one, one that is not a field, or the parameter of an `@ignore`d field;
+- the class is generic, or does not apply the generated `_$ClassName` mixin;
+- a field is named after a member the mixin declares (`copyWith`, `merge`, `lerp`);
 - a `@ThemeExtensions` class does not extend `ThemeExtension<Self>`;
-- `contextAccessorName` is not a valid identifier;
+- `contextAccessorName` is not a valid identifier, or is a reserved word;
 - a `WidgetStateProperty` field has a non-nullable generic.
 
 A field type whose `lerp` or `merge` has a signature the generator cannot call is not an error. The build logs a warning naming the field, which then switches over at `t = 0.5` instead of being interpolated, or is overwritten instead of being merged.

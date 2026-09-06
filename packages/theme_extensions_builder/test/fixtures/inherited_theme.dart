@@ -52,3 +52,32 @@ final class InheritedTheme extends BaseTheme
     double t,
   ) => _$InheritedTheme.lerp(a, b, t);
 }
+
+/// Declares a field whose type is the class' own type parameter.
+class Slot<T> {
+  const Slot({required this.value});
+
+  final T value;
+}
+
+/// Theme inheriting a field from a generic superclass: the field is declared
+/// as `T value`, and the generated code has to write it as the `num` the
+/// `extends` clause fixes `T` to.
+@ShouldGenerateFile(
+  'goldens/generic_inherited_theme.g.theme.dart',
+  partOfCurrent: true,
+)
+@themeGen
+final class GenericInheritedTheme extends Slot<num>
+    with _$GenericInheritedTheme {
+  const GenericInheritedTheme({required super.value});
+
+  @override
+  bool get canMerge => true;
+
+  static GenericInheritedTheme? lerp(
+    GenericInheritedTheme? a,
+    GenericInheritedTheme? b,
+    double t,
+  ) => _$GenericInheritedTheme.lerp(a, b, t);
+}

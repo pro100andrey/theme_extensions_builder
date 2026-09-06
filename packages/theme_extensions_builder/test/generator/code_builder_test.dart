@@ -84,6 +84,18 @@ void main() {
       expect(code, contains('(a.value.lerp(b.value, t) as Lerpable)'));
     });
 
+    test('instance lerp with optional result is null checked', () {
+      final code = _generate([
+        _field(
+          'value',
+          typeName: 'Lerpable',
+          lerp: const InstanceLerp(optionalResult: true),
+        ),
+      ]);
+
+      expect(code, contains('value: a.value.lerp(b.value, t)!'));
+    });
+
     test('a result that already has the field type is not cast', () {
       final code = _generate([
         _field(

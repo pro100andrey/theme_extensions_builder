@@ -3,7 +3,8 @@
 ///
 /// This file is excluded from `generate_for` in `build.yaml`, so the failing
 /// generation is only exercised by the test. None of the classes mix
-/// in the generated mixin for the same reason.
+/// in the generated mixin for the same reason; the mixin check runs last, so
+/// every other class is stopped by its own error first.
 library;
 
 import 'package:source_gen_test/source_gen_test.dart';
@@ -80,4 +81,68 @@ final class MissingParameterExtension
 
   final Color color;
   final double width;
+}
+
+/// A reserved word matches the identifier pattern but cannot name a getter.
+@ShouldThrow(
+  '`class` is a reserved word, so it cannot be used as `contextAccessorName`.',
+  todo: 'Use a name that is not a Dart keyword.',
+)
+@ThemeExtensions(contextAccessorName: 'class')
+final class ReservedWordAccessor extends ThemeExtension<ReservedWordAccessor> {
+  const ReservedWordAccessor({required this.color});
+
+  final Color color;
+}
+
+/// The mixin is declared `on ThemeExtension<Self>` with no type arguments to
+/// pass on.
+@ShouldThrow(
+  '`GenericExtension<T>` is generic, and the generated mixin cannot be: it '
+  'instantiates `GenericExtension` without type arguments.',
+  todo:
+      'Remove the type parameters from `GenericExtension`, or write its theme '
+      'methods by hand.',
+)
+@themeExtensions
+final class GenericExtension<T> extends ThemeExtension<GenericExtension<T>> {
+  const GenericExtension({required this.value});
+
+  final T value;
+}
+
+/// The mixin's `lerp` is an instance method here, which a field cannot
+/// override. `ThemeExtension` declares the same method, so the analyzer
+/// objects to the field on its own; the generator still names the mixin so
+/// that a `@ThemeGen` field of the same name reads the same.
+@ShouldThrow(
+  r'The generated mixin `_$ReservedFieldExtension` declares `lerp`, so '
+  '`ReservedFieldExtension` cannot have a field of that name.',
+  todo: 'Rename the field `lerp`.',
+)
+@themeExtensions
+final class ReservedFieldExtension
+    extends ThemeExtension<ReservedFieldExtension> {
+  const ReservedFieldExtension({required this.lerp});
+
+  // The conflict is the point of this fixture.
+  // ignore: conflicting_field_and_method, annotate_overrides
+  final double lerp;
+}
+
+/// Everything else is in order, so the missing `with` clause is what stops
+/// this one.
+@ShouldThrow(
+  '`MissingMixinExtension` does not apply the generated mixin '
+  r'`_$MissingMixinExtension`, which holds the generated methods.',
+  todo:
+      r'Add `with _$MissingMixinExtension` to the declaration of '
+      '`MissingMixinExtension`.',
+)
+@themeExtensions
+final class MissingMixinExtension
+    extends ThemeExtension<MissingMixinExtension> {
+  const MissingMixinExtension({required this.color});
+
+  final Color color;
 }

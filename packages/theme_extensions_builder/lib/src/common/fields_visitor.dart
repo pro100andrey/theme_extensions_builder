@@ -1,6 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:analyzer/dart/element/visitor2.dart';
 
 import 'field_symbol.dart';
 import 'symbols/field_info.dart';
@@ -23,15 +22,14 @@ List<FieldInfo> collectFields(
   ClassElement element, {
   bool includeMergeLookup = true,
 }) {
-  final visitor = FieldsVisitor(includeMergeLookup: includeMergeLookup);
+  final collector = _FieldCollector(includeMergeLookup: includeMergeLookup);
+  final thisType = element.thisType;
 
-  element.visitChildren(visitor);
-
-  for (final inherited in _inheritedTypes(element.thisType)) {
-    inherited.element.visitChildren(visitor);
+  for (final type in [thisType, ..._inheritedTypes(thisType)]) {
+    collector.addDeclaredOn(type);
   }
 
-  return visitor.fields;
+  return collector.fields;
 }
 
 /// Yields the types [type] inherits members from, nearest first.
@@ -49,16 +47,13 @@ Iterable<InterfaceType> _inheritedTypes(InterfaceType type) sync* {
   }
 }
 
-/// A visitor that collects field information from a class element.
+/// Collects field information from the types of a class hierarchy.
 ///
 /// Only fields the generated code can pass to a constructor are collected:
 /// explicitly declared instance fields that are public and not annotated with
 /// `@ignore`.
-class FieldsVisitor extends SimpleElementVisitor2<void> {
-  /// Creates a [FieldsVisitor].
-  ///
-  /// When [includeMergeLookup] is `false`, no merge method is looked up.
-  FieldsVisitor({this.includeMergeLookup = true});
+class _FieldCollector {
+  _FieldCollector({required this.includeMergeLookup});
 
   /// Whether to look up merge methods on field types.
   final bool includeMergeLookup;
@@ -79,40 +74,51 @@ class FieldsVisitor extends SimpleElementVisitor2<void> {
   /// The collected fields, in the order they were visited.
   List<FieldInfo> get fields => _fields.values.toList(growable: false);
 
-  @override
-  void visitFieldElement(FieldElement element) {
-    // Only explicitly declared fields: a synthetic field backs a getter or
-    // setter, and cannot be passed to a constructor.
-    if (!element.isOriginDeclaration) {
-      return;
+  /// Adds the fields declared on the class of [type].
+  ///
+  /// The declarations are read off the class, but their types through
+  /// [type]: a field declared as `T value` on `Base<T>` is a `num value` on
+  /// `Base<num>`, and `num` is the type the generated code has to write.
+  void addDeclaredOn(InterfaceType type) {
+    for (final element in type.element.fields) {
+      // Only explicitly declared fields: a synthetic field backs a getter or
+      // setter, and cannot be passed to a constructor.
+      if (!element.isOriginDeclaration) {
+        continue;
+      }
+
+      // A static field is not part of an instance. Dart forbids a static and
+      // an instance member of the same name in one hierarchy, so it cannot
+      // shadow an inherited field either.
+      if (element.isStatic) {
+        continue;
+      }
+
+      // A private field cannot be passed to a generated constructor call, and
+      // a private name is not a valid named parameter either.
+      if (element.isPrivate) {
+        continue;
+      }
+
+      final name = element.displayName;
+
+      if (!_claimed.add(name)) {
+        continue;
+      }
+
+      if (ignoreChecker.hasAnnotationOf(element)) {
+        continue;
+      }
+
+      // The getter looked up on the instantiated type carries the substituted
+      // field type.
+      final fieldType = type.getGetter(name)?.returnType ?? element.type;
+
+      _fields[name] = fieldSymbol(
+        element,
+        fieldType,
+        includeMergeLookup: includeMergeLookup,
+      );
     }
-
-    // A static field is not part of an instance. Dart forbids a static and an
-    // instance member of the same name in one hierarchy, so it cannot shadow
-    // an inherited field either.
-    if (element.isStatic) {
-      return;
-    }
-
-    // A private field cannot be passed to a generated constructor call, and a
-    // private name is not a valid named parameter either.
-    if (element.isPrivate) {
-      return;
-    }
-
-    final name = element.displayName;
-
-    if (!_claimed.add(name)) {
-      return;
-    }
-
-    if (ignoreChecker.hasAnnotationOf(element)) {
-      return;
-    }
-
-    _fields[name] = fieldSymbol(
-      element,
-      includeMergeLookup: includeMergeLookup,
-    );
   }
 }

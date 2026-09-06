@@ -84,13 +84,11 @@ void main() {
   group('WidgetStatePropertyLerp', () {
     WidgetStatePropertyLerp build({
       String genericType = 'Color',
-      bool isNullableGeneric = true,
       bool genericIsDouble = false,
       bool genericIsDuration = false,
     }) => WidgetStatePropertyLerp(
       baseTypeName: 'WidgetStateProperty',
       genericType: genericType,
-      isNullableGeneric: isNullableGeneric,
       genericIsDouble: genericIsDouble,
       genericIsDuration: genericIsDuration,
     );
@@ -111,7 +109,16 @@ void main() {
       expect(build(), equals(build()));
       expect(build().hashCode, equals(build().hashCode));
       expect(build(), isNot(equals(build(genericType: 'double'))));
-      expect(build(), isNot(equals(build(isNullableGeneric: false))));
+    });
+
+    test('the element checks take part in equality', () {
+      // A user type called `Duration` shares genericType with the real one.
+      final byName = build(genericType: 'Duration');
+      final byElement = build(genericType: 'Duration', genericIsDuration: true);
+
+      expect(byName, isNot(equals(byElement)));
+      expect(byName.hashCode, isNot(equals(byElement.hashCode)));
+      expect(build(), isNot(equals(build(genericIsDouble: true))));
     });
 
     test('toString returns correct format', () {
@@ -120,7 +127,8 @@ void main() {
         'WidgetStatePropertyLerp('
         'baseTypeName: WidgetStateProperty, '
         'genericType: Color, '
-        'isNullableGeneric: true)',
+        'genericIsDouble: false, '
+        'genericIsDuration: false)',
       );
     });
   });

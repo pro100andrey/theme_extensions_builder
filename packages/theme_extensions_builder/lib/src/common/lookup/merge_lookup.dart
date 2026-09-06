@@ -15,16 +15,10 @@ MergeInfo mergeInfo(DartType type, FieldElement fieldElement) {
     return const NoMerge();
   }
 
-  // A `@ThemeGen` class gets its `merge` from the generated mixin, which may
-  // not exist yet when this runs. The annotation is taken as the promise that
-  // it will: `T merge(T? other)`.
-  if (themeGenChecker.hasAnnotationOfExact(type.element)) {
-    return const InstanceMerge();
-  }
-
   final method = lookupMethod(type, 'merge');
+
   if (method == null) {
-    return const NoMerge();
+    return _promisedMerge(type);
   }
 
   final params = callableParameters(method);
@@ -74,4 +68,31 @@ MergeInfo mergeInfo(DartType type, FieldElement fieldElement) {
   warnUnsupported('merge', type, fieldElement);
 
   return const NoMerge();
+}
+
+/// The `merge` a type without one is going to have once its part file is
+/// generated.
+///
+/// A `@ThemeGen` class gets `T merge(T? other)` from its generated mixin,
+/// which may not exist yet when this runs. The annotation is taken as the
+/// promise that it will. A subclass of the annotated class inherits that
+/// method, whose result is the base type and has to be cast back — the same
+/// shape the lookup resolves once the mixin exists, so the generated code
+/// does not depend on whether the build is clean or incremental.
+///
+/// A `merge` the class writes itself is found by the lookup before this is
+/// reached, so a hand-written signature is never mistaken for the generated
+/// one.
+MergeInfo _promisedMerge(InterfaceType type) {
+  if (themeGenChecker.hasAnnotationOfExact(type.element)) {
+    return const InstanceMerge();
+  }
+
+  final inheritsThemeGen = type.allSupertypes.any(
+    (supertype) => themeGenChecker.hasAnnotationOfExact(supertype.element),
+  );
+
+  return inheritsThemeGen
+      ? const InstanceMerge(needsCast: true)
+      : const NoMerge();
 }

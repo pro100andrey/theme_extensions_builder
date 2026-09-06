@@ -5,15 +5,33 @@ import 'flutter_stubs.dart';
 
 part 'widget_state_property_theme.g.theme.dart';
 
-const _labelWarning =
-    'The `lerp` method of String has an unsupported signature, so the field '
-    '`label` switches over at t = 0.5 instead of being interpolated.';
+const _fallback = 'switches over at t = 0.5 instead of being interpolated.';
 
-/// Empty Theme - testing edge case with no fields
+const _labelWarning =
+    'WidgetStateProperty<String?> cannot be interpolated: `String` has no '
+    'static `String? lerp(String?, String?, double)` for '
+    '`WidgetStateProperty.lerp` to call, so the field `label` $_fallback';
+
+const _sideWarning =
+    'WidgetStateProperty<BorderSide?> cannot be interpolated: `BorderSide` '
+    'has no static `BorderSide? lerp(BorderSide?, BorderSide?, double)` for '
+    '`WidgetStateProperty.lerp` to call, so the field `side` $_fallback';
+
+const _nestedWarning =
+    'WidgetStateProperty<WidgetStateProperty<Color>?> cannot be '
+    'interpolated: `WidgetStateProperty<Color>` has no static '
+    '`WidgetStateProperty<Color>? lerp(WidgetStateProperty<Color>?, '
+    'WidgetStateProperty<Color>?, double)` for `WidgetStateProperty.lerp` to '
+    'call, so the field `nested` $_fallback';
+
+/// Theme covering the `WidgetStateProperty` shapes: `double` and `Duration`
+/// generics have their own lerp functions, anything else needs a static
+/// `lerp` on the generic that accepts nulls, and a generic without one is
+/// reported once, whatever `lerp` it does declare.
 @ShouldGenerateFile(
   'goldens/widget_state_property_theme.g.theme.dart',
   partOfCurrent: true,
-  expectedLogItems: [_labelWarning],
+  expectedLogItems: [_labelWarning, _sideWarning, _nestedWarning],
 )
 @themeGen
 final class WidgetStatePropertyTheme with _$WidgetStatePropertyTheme {
@@ -25,6 +43,8 @@ final class WidgetStatePropertyTheme with _$WidgetStatePropertyTheme {
     required this.optionalWidth,
     required this.optionalDuration,
     required this.label,
+    required this.side,
+    required this.nested,
   });
 
   final WidgetStateProperty<Color?> color;
@@ -37,6 +57,13 @@ final class WidgetStatePropertyTheme with _$WidgetStatePropertyTheme {
 
   /// `String` has no static lerp, so this one cannot be interpolated.
   final WidgetStateProperty<String?> label;
+
+  /// `BorderSide.lerp` takes no nulls, so it cannot be passed on either.
+  final WidgetStateProperty<BorderSide?> side;
+
+  /// The inner generic is not nullable, which is a fallback here rather than
+  /// the error it is on a field: the message would point at the wrong type.
+  final WidgetStateProperty<WidgetStateProperty<Color>?> nested;
 
   @override
   bool get canMerge => true;

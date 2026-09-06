@@ -119,6 +119,16 @@ class Special extends Animatable {
   const Special(super.value);
 }
 
+/// An instance `lerp` with an optional result on a type used non-nullably,
+/// whose null the generated code has to check away.
+class Soft {
+  const Soft(this.value);
+
+  final double value;
+
+  Soft? lerp(Soft other, double t) => Soft(value + (other.value - value) * t);
+}
+
 /// A `lerp` returning something unrelated to the class it is declared on.
 class Fade {
   const Fade(this.value);
@@ -240,6 +250,7 @@ final class LookupTheme extends Middle with _$LookupTheme {
     required this.strict,
     required this.box,
     required this.special,
+    required this.soft,
     required this.fade,
     required this.ratio,
     required this.counter,
@@ -261,6 +272,7 @@ final class LookupTheme extends Middle with _$LookupTheme {
   final Strict strict;
   final Box<int> box;
   final Special? special;
+  final Soft soft;
   final Fade? fade;
   final Ratio ratio;
   final Counter counter;

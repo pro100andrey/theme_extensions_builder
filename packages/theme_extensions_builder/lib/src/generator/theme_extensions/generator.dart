@@ -4,6 +4,7 @@ import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 import '../../common/fields_visitor.dart';
+import '../../common/type_checkers.dart';
 import '../../common/validation.dart';
 import '../../config/config.dart';
 import '../annotation_reader.dart';
@@ -28,7 +29,10 @@ import 'code_builder.dart';
 /// ```
 class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
   /// Creates a [ThemeExtensionsGenerator].
-  const ThemeExtensionsGenerator();
+  ///
+  /// The annotation is matched by package as well as by name, so a user class
+  /// called `ThemeExtensions` does not trigger the generator.
+  const ThemeExtensionsGenerator() : super(inPackage: annotationPackage);
 
   @override
   Future<String> generateForAnnotatedElement(
@@ -44,6 +48,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
       );
     }
 
+    checkNotGeneric(element);
     checkExtendsThemeExtension(element);
 
     final buildContextExtension = annotation
@@ -69,6 +74,12 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
     final fields = collectFields(element, includeMergeLookup: false);
 
     checkConstructorParameters(element, constructor, fields);
+    checkReservedFieldNames(
+      element,
+      fields,
+      reserved: themeExtensionsReservedNames,
+    );
+    checkMixinApplied(element);
 
     final config = ThemeExtensionsConfig(
       fields: fields,
@@ -76,8 +87,7 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
       contextAccessorName: contextAccessorName,
       buildContextExtension: buildContextExtension,
       constructor: constructorName,
-      // The mixin is applied by name, so the name is a convention.
-      themeExtensionMixinName: '_\$${element.displayName}',
+      themeExtensionMixinName: generatedMixinName(element),
       constConstructor: constructor.isConst,
     );
 

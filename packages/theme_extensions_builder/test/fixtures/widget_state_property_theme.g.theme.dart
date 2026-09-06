@@ -62,6 +62,8 @@ mixin _$WidgetStatePropertyTheme {
         lerpDuration$,
       ),
       label: t < 0.5 ? a.label : b.label,
+      side: t < 0.5 ? a.side : b.side,
+      nested: t < 0.5 ? a.nested : b.nested,
     );
   }
 
@@ -73,6 +75,8 @@ mixin _$WidgetStatePropertyTheme {
     WidgetStateProperty<double?>? optionalWidth,
     WidgetStateProperty<Duration?>? optionalDuration,
     WidgetStateProperty<String?>? label,
+    WidgetStateProperty<BorderSide?>? side,
+    WidgetStateProperty<WidgetStateProperty<Color>?>? nested,
   }) {
     final _this = (this as WidgetStatePropertyTheme);
 
@@ -84,6 +88,8 @@ mixin _$WidgetStatePropertyTheme {
       optionalWidth: optionalWidth ?? _this.optionalWidth,
       optionalDuration: optionalDuration ?? _this.optionalDuration,
       label: label ?? _this.label,
+      side: side ?? _this.side,
+      nested: nested ?? _this.nested,
     );
   }
 
@@ -106,6 +112,8 @@ mixin _$WidgetStatePropertyTheme {
       optionalWidth: other.optionalWidth,
       optionalDuration: other.optionalDuration,
       label: other.label,
+      side: other.side,
+      nested: other.nested,
     );
   }
 
@@ -128,7 +136,9 @@ mixin _$WidgetStatePropertyTheme {
         _other.optionalColor == _this.optionalColor &&
         _other.optionalWidth == _this.optionalWidth &&
         _other.optionalDuration == _this.optionalDuration &&
-        _other.label == _this.label;
+        _other.label == _this.label &&
+        _other.side == _this.side &&
+        _other.nested == _this.nested;
   }
 
   @override
@@ -144,6 +154,8 @@ mixin _$WidgetStatePropertyTheme {
       _this.optionalWidth,
       _this.optionalDuration,
       _this.label,
+      _this.side,
+      _this.nested,
     );
   }
 }

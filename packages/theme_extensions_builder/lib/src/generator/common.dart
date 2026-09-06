@@ -156,6 +156,11 @@ Expression lerpFieldExpression(FieldInfo field, Expression a, Expression b) {
     InstanceLerp(needsCast: true) =>
       a.property('lerp')([b, tRef]).asA(fieldType),
 
+    // Non-nullable field, instance lerp returning an optional result:
+    // a.field.lerp(b.field, t)!
+    InstanceLerp(optionalResult: true) =>
+      a.property('lerp')([b, tRef]).nullChecked,
+
     // Non-nullable field, instance lerp:
     // a.field.lerp(b.field, t)
     InstanceLerp() => a.property('lerp')([b, tRef]),
@@ -165,7 +170,6 @@ Expression lerpFieldExpression(FieldInfo field, Expression a, Expression b) {
       :final baseTypeName,
       :final genericType,
       :final genericBaseTypeName,
-      :final isNullableGeneric,
       :final genericIsDouble,
       :final genericIsDuration,
     ) =>
@@ -183,7 +187,7 @@ Expression lerpFieldExpression(FieldInfo field, Expression a, Expression b) {
               genericBaseTypeName.ref.property('lerp'),
           ],
           {},
-          [genericType.typeRef(isNullable: isNullableGeneric)],
+          [genericType.typeRef(isNullable: true)],
         ),
       ),
 
@@ -320,7 +324,7 @@ Method hashMethod(BaseConfig config) => Method((m) {
 /// This is a utility function for generating conditional code when using
 /// code_builder, as it doesn't provide a built-in if construct.
 Code ifStatement(Expression condition, Block ifBlock) {
-  final visitor = DartEmitter();
+  final visitor = partEmitter();
   final conditionV = condition.accept(visitor);
   final ifBlockV = ifBlock.accept(visitor);
 

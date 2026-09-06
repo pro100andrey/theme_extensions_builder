@@ -22,7 +22,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  analyzer: ">=13.0.0 <15.0.0"
+  analyzer: ">=13.1.0 <15.0.0"
   build:  ">=3.0.0 <5.0.0"
   code_builder: ^4.11.1
   source_gen: ">=4.2.3 <5.0.0"

@@ -9,7 +9,7 @@ Future<void> main() async {
   const generator = ThemeGenGenerator();
 
   final emptyReader = await initializeLibraryReaderForDirectory(
-    'test/theme_gen',
+    'test/fixtures',
     'empty_theme.dart',
   );
 
@@ -18,7 +18,7 @@ Future<void> main() async {
   });
 
   final complexReader = await initializeLibraryReaderForDirectory(
-    'test/theme_gen',
+    'test/fixtures',
     'complex_theme.dart',
   );
 
@@ -27,7 +27,7 @@ Future<void> main() async {
   });
 
   final wspReader = await initializeLibraryReaderForDirectory(
-    'test/theme_gen',
+    'test/fixtures',
     'widget_state_property_theme.dart',
   );
 
@@ -36,7 +36,7 @@ Future<void> main() async {
   });
 
   final lookupReader = await initializeLibraryReaderForDirectory(
-    'test/theme_gen',
+    'test/fixtures',
     'lookup_theme.dart',
   );
 
@@ -45,7 +45,7 @@ Future<void> main() async {
   });
 
   final inheritedReader = await initializeLibraryReaderForDirectory(
-    'test/theme_gen',
+    'test/fixtures',
     'inherited_theme.dart',
   );
 

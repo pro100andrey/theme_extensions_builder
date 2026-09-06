@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import '../theme_gen/lookup_theme.dart';
+import '../fixtures/lookup_theme.dart';
 
 void main() {
   const a = LookupTheme(

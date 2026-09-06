@@ -5,5 +5,4 @@ formatter:
 
 analyzer: 
   exclude: 
-    - test/theme_gen/goldens/**.dart
-    - test/theme_extensions/goldens/**.dart
+    - test/fixtures/goldens/**.dart

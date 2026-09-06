@@ -169,7 +169,6 @@ function main() {
 
 	local dirs=(
 		"packages/theme_extensions_builder_annotation"
-		"packages/flutter_stubs"
 		"packages/theme_extensions_builder"
 		"packages/theme_extensions_builder/example"
 	)

@@ -1,9 +1,9 @@
-import 'package:flutter_stubs/flutter_stubs.dart';
 import 'package:test/test.dart';
 
-import '../theme_extensions/complex_theme_extension.dart';
-import '../theme_extensions/empty_theme.dart';
-import '../theme_extensions/empty_theme_extension.dart';
+import '../fixtures/complex_theme_extension.dart';
+import '../fixtures/empty_theme.dart';
+import '../fixtures/empty_theme_extension.dart';
+import '../fixtures/flutter_stubs.dart';
 
 void main() {
   group('ComplexThemeExtensionNoContext', () {

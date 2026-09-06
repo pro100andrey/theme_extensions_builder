@@ -11,4 +11,3 @@ workspace:
   - packages/theme_extensions_builder
   - packages/theme_extensions_builder_annotation
   - packages/theme_extensions_builder/example
-  - packages/flutter_stubs

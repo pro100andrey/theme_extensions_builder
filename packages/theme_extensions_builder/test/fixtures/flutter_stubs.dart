@@ -6,9 +6,11 @@
 /// the same `lerp` and `merge` signatures as the real ones. That is the only
 /// thing the generator looks at.
 ///
-/// Keep the signatures in step with Flutter: the example app in the
-/// `theme_extensions_builder` package is what checks them against the real
-/// framework.
+/// Keep the signatures in step with Flutter: the example app is what checks
+/// the generated code against the real framework.
+///
+/// This file sits next to the fixtures because `source_gen_test` reads a
+/// fixture directory flat, so a fixture can only import its siblings.
 library;
 
 import 'dart:math' as math;

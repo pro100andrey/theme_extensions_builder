@@ -1,13 +1,14 @@
 /// Classes the generator refuses, with the error it reports for each.
 ///
-/// This directory is not part of `generate_for` in `build.yaml`, so the
-/// failing generation is only exercised by the test. None of the classes mix
+/// This file is excluded from `generate_for` in `build.yaml`, so the failing
+/// generation is only exercised by the test. None of the classes mix
 /// in the generated mixin for the same reason.
 library;
 
-import 'package:flutter_stubs/flutter_stubs.dart';
 import 'package:source_gen_test/source_gen_test.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
+
+import 'flutter_stubs.dart';
 
 /// `WidgetStateProperty.lerp` needs a lerp function with nullable parameters,
 /// so the generic of a `WidgetStateProperty` field has to be nullable.

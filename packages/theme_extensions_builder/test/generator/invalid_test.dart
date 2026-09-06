@@ -8,7 +8,7 @@ Future<void> main() async {
   initializeBuildLogTracking();
 
   final themeGenReader = await initializeLibraryReaderForDirectory(
-    'test/invalid',
+    'test/fixtures',
     'invalid_theme.dart',
   );
 
@@ -17,7 +17,7 @@ Future<void> main() async {
   });
 
   final themeExtensionsReader = await initializeLibraryReaderForDirectory(
-    'test/invalid',
+    'test/fixtures',
     'invalid_theme_extension.dart',
   );
 

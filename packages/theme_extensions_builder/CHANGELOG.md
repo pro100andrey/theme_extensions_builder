@@ -15,6 +15,7 @@
 - **Fixed**: `constructor: ''` selects the unnamed constructor instead of emitting `X.()`.
 - **Fixed**: The `@ThemeGen` and `@ignore` annotations are matched by package as well as by name, so a user class called `ThemeGen` is no longer taken for the annotation.
 - **Code Quality**: The `lerp` and `copyWith` generation is shared between the two generators instead of being maintained twice. The symbol model keeps only what the code builders read, the method lookups live in one file each, and the `collection` and `meta` dependencies are gone.
+- **Changed**: The `platforms` key is gone from the pubspec. A `build_runner` generator runs in the build process rather than on a platform, and declaring web support only cost the package its WASM score; pub.dev now lists the platforms it detects, as it does for `json_serializable` and `freezed`.
 
 ## 7.4.0
 

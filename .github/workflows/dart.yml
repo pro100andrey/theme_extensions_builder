@@ -9,7 +9,6 @@ on:
 env:
   BUILDER: packages/theme_extensions_builder
   ANNOTATION: packages/theme_extensions_builder_annotation
-  STUBS: packages/flutter_stubs
   EXAMPLE: packages/theme_extensions_builder/example
 
 jobs:
@@ -42,10 +41,10 @@ jobs:
 
       - name: Check formatting
         if: matrix.deps == 'latest'
-        run: dart format --set-exit-if-changed $BUILDER $ANNOTATION $STUBS
+        run: dart format --set-exit-if-changed $BUILDER $ANNOTATION
 
       - name: Analyze
-        run: dart analyze --fatal-infos $BUILDER $ANNOTATION $STUBS
+        run: dart analyze --fatal-infos $BUILDER $ANNOTATION
 
       - name: Test annotation
         working-directory: ${{ env.ANNOTATION }}

@@ -153,7 +153,7 @@ scripts/prepare_push.sh     # format, analyze, build and test every package
 scripts/update_goldens.sh   # regenerate the golden files after a generator change
 ```
 
-The generator tests run on the Dart SDK alone, against `packages/flutter_stubs`: small stand-ins for the Flutter classes the fixtures use, with the same `lerp` and `merge` signatures. The example app is where the generated code meets the real framework, so CI regenerates and analyzes it on every push.
+The generator tests run on the Dart SDK alone. The Flutter classes the fixtures use are small stand-ins in `packages/theme_extensions_builder/test/fixtures/flutter_stubs.dart`, with the same `lerp` and `merge` signatures as the real ones. The example app is where the generated code meets the real framework, so CI regenerates and analyzes it on every push.
 
 ## 📄 License
 

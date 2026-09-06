@@ -1,4 +1,0 @@
-include: package:pro_lints/recommended.yaml
-
-formatter:
-  trailing_commas: preserve

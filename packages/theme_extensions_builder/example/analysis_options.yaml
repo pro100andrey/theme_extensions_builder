@@ -1,5 +1,11 @@
-include: package:pro_lints/common.yaml
+include: package:pro_lints/recommended.yaml
 
 formatter: 
   trailing_commas: preserve
+analyzer:
+  exclude:
+    - android/**
+    - ios/**
+    - macos/**
+    - linux/**
 

@@ -1,19 +1,18 @@
 /// Extension for converting strings to camelCase format.
 extension StringCamelCase on String {
-  /// Converts the string to camelCase, with special handling for 'Extension'
-  /// suffix.
+  /// Converts the string to camelCase, optionally dropping a suffix.
   ///
-  /// This getter:
-  /// - Returns empty string if the input is empty
+  /// This method:
+  /// - Returns an empty string if the input is empty
   /// - Converts the first character to lowercase
-  /// - Removes 'Extension' suffix if present (e.g., 'MyExtension' → 'my')
+  /// - Removes [suffixToRemove] from the end when it is present
   ///
   /// Examples:
   /// ```dart
-  /// 'HelloWorld'.camelCase // 'helloWorld'
-  /// 'MyThemeExtension'.camelCase // 'myTheme'
-  /// 'theme'.camelCase // 'theme'
-  /// ''.camelCase // ''
+  /// 'HelloWorld'.camelCase() // 'helloWorld'
+  /// 'theme'.camelCase() // 'theme'
+  /// ''.camelCase() // ''
+  /// 'MyThemeExtension'.camelCase(suffixToRemove: 'Extension') // 'myTheme'
   /// ```
   String camelCase({String? suffixToRemove}) {
     if (isEmpty) {

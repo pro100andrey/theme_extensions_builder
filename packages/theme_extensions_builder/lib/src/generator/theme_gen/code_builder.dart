@@ -1,12 +1,18 @@
 import 'package:code_builder/code_builder.dart';
 
 import '../../common/symbols/field_info.dart';
-import '../../common/symbols/lerp_info.dart';
 import '../../common/symbols/merge_info.dart';
 import '../../config/config.dart';
 import '../common.dart';
 
-/// Generates code for theme extensions based on a given configuration.
+/// The members the generated mixin declares that a field cannot share a name
+/// with.
+///
+/// `canMerge` is left out on purpose: the mixin declares it as a getter, so a
+/// `bool` field is a valid override and is handled by [staticLerp].
+const themeGenReservedNames = {'copyWith', 'merge', 'lerp'};
+
+/// Generates the mixin for a `@ThemeGen` class.
 class ThemeGenCodeBuilder {
   const ThemeGenCodeBuilder();
 
@@ -21,22 +27,16 @@ class ThemeGenCodeBuilder {
         ..methods.addAll([
           canMerge(config),
           staticLerp(config),
-          copyWith(config),
+          copyWithMethod(config, returns: config.className.ref),
           merge(config),
           equalOperator(config),
           hashMethod(config),
         ]);
     });
 
-    // Set up the Dart code emitter
-    final emitter = DartEmitter(
-      allocator: Allocator.simplePrefixing(),
-      useNullSafetySyntax: true,
-      orderDirectives: true,
-    );
+    final library = Library((lib) => lib.body.add(mix));
 
-    final mixinLibrary = Library((lib) => lib.body.addAll([mix]));
-    return mixinLibrary.accept(emitter).toString();
+    return library.accept(partEmitter()).toString();
   }
 }
 
@@ -48,55 +48,6 @@ Method canMerge(ThemeGenConfig config) => Method((m) {
     ..type = MethodType.getter
     ..lambda = true
     ..body = literalTrue.code;
-});
-
-/// Generates a `copyWith` method for the theme class.
-Method copyWith(ThemeGenConfig config) => Method((m) {
-  final fields = config.filteredFields;
-
-  m
-    ..name = 'copyWith'
-    ..returns = config.className.ref
-    ..optionalParameters.addAll(
-      fields.map(
-        (field) => Parameter(
-          (p) => p
-            ..name = field.name
-            ..named = true
-            ..type = field.typeName.typeRef(isNullable: true),
-        ),
-      ),
-    )
-    ..body = Block((b) {
-      // If there are fields, create a _this variable for easier access
-      if (fields.isNotEmpty) {
-        b
-          ..addExpression(
-            declareFinal('_this').assign('this'.ref.asA(config.className.ref)),
-          )
-          ..addEmptyLine();
-      }
-
-      final args = <String, Expression>{};
-      for (final field in fields) {
-        args[field.name] = field.name.ref.ifNullThen(
-          '_this'.ref.prop(field.name),
-        );
-      }
-
-      b.addExpression(
-        (fields.isEmpty && config.constConstructor
-                ? InvokeExpression.constOf
-                : InvokeExpression.newOf)(
-              config.className.ref,
-              [],
-              args,
-              [],
-              config.constructor,
-            )
-            .returned,
-      );
-    });
 });
 
 /// Generates a `merge` method for the theme class.
@@ -112,90 +63,106 @@ Method merge(ThemeGenConfig config) => Method((m) {
       ),
     )
     ..body = Block((b) {
-      final fields = config.filteredFields;
-
       b
-        // Create a _this variable for easier access to the current instance
-        ..addExpression(
-          declareFinal(
-            '_this'.ref.symbol,
-          ).assign('this'.ref.asA(config.className.ref)),
-        )
+        ..addExpression(declareThis(config))
         ..addEmptyLine()
         // Return `_this` if other is null or identical to `_this`
         ..statements.add(
           ifStatement(
             'other'.ref
                 .equalTo(literalNull)
-                .or('identical'.ref(['_this'.ref, 'other'.ref])),
-            Block((b) => b.addExpression('_this'.ref.returned)),
+                .or('identical'.ref([thisRef, 'other'.ref])),
+            Block((b) => b.addExpression(thisRef.returned)),
           ),
         )
         ..addEmptyLine()
         // Return `other` if it cannot be merged
         ..statements.add(
           ifStatement(
-            'other'.ref.negate().prop('canMerge'),
+            'other'.ref.negate().property('canMerge'),
             Block((b) => b.addExpression('other'.ref.returned)),
           ),
         )
         ..addEmptyLine();
 
-      final args = <String, Expression>{};
-      for (final field in fields) {
-        final thisProp = '_this'.ref.prop(field.name);
-        final otherProp = 'other'.ref.prop(field.name);
-
-        final staticMerge = field.typeName.ref.prop('merge');
-        final instanceMerge = thisProp.prop('merge');
-
-        // Handle different merge strategies based on field configuration
-
-        // No merge method, just take the other property
-        // `property: other.property`
-        if (field.merge case NoMerge()) {
-          args[field.name] = otherProp;
-          continue;
-        }
-
-        // Static merge method with optional field
-        if (field.merge case StaticMerge() when field.isNullable) {
-          args[field.name] = thisProp
-              .notEqualTo(literalNull)
-              .and(otherProp.notEqualTo(literalNull))
-              .conditional(
-                staticMerge([thisProp.nullChecked, otherProp.nullChecked]),
-                otherProp,
-              );
-          continue;
-        }
-
-        // Static merge method with non-optional field
-        if (field.merge case StaticMerge() when !field.isNullable) {
-          args[field.name] = staticMerge([thisProp, otherProp]);
-          continue;
-        }
-
-        // Instance merge method with optional field
-        if (field.merge case InstanceMerge() when field.isNullable) {
-          args[field.name] = thisProp
-              .nullSafeProperty('merge')([otherProp])
-              .ifNullThen(otherProp);
-          continue;
-        }
-
-        // Instance merge method with non-optional field
-        if (field.merge case InstanceMerge() when !field.isNullable) {
-          args[field.name] = instanceMerge([otherProp]);
-          continue;
-        }
-
-        throw StateError('Unsupported merge info for field ${field.name}');
-      }
+      final args = {
+        for (final field in config.fields)
+          field.name: _mergeFieldExpression(
+            field,
+            thisRef.property(field.name),
+            'other'.ref.property(field.name),
+          ),
+      };
 
       b.addExpression('copyWith'.ref([], args).returned);
     });
 });
+
+/// The expression that merges [other] into [current] for [field].
+Expression _mergeFieldExpression(
+  FieldInfo field,
+  Expression current,
+  Expression other,
+) {
+  final staticMerge = field.baseTypeName.ref.property('merge');
+
+  Expression castIfNeeded(Expression expression, {required bool needsCast}) =>
+      needsCast
+      ? expression.asA(field.typeName.typeRef(isNullable: field.isNullable))
+      : expression;
+
+  // A merge that cannot take a null on either side keeps whichever value is
+  // present:
+  // _this.field == null
+  //     ? other.field
+  //     : other.field == null
+  //     ? _this.field
+  //     : <merge>
+  Expression whenBothPresent(Expression merge) => current
+      .equalTo(literalNull)
+      .conditional(
+        other,
+        other.equalTo(literalNull).conditional(current, merge),
+      );
+
+  // The result goes through `copyWith`, which reads a null as "keep the
+  // current value": a null `other.field`, or a null returned by the field's
+  // own `merge`, leaves `_this.field` in place.
+  return switch (field.merge) {
+    // No merge method, just take the other property
+    NoMerge() => other,
+
+    // Class.merge(_this.field!, other.field!), guarded
+    StaticMerge() when field.isNullable => whenBothPresent(
+      staticMerge([current.nullChecked, other.nullChecked]),
+    ),
+
+    // Class.merge(_this.field, other.field)
+    StaticMerge() => staticMerge([current, other]),
+
+    // _this.field?.merge(other.field) ?? other.field
+    InstanceMerge(isNullableParameter: true, :final needsCast)
+        when field.isNullable =>
+      castIfNeeded(
+        current.nullSafeProperty('merge')([other]),
+        needsCast: needsCast,
+      ).ifNullThen(other),
+
+    // _this.field!.merge(other.field!), guarded
+    InstanceMerge(:final needsCast) when field.isNullable => whenBothPresent(
+      castIfNeeded(
+        current.nullChecked.property('merge')([other.nullChecked]),
+        needsCast: needsCast,
+      ),
+    ),
+
+    // _this.field.merge(other.field)
+    InstanceMerge(:final needsCast) => castIfNeeded(
+      current.property('merge')([other]),
+      needsCast: needsCast,
+    ),
+  };
+}
 
 /// Generates a static `lerp` method for interpolating between two theme
 /// instances.
@@ -210,23 +177,21 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
     ..requiredParameters.addAll([
       Parameter(
         (p) => p
-          ..name = 'a'.ref.symbol
+          ..name = 'a'
           ..type = config.className.typeRef(isNullable: true),
       ),
       Parameter(
         (p) => p
-          ..name = 'b'.ref.symbol
+          ..name = 'b'
           ..type = config.className.typeRef(isNullable: true),
       ),
       Parameter(
         (p) => p
-          ..name = 't'.ref.symbol
+          ..name = 't'
           ..type = 'double'.ref,
       ),
     ])
     ..body = Block((b) {
-      final fields = config.filteredFields;
-
       b
         // If a and b are identical, return a
         ..statements.add(
@@ -242,7 +207,7 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
             'a'.ref.equalTo(literalNull),
             Block(
               (b) => b.addExpression(
-                't'.ref
+                tRef
                     .equalTo(literalNum(1.0))
                     .conditional('b'.ref, literalNull)
                     .returned,
@@ -257,7 +222,7 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
             'b'.ref.equalTo(literalNull),
             Block(
               (b) => b.addExpression(
-                't'.ref
+                tRef
                     .equalTo(literalNum(0.0))
                     .conditional('a'.ref, literalNull)
                     .returned,
@@ -267,172 +232,19 @@ Method staticLerp(ThemeGenConfig config) => Method((m) {
         )
         ..addEmptyLine();
 
-      final argsResult = <String, Expression>{};
+      final args = <String, Expression>{};
 
-      for (final field in fields) {
-        final aProp = 'a'.ref.prop(field.name);
-        final bProp = 'b'.ref.prop(field.name);
-        final lerp = field.typeName.ref.prop('lerp');
+      for (final field in config.fields) {
+        final aProp = 'a'.ref.property(field.name);
+        final bProp = 'b'.ref.property(field.name);
 
-        // Handle different lerp strategies based on field configuration
-
-        // Non-nullable field with non-nullable lerp signature
-        if (field.lerp case StaticLerp(
-          isNullableSignature: false,
-        ) when !field.isNullable) {
-          // value: Class.lerp(a.field, b.field, t)
-          argsResult[field.name] = lerp([aProp, bProp, 't'.ref]);
-
-          continue;
-        }
-
-        // Non-nullable field with nullable lerp signature
-        if (field.lerp case StaticLerp(
-          isNullableSignature: true,
-        ) when !field.isNullable) {
-          // value: Class.lerp(a.field, b.field, t)!
-          argsResult[field.name] = lerp([aProp, bProp, 't'.ref]).nullChecked;
-          continue;
-        }
-
-        // Nullable field with non-nullable lerp signature
-        if (field.lerp case StaticLerp(
-          isNullableSignature: false,
-        ) when field.isNullable) {
-          // value: a.field == null
-          //     ? b.field
-          //     : b.field == null
-          //         ? a.field
-          //         : Class.lerp(a.field!, b.field!, t)
-          argsResult[field.name] = aProp
-              .equalTo(literalNull)
-              .conditional(
-                bProp,
-                bProp
-                    .equalTo(literalNull)
-                    .conditional(
-                      aProp,
-                      lerp([aProp.nullChecked, bProp.nullChecked, 't'.ref]),
-                    ),
-              );
-
-          continue;
-        }
-
-        // Nullable field with nullable lerp signature
-        if (field.lerp case StaticLerp(
-          isNullableSignature: true,
-        ) when field.isNullable) {
-          // value: Class.lerp(a.field, b.field, t)
-          argsResult[field.name] = lerp([aProp, bProp, 't'.ref]);
-
-          continue;
-        }
-
-        // Instance lerp method with optional result
-        if (field.lerp case InstanceLerp(
-          optionalResult: true,
-        ) when field.isNullable) {
-          // value: a.field?.lerp(b.field, t)
-          argsResult[field.name] = aProp.prop('lerp', nullSafe: true)([
-            bProp,
-            't'.ref,
-          ]);
-
-          continue;
-        }
-        // Instance lerp method with non-optional result
-        if (field.lerp case InstanceLerp(
-          optionalResult: false,
-        ) when !field.isNullable) {
-          // value: a.field.lerp(b.field, t)
-          argsResult[field.name] = aProp
-              .prop('lerp')([bProp, 't'.ref])
-              .asA(field.typeName.typeRef());
-
-          continue;
-        }
-
-        // WidgetStateProperty lerp with inner lerp function
-        if (field.lerp case WidgetStatePropertyLerp(
-          :final baseTypeName,
-          :final genericType,
-          :final isNullableGeneric,
-          :final genericIsDouble,
-          :final genericIsDuration,
-        )) {
-          // Get the inner lerp function reference
-          final innerLerpFn = genericIsDouble
-              ? r'lerpDouble$'.ref
-              : genericIsDuration
-              ? r'lerpDuration$'.ref
-              : genericType.ref.prop('lerp');
-
-          // WidgetStateProperty.lerp<Color?>(
-          // a.field,
-          // b.field,
-          // t,
-          // Color.lerp
-          // )
-
-          final expression = baseTypeName.ref.prop('lerp')(
-            [aProp, bProp, 't'.ref, innerLerpFn],
-            {},
-            [genericType.typeRef(isNullable: isNullableGeneric)],
-          );
-
-          argsResult[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
-
-          continue;
-        }
-
-        // When the field is of type double
-        if (field case FieldInfo(isDouble: true) when field.lerp is NoLerp) {
-          final expression = r'lerpDouble$'.ref([aProp, bProp, 't'.ref]);
-
-          argsResult[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
-
-          continue;
-        }
-
-        // When the field is of type Duration
-        if (field case FieldInfo(isDuration: true) when field.lerp is NoLerp) {
-          final expression = r'lerpDuration$'.ref([aProp, bProp, 't'.ref]);
-
-          argsResult[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
-
-          continue;
-        }
-
-        // Special case for canMerge field
-        if (field.name == 'canMerge') {
-          argsResult[field.name] = bProp;
-          continue;
-        }
-        // Fallback to a simple conditional expression:
-        // t < 0.5 ? a.field : b.field
-        argsResult[field.name] = 't'.ref
-            .lessThan(literalNum(0.5))
-            .conditional(aProp, bProp);
+        // A `canMerge` declared as a field rather than a getter is not
+        // interpolated: the result takes the value of `b`.
+        args[field.name] = field.name == 'canMerge'
+            ? bProp
+            : lerpFieldExpression(field, aProp, bProp);
       }
 
-      b.addExpression(
-        (argsResult.isEmpty && config.constConstructor
-                ? InvokeExpression.constOf
-                : InvokeExpression.newOf)(
-              config.className.ref,
-              [],
-              argsResult,
-              [],
-              config.constructor,
-            )
-            .returned,
-      );
+      b.addExpression(construct(config, args).returned);
     });
 });

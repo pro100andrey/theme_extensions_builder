@@ -1,0 +1,7 @@
+# The example app is a member of the development workspace: its pubspec.yaml
+# says `resolution: workspace`, which does not resolve outside the repository,
+# and its platform folders are noise on pub.dev. The sources and the README
+# stay, so the Example tab still has something to show.
+example/*
+!example/lib
+!example/README.md

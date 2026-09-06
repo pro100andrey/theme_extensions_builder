@@ -1,11 +1,15 @@
 import 'package:code_builder/code_builder.dart';
 
-import '../../common/symbols/lerp_info.dart';
 import '../../config/config.dart';
 import '../../extensions/string.dart';
 import '../common.dart';
 
-/// Generates code for `ThemeExtension` mixins and related helpers.
+/// The members the generated mixin declares that a field cannot share a name
+/// with.
+const themeExtensionsReservedNames = {'copyWith', 'lerp'};
+
+/// Generates the mixin for a `@ThemeExtensions` class, and the `BuildContext`
+/// extension that reaches it.
 class ThemeExtensionsCodeBuilder {
   const ThemeExtensionsCodeBuilder();
 
@@ -21,24 +25,18 @@ class ThemeExtensionsCodeBuilder {
     final mix = Mixin((m) {
       m
         ..name = config.themeExtensionMixinName
-        ..on = TypeReference(
-          (t) => t
-            ..symbol = 'ThemeExtension'
-            ..types.add(config.className.ref),
-        )
+        ..on = _themeExtensionRef(config)
         ..methods.addAll([
-          copyWith(config),
+          copyWithMethod(
+            config,
+            returns: _themeExtensionRef(config),
+            isOverride: true,
+          ),
           lerpMethod(config),
           equalOperator(config),
           hashMethod(config),
         ]);
     });
-
-    final emitter = DartEmitter(
-      allocator: Allocator.simplePrefixing(),
-      useNullSafetySyntax: true,
-      orderDirectives: true,
-    );
 
     final library = Library(
       (b) => b.body.addAll([
@@ -47,62 +45,9 @@ class ThemeExtensionsCodeBuilder {
       ]),
     );
 
-    return library.accept(emitter).toString();
+    return library.accept(partEmitter()).toString();
   }
 }
-
-/// Generates the `copyWith` method for the theme extension.
-///
-/// Allows creating a copy of the theme extension with some fields replaced.
-Method copyWith(ThemeExtensionsConfig config) => Method((m) {
-  final fields = config.filteredFields;
-
-  m
-    ..name = 'copyWith'
-    ..annotations.add('override'.ref)
-    ..returns = _buildThemeExtensionRef(config)
-    ..optionalParameters.addAll(
-      fields.map(
-        (field) => Parameter(
-          (p) => p
-            ..name = field.name
-            ..named = true
-            ..type = field.typeName.typeRef(isNullable: true),
-        ),
-      ),
-    )
-    ..body = Block((b) {
-      if (fields.isNotEmpty) {
-        b
-          ..addExpression(
-            declareFinal(
-              '_this'.ref.symbol,
-            ).assign('this'.ref.asA(config.className.ref)),
-          )
-          ..addEmptyLine();
-      }
-
-      final args = <String, Expression>{};
-      for (final field in fields) {
-        args[field.name] = field.name.ref.ifNullThen(
-          '_this'.ref.prop(field.name),
-        );
-      }
-
-      b.addExpression(
-        (fields.isEmpty && config.constConstructor
-                ? InvokeExpression.constOf
-                : InvokeExpression.newOf)(
-              config.className.ref,
-              [],
-              args,
-              [],
-              config.constructor,
-            )
-            .returned,
-      );
-    });
-});
 
 /// Generates the `lerp` (linear interpolation) method for the theme extension.
 ///
@@ -114,13 +59,13 @@ Method copyWith(ThemeExtensionsConfig config) => Method((m) {
 Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
   m
     ..name = 'lerp'
-    ..annotations.add('override'.ref)
-    ..returns = _buildThemeExtensionRef(config)
+    ..annotations.add(overrideAnnotation)
+    ..returns = _themeExtensionRef(config)
     ..requiredParameters.addAll([
       Parameter(
         (p) => p
           ..name = 'other'
-          ..type = _buildThemeExtensionRef(config, isNullable: true),
+          ..type = _themeExtensionRef(config, isNullable: true),
       ),
       Parameter(
         (p) => p
@@ -129,7 +74,7 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
       ),
     ])
     ..body = Block((b) {
-      final fields = config.filteredFields;
+      final fields = config.fields;
 
       b
         ..statements.add(
@@ -142,199 +87,25 @@ Method lerpMethod(ThemeExtensionsConfig config) => Method((m) {
 
       if (fields.isNotEmpty) {
         b
-          ..addExpression(
-            declareFinal(
-              '_this'.ref.symbol,
-            ).assign('this'.ref.asA(config.className.ref)),
-          )
+          ..addExpression(declareThis(config))
           ..addEmptyLine();
       }
 
-      final args = <String, Expression>{};
+      final args = {
+        for (final field in fields)
+          field.name: lerpFieldExpression(
+            field,
+            thisRef.property(field.name),
+            'other'.ref.property(field.name),
+          ),
+      };
 
-      for (final field in fields) {
-        final tProp = '_this'.ref.prop(field.name);
-        final oProp = 'other'.ref.prop(field.name);
-
-        // Handle NoLerp with double field
-        if (field.lerp case NoLerp() when field.isDouble) {
-          // lerpDouble$(_this.field, other.field, t) or
-          // lerpDouble$(_this.field, other.field, t)!
-          final expression = r'lerpDouble$'.ref([tProp, oProp, 't'.ref]);
-
-          args[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
-          continue;
-        }
-
-        // Handle NoLerp with duration field
-        if (field.lerp case NoLerp() when field.isDuration) {
-          // lerpDuration$(_this.field, other.field, t) or
-          // lerpDuration$(_this.field, other.field, t)!
-          final expression = r'lerpDuration$'.ref([tProp, oProp, 't'.ref]);
-
-          args[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
-          continue;
-        }
-
-        if (field.lerp case NoLerp()) {
-          // Default conditional expression
-
-          args[field.name] = 't'.ref
-              .lessThan(literalNum(0.5))
-              .conditional(
-                '_this'.ref.prop(field.name),
-                'other'.ref.prop(field.name),
-              );
-
-          continue;
-        }
-
-        final sLerp = field.typeName.ref.prop('lerp');
-
-        // Handle StaticLerp with non-nullable signature and optional
-        // field
-        if (field.lerp case StaticLerp(
-          isNullableSignature: false,
-        ) when field.isNullable) {
-          // _this.side == null
-          // ? other.side
-          // : other.side == null
-          // ? _this.side
-          // : Side.lerp(_this.side!, other.side!, t),
-          args[field.name] = tProp
-              .equalTo(literalNull)
-              .conditional(
-                oProp,
-                oProp
-                    .equalTo(literalNull)
-                    .conditional(
-                      tProp,
-                      sLerp([tProp.nullChecked, oProp.nullChecked, 't'.ref]),
-                    ),
-              );
-          continue;
-        }
-        // Handle StaticLerp with non-nullable signature and
-        // non-optional field
-        if (field.lerp case StaticLerp(
-          isNullableSignature: false,
-        ) when !field.isNullable) {
-          // FieldType.lerp(_this.field, other.field, t)
-          args[field.name] = sLerp([tProp, oProp, 't'.ref]);
-          continue;
-        }
-
-        // Handle StaticLerp with nullable signature and
-        // non-optional field
-        if (field.lerp case StaticLerp(
-          isNullableSignature: true,
-        ) when !field.isNullable) {
-          // FieldType.lerp(_this.field!, other.field!, t)!
-          args[field.name] = sLerp([tProp, oProp, 't'.ref]).nullChecked;
-          continue;
-        }
-
-        // Handle StaticLerp with nullable signature and optional
-        // field
-        if (field.lerp case StaticLerp(
-          isNullableSignature: true,
-        ) when field.isNullable) {
-          // FieldType.lerp(_this.field, other.field, t)
-          args[field.name] = sLerp([tProp, oProp, 't'.ref]);
-          continue;
-        }
-
-        // Handle InstanceLerp with optional field
-        if (field.lerp case InstanceLerp(
-          optionalResult: true,
-        ) when field.isNullable) {
-          // _this.field?.lerp(other.field, t)
-          args[field.name] = tProp.prop('lerp', nullSafe: true)([
-            oProp,
-            't'.ref,
-          ]);
-          continue;
-        }
-
-        // Handle InstanceLerp with non-optional result and nullable field
-        if (field.lerp case InstanceLerp(
-          optionalResult: false,
-        ) when field.isNullable) {
-          // _this.field?.lerp(other.field, t) as FieldType?
-          args[field.name] = tProp
-              .prop('lerp', nullSafe: true)([oProp, 't'.ref])
-              .asA(field.typeName.typeRef(isNullable: true));
-          continue;
-        }
-
-        // Handle InstanceLerp with non-optional field
-        if (field.lerp case InstanceLerp() when !field.isNullable) {
-          // _this.field.lerp(other.field, t) as FieldType
-          args[field.name] = tProp
-              .prop('lerp')([oProp, 't'.ref])
-              .asA(field.typeName.typeRef());
-          continue;
-        }
-
-        // Handle WidgetStateProperty lerp with inner lerp function
-        if (field.lerp case WidgetStatePropertyLerp(
-          :final baseTypeName,
-          :final genericType,
-          :final isNullableGeneric,
-          :final genericIsDouble,
-          :final genericIsDuration,
-        )) {
-          // Get the inner lerp function reference
-          final innerLerpFn = genericIsDouble
-              ? r'lerpDouble$'.ref
-              : genericIsDuration
-              ? r'lerpDuration$'.ref
-              : genericType.ref.prop('lerp');
-
-          // WidgetStateProperty.lerp<Color?>(
-          //   _this.field,
-          //   other.field,
-          //   t,
-          //   Color.lerp
-          // )
-          final expression = baseTypeName.ref.prop('lerp')(
-            [tProp, oProp, 't'.ref, innerLerpFn],
-            {},
-            [genericType.typeRef(isNullable: isNullableGeneric)],
-          );
-
-          args[field.name] = field.isNullable
-              ? expression
-              : expression.nullChecked;
-
-          continue;
-        }
-
-        throw UnimplementedError(
-          'Lerp method not implemented for field: ${field.name}',
-        );
-      }
-
-      b.addExpression(
-        (args.isEmpty && config.constConstructor
-                ? InvokeExpression.constOf
-                : InvokeExpression.newOf)(
-              config.className.ref,
-              [],
-              args,
-              [],
-              config.constructor,
-            )
-            .returned,
-      );
+      b.addExpression(construct(config, args).returned);
     });
 });
-// Returns a type reference for `ThemeExtension<T>` based on [config].
-TypeReference _buildThemeExtensionRef(
+
+/// A reference to `ThemeExtension<ClassName>`.
+TypeReference _themeExtensionRef(
   ThemeExtensionsConfig config, {
   bool isNullable = false,
 }) => TypeReference(
@@ -350,28 +121,24 @@ TypeReference _buildThemeExtensionRef(
 /// ```dart
 /// context.myThemeExtension
 /// ```
-Extension contextExtension(ThemeExtensionsConfig config) {
-  final result = Extension((b) {
-    b
-      ..name = '${config.className}BuildContext'
-      ..on = 'BuildContext'.ref
-      ..methods.add(
-        Method((mb) {
-          mb
-            ..type = MethodType.getter
-            ..lambda = true
-            ..name =
-                config.contextAccessorName ??
-                config.className.camelCase(suffixToRemove: 'Extension')
-            ..returns = config.className.ref
-            ..body = 'Theme'.ref
-                .prop('of')(['this'.ref])
-                .prop('extension')([], {}, [config.className.ref])
-                .nullChecked
-                .code;
-        }),
-      );
-  });
-
-  return result;
-}
+Extension contextExtension(ThemeExtensionsConfig config) => Extension((b) {
+  b
+    ..name = '${config.className}BuildContext'
+    ..on = 'BuildContext'.ref
+    ..methods.add(
+      Method((mb) {
+        mb
+          ..type = MethodType.getter
+          ..lambda = true
+          ..name =
+              config.contextAccessorName ??
+              config.className.camelCase(suffixToRemove: 'Extension')
+          ..returns = config.className.ref
+          ..body = 'Theme'.ref
+              .property('of')(['this'.ref])
+              .property('extension')([], {}, [config.className.ref])
+              .nullChecked
+              .code;
+      }),
+    );
+});

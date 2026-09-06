@@ -29,11 +29,11 @@ Or add manually to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  theme_extensions_builder_annotation: ^7.3.0
+  theme_extensions_builder_annotation: ^7.5.0
 
 dev_dependencies:
   build_runner: ^2.13.0
-  theme_extensions_builder: ^7.4.0
+  theme_extensions_builder: ^7.5.0
 ```
 
 ## 🚀 Quick Start
@@ -472,19 +472,37 @@ The example includes ready-to-use components and demonstrates best practices for
 
 ## 🔧 Build Configuration
 
-### build.yaml (Optional)
-
-You can customize the build configuration:
+The builder takes no options. What `build.yaml` can configure is which files it looks at, which keeps builds fast in a large project:
 
 ```yaml
 targets:
   $default:
     builders:
       theme_extensions_builder:
-        enabled: true
-        options:
-          # Add custom options here if needed
+        generate_for:
+          - lib/theme/**.dart
 ```
+
+## 🚧 Limitations
+
+- **Types are written by name.** The generated code refers to field types the way the analyzer displays them, without import prefixes. A theme file that imports Flutter `as m` gets a bare `Color` in the generated part, which does not resolve. Import Flutter without a prefix in the files that declare themes.
+- **`copyWith` cannot set a nullable field to `null`.** Passing `null` means "keep the current value", as in Flutter's own theme classes.
+- **Null handling in `lerp` depends on the type.** `double` and `Duration` treat a missing side as zero, like Flutter's `lerpDouble`. A type with a static `lerp` that accepts nulls, such as `Color`, decides for itself. A type whose `lerp` cannot take a null keeps the nearer side: `t < 0.5` gives the first value, otherwise the second.
+
+## 🚨 Generation Errors
+
+The generator checks the annotated class before it writes anything, and stops the build with a message pointing at the class when:
+
+- the constructor named in `constructor:` does not exist, or there is no unnamed constructor to fall back to;
+- a field has no named parameter of the same name in that constructor (mark it `@ignore` if it is not part of the theme);
+- that constructor requires a parameter the generated code does not pass: a positional one, one that is not a field, or the parameter of an `@ignore`d field;
+- the class is generic, or does not apply the generated `_$ClassName` mixin;
+- a field is named after a member the mixin declares (`copyWith`, `merge`, `lerp`);
+- a `@ThemeExtensions` class does not extend `ThemeExtension<Self>`;
+- `contextAccessorName` is not a valid identifier, or is a reserved word;
+- a `WidgetStateProperty` field has a non-nullable generic.
+
+A field type whose `lerp` or `merge` has a signature the generator cannot call is not an error. The build logs a warning naming the field, which then switches over at `t = 0.5` instead of being interpolated, or is overwritten instead of being merged.
 
 ## ⚡ Tips and Best Practices
 

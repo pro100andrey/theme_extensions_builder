@@ -1,192 +1,135 @@
+// Several tests build values without `const` on purpose: two identical const
+// expressions are canonicalized into the same object, which would make the
+// equality checks trivially true.
+// ignore_for_file: prefer_const_constructors
+
 import 'package:test/test.dart';
 import 'package:theme_extensions_builder/src/common/symbols/field_info.dart';
 import 'package:theme_extensions_builder/src/common/symbols/lerp_info.dart';
 import 'package:theme_extensions_builder/src/common/symbols/merge_info.dart';
-import 'package:theme_extensions_builder/src/common/symbols/parameter_info.dart'
-    show ParameterInfo;
 
 void main() {
-  group('ParameterInfo', () {
-    test('creates ParameterInfo with required properties', () {
-      const arg = ParameterInfo(
-        name: 'value',
-        type: 'String',
-        isNullable: true,
-      );
-
-      expect(arg.name, 'value');
-      expect(arg.type, 'String');
-      expect(arg.isNullable, true);
-    });
-
-    test('equality works correctly', () {
-      const arg1 = ParameterInfo(name: 'a', type: 'int', isNullable: false);
-      const arg2 = ParameterInfo(name: 'a', type: 'int', isNullable: false);
-      const arg3 = ParameterInfo(name: 'b', type: 'int', isNullable: false);
-
-      expect(arg1, equals(arg2));
-      expect(arg1, isNot(equals(arg3)));
-    });
-
-    test('hashCode works correctly', () {
-      const arg1 = ParameterInfo(name: 'a', type: 'int', isNullable: false);
-      const arg2 = ParameterInfo(name: 'a', type: 'int', isNullable: false);
-
-      expect(arg1.hashCode, equals(arg2.hashCode));
-    });
-
-    test('toString returns readable format', () {
-      const arg = ParameterInfo(name: 'test', type: 'double', isNullable: true);
-      expect(
-        arg.toString(),
-        'ParameterInfo(name: test, type: double, isNullable: true)',
-      );
-    });
-  });
-
   group('StaticLerp', () {
     test('creates StaticLerp with properties', () {
-      const lerp = StaticLerp(
-        optionalResult: true,
-        args: [
-          ParameterInfo(name: 'a', type: 'Color', isNullable: true),
-          ParameterInfo(name: 'b', type: 'Color', isNullable: true),
-          ParameterInfo(name: 't', type: 'double', isNullable: false),
-        ],
-      );
+      const lerp = StaticLerp(optionalResult: true, isNullableParameter: true);
 
       expect(lerp.optionalResult, true);
-      expect(lerp.args.length, 3);
-    });
-
-    test('isNullableSignature returns true when all conditions met', () {
-      const lerp = StaticLerp(
-        optionalResult: true,
-        args: [
-          ParameterInfo(name: 'a', type: 'Color', isNullable: true),
-          ParameterInfo(name: 'b', type: 'Color', isNullable: true),
-          ParameterInfo(name: 't', type: 'double', isNullable: false),
-        ],
-      );
-
-      expect(lerp.isNullableSignature, true);
-    });
-
-    test('isNullableSignature returns false when optionalResult is false', () {
-      const lerp = StaticLerp(
-        optionalResult: false,
-        args: [
-          ParameterInfo(name: 'a', type: 'Color', isNullable: true),
-          ParameterInfo(name: 'b', type: 'Color', isNullable: true),
-          ParameterInfo(name: 't', type: 'double', isNullable: false),
-        ],
-      );
-
-      expect(lerp.isNullableSignature, false);
-    });
-
-    test('isNullableSignature returns false when first arg not nullable', () {
-      const lerp = StaticLerp(
-        optionalResult: true,
-        args: [
-          ParameterInfo(name: 'a', type: 'Color', isNullable: false),
-          ParameterInfo(name: 'b', type: 'Color', isNullable: true),
-          ParameterInfo(name: 't', type: 'double', isNullable: false),
-        ],
-      );
-
-      expect(lerp.isNullableSignature, false);
-    });
-
-    test('isNullableSignature handles empty args safely', () {
-      const lerp = StaticLerp(optionalResult: true, args: []);
-
-      expect(lerp.isNullableSignature, false);
-    });
-
-    test('isNullableSignature handles single arg safely', () {
-      const lerp = StaticLerp(
-        optionalResult: true,
-        args: [ParameterInfo(name: 'a', type: 'Color', isNullable: true)],
-      );
-
-      expect(lerp.isNullableSignature, false);
+      expect(lerp.isNullableParameter, true);
     });
 
     test('equality works correctly', () {
-      const lerp1 = StaticLerp(
+      final lerp1 = StaticLerp(optionalResult: true, isNullableParameter: true);
+      final lerp2 = StaticLerp(optionalResult: true, isNullableParameter: true);
+      final lerp3 = StaticLerp(
         optionalResult: true,
-        args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
+        isNullableParameter: false,
       );
-      const lerp2 = StaticLerp(
-        optionalResult: true,
-        args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
-      );
-      const lerp3 = StaticLerp(
+      final lerp4 = StaticLerp(
         optionalResult: false,
-        args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
+        isNullableParameter: true,
       );
 
       expect(lerp1, equals(lerp2));
+      expect(lerp1.hashCode, equals(lerp2.hashCode));
       expect(lerp1, isNot(equals(lerp3)));
+      expect(lerp1, isNot(equals(lerp4)));
+    });
+
+    test('toString returns correct format', () {
+      const lerp = StaticLerp(optionalResult: true, isNullableParameter: false);
+
+      expect(
+        lerp.toString(),
+        'StaticLerp(optionalResult: true, isNullableParameter: false)',
+      );
     });
   });
 
   group('InstanceLerp', () {
     test('creates InstanceLerp with properties', () {
-      const lerp = InstanceLerp(
-        optionalResult: true,
-        args: [
-          ParameterInfo(name: 'other', type: 'Color', isNullable: false),
-          ParameterInfo(name: 't', type: 'double', isNullable: false),
-        ],
-      );
+      const lerp = InstanceLerp(optionalResult: true);
 
       expect(lerp.optionalResult, true);
-      expect(lerp.args.length, 2);
-    });
-
-    test('isNullableSignature returns true when all conditions met', () {
-      const lerp = InstanceLerp(
-        optionalResult: true,
-        args: [
-          ParameterInfo(name: 'other', type: 'Color', isNullable: true),
-          ParameterInfo(name: 't', type: 'double', isNullable: false),
-        ],
-      );
-
-      expect(lerp.isNullableSignature, true);
-    });
-
-    test('isNullableSignature returns false when optionalResult is false', () {
-      const lerp = InstanceLerp(
-        optionalResult: false,
-        args: [
-          ParameterInfo(name: 'other', type: 'Color', isNullable: true),
-          ParameterInfo(name: 't', type: 'double', isNullable: false),
-        ],
-      );
-
-      expect(lerp.isNullableSignature, false);
-    });
-
-    test('isNullableSignature handles empty args safely', () {
-      const lerp = InstanceLerp(optionalResult: true, args: []);
-
-      expect(lerp.isNullableSignature, false);
+      expect(lerp.needsCast, false);
     });
 
     test('equality works correctly', () {
-      const lerp1 = InstanceLerp(
-        optionalResult: true,
-        args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
-      );
-      const lerp2 = InstanceLerp(
-        optionalResult: true,
-        args: [ParameterInfo(name: 'a', type: 'int', isNullable: false)],
-      );
+      final lerp1 = InstanceLerp(optionalResult: true);
+      final lerp2 = InstanceLerp(optionalResult: true);
+      final lerp3 = InstanceLerp(optionalResult: false);
 
       expect(lerp1, equals(lerp2));
+      expect(lerp1.hashCode, equals(lerp2.hashCode));
+      expect(lerp1, isNot(equals(lerp3)));
+    });
+
+    test('needsCast takes part in equality', () {
+      final plain = InstanceLerp(optionalResult: true);
+      final cast = InstanceLerp(optionalResult: true, needsCast: true);
+
+      expect(plain, isNot(equals(cast)));
+      expect(plain.hashCode, isNot(equals(cast.hashCode)));
+    });
+
+    test('toString returns correct format', () {
+      const lerp = InstanceLerp(optionalResult: false);
+
+      expect(
+        lerp.toString(),
+        'InstanceLerp(optionalResult: false, needsCast: false)',
+      );
+    });
+  });
+
+  group('WidgetStatePropertyLerp', () {
+    WidgetStatePropertyLerp build({
+      String genericType = 'Color',
+      bool genericIsDouble = false,
+      bool genericIsDuration = false,
+    }) => WidgetStatePropertyLerp(
+      baseTypeName: 'WidgetStateProperty',
+      genericType: genericType,
+      genericIsDouble: genericIsDouble,
+      genericIsDuration: genericIsDuration,
+    );
+
+    test('reports the generic type', () {
+      expect(build().genericIsDouble, isFalse);
+      expect(build().genericIsDuration, isFalse);
+      expect(build(genericIsDouble: true).genericIsDouble, isTrue);
+      expect(build(genericIsDuration: true).genericIsDuration, isTrue);
+    });
+
+    test('the inner lerp receiver drops the type arguments', () {
+      expect(build().genericBaseTypeName, 'Color');
+      expect(build(genericType: 'Box<int>').genericBaseTypeName, 'Box');
+    });
+
+    test('equality works correctly', () {
+      expect(build(), equals(build()));
+      expect(build().hashCode, equals(build().hashCode));
+      expect(build(), isNot(equals(build(genericType: 'double'))));
+    });
+
+    test('the element checks take part in equality', () {
+      // A user type called `Duration` shares genericType with the real one.
+      final byName = build(genericType: 'Duration');
+      final byElement = build(genericType: 'Duration', genericIsDuration: true);
+
+      expect(byName, isNot(equals(byElement)));
+      expect(byName.hashCode, isNot(equals(byElement.hashCode)));
+      expect(build(), isNot(equals(build(genericIsDouble: true))));
+    });
+
+    test('toString returns correct format', () {
+      expect(
+        build().toString(),
+        'WidgetStatePropertyLerp('
+        'baseTypeName: WidgetStateProperty, '
+        'genericType: Color, '
+        'genericIsDouble: false, '
+        'genericIsDuration: false)',
+      );
     });
   });
 
@@ -197,10 +140,11 @@ void main() {
     });
 
     test('equality works correctly', () {
-      const lerp1 = NoLerp();
-      const lerp2 = NoLerp();
+      final lerp1 = NoLerp();
+      final lerp2 = NoLerp();
 
       expect(lerp1, equals(lerp2));
+      expect(lerp1.hashCode, equals(lerp2.hashCode));
     });
 
     test('toString returns correct format', () {
@@ -211,24 +155,31 @@ void main() {
 
   group('MergeInfo', () {
     test('NoMerge equality works', () {
-      const merge1 = NoMerge();
-      const merge2 = NoMerge();
+      final merge1 = NoMerge();
+      final merge2 = NoMerge();
 
       expect(merge1, equals(merge2));
+      expect(merge1.hashCode, equals(merge2.hashCode));
     });
 
     test('StaticMerge equality works', () {
-      const merge1 = StaticMerge();
-      const merge2 = StaticMerge();
+      final merge1 = StaticMerge();
+      final merge2 = StaticMerge();
 
       expect(merge1, equals(merge2));
+      expect(merge1.hashCode, equals(merge2.hashCode));
     });
 
     test('InstanceMerge equality works', () {
-      const merge1 = InstanceMerge();
-      const merge2 = InstanceMerge();
+      final merge1 = InstanceMerge();
+      final merge2 = InstanceMerge();
+      const merge3 = InstanceMerge(isNullableParameter: false);
+      const merge4 = InstanceMerge(needsCast: true);
 
       expect(merge1, equals(merge2));
+      expect(merge1.hashCode, equals(merge2.hashCode));
+      expect(merge1, isNot(equals(merge3)));
+      expect(merge1, isNot(equals(merge4)));
     });
 
     test('different merge methods are not equal', () {
@@ -248,22 +199,34 @@ void main() {
 
       expect(noMerge.toString(), 'NoMerge()');
       expect(staticMerge.toString(), 'StaticMerge()');
-      expect(instanceMerge.toString(), 'InstanceMerge()');
+      expect(
+        instanceMerge.toString(),
+        'InstanceMerge(isNullableParameter: true, needsCast: false)',
+      );
     });
   });
 
   group('FieldInfo', () {
+    FieldInfo build({
+      String name = 'value',
+      String typeName = 'int',
+      bool isNullable = false,
+      bool isDouble = false,
+      bool isDuration = false,
+      MergeInfo merge = const NoMerge(),
+      LerpInfo lerp = const NoLerp(),
+    }) => FieldInfo(
+      name: name,
+      typeName: typeName,
+      isNullable: isNullable,
+      isDouble: isDouble,
+      isDuration: isDuration,
+      merge: merge,
+      lerp: lerp,
+    );
+
     test('creates FieldInfo with all properties', () {
-      const field = FieldInfo(
-        name: 'color',
-        typeName: 'Color',
-        isNullable: true,
-        isDouble: false,
-        isDuration: false,
-        merge: NoMerge(),
-        lerp: NoLerp(),
-        isStatic: false,
-      );
+      final field = build(name: 'color', typeName: 'Color', isNullable: true);
 
       expect(field.name, 'color');
       expect(field.typeName, 'Color');
@@ -272,204 +235,51 @@ void main() {
       expect(field.isDuration, false);
       expect(field.merge, isA<NoMerge>());
       expect(field.lerp, isA<NoLerp>());
-      expect(field.isStatic, false);
+    });
+
+    test('the static call receiver drops the type arguments', () {
+      expect(build(typeName: 'Box<int>').baseTypeName, 'Box');
+      expect(build(typeName: 'Color').baseTypeName, 'Color');
     });
 
     test('equality works correctly with same properties', () {
-      const field1 = FieldInfo(
-        name: 'value',
-        typeName: 'int',
-        isNullable: false,
-        isDouble: false,
-        isDuration: false,
-        merge: NoMerge(),
-        lerp: NoLerp(),
-        isStatic: false,
-      );
-
-      const field2 = FieldInfo(
-        name: 'value',
-        typeName: 'int',
-        isNullable: false,
-        isDouble: false,
-        isDuration: false,
-        merge: NoMerge(),
-        lerp: NoLerp(),
-        isStatic: false,
-      );
-
-      expect(field1, equals(field2));
+      expect(build(), equals(build()));
+      expect(build().hashCode, equals(build().hashCode));
     });
 
     test('equality returns false with different properties', () {
-      const field1 = FieldInfo(
-        name: 'value',
-        typeName: 'int',
-        isNullable: false,
-        isDouble: false,
-        isDuration: false,
-        merge: NoMerge(),
-        lerp: NoLerp(),
-        isStatic: false,
+      expect(build(), isNot(equals(build(name: 'other'))));
+      expect(build(), isNot(equals(build(typeName: 'double'))));
+      expect(build(), isNot(equals(build(isNullable: true))));
+      expect(build(), isNot(equals(build(isDouble: true))));
+      expect(build(), isNot(equals(build(isDuration: true))));
+      expect(build(), isNot(equals(build(merge: const StaticMerge()))));
+      expect(
+        build(),
+        isNot(
+          equals(
+            build(
+              lerp: const StaticLerp(
+                optionalResult: true,
+                isNullableParameter: true,
+              ),
+            ),
+          ),
+        ),
       );
-
-      const field2 = FieldInfo(
-        name: 'other',
-        typeName: 'int',
-        isNullable: false,
-        isDouble: false,
-        isDuration: false,
-        merge: NoMerge(),
-        lerp: NoLerp(),
-        isStatic: false,
-      );
-
-      expect(field1, isNot(equals(field2)));
-    });
-
-    test('hashCode is consistent', () {
-      const field1 = FieldInfo(
-        name: 'test',
-        typeName: 'String',
-        isNullable: true,
-        isDouble: false,
-        isDuration: false,
-        merge: StaticMerge(),
-        lerp: NoLerp(),
-        isStatic: false,
-      );
-
-      const field2 = FieldInfo(
-        name: 'test',
-        typeName: 'String',
-        isNullable: true,
-        isDouble: false,
-        isDuration: false,
-        merge: StaticMerge(),
-        lerp: NoLerp(),
-        isStatic: false,
-      );
-
-      expect(field1.hashCode, equals(field2.hashCode));
     });
 
     test('toString returns readable format', () {
-      const field = FieldInfo(
-        name: 'duration',
-        typeName: 'Duration',
-        isNullable: false,
-        isDouble: false,
-        isDuration: true,
-        merge: InstanceMerge(),
-        lerp: StaticLerp(optionalResult: false, args: []),
-        isStatic: false,
+      expect(
+        build().toString(),
+        'FieldInfo(name: value, '
+        'typeName: int, '
+        'isNullable: false, '
+        'isDouble: false, '
+        'isDuration: false, '
+        'merge: NoMerge(), '
+        'lerp: NoLerp())',
       );
-
-      final string = field.toString();
-      expect(string, contains('duration'));
-      expect(string, contains('Duration'));
-      expect(string, contains('isDuration: true'));
-    });
-
-    test('works with different lerp methods', () {
-      const field1 = FieldInfo(
-        name: 'x',
-        typeName: 'double',
-        isNullable: false,
-        isDouble: true,
-        isDuration: false,
-        merge: NoMerge(),
-        lerp: StaticLerp(optionalResult: false, args: []),
-        isStatic: false,
-      );
-
-      const field2 = FieldInfo(
-        name: 'x',
-        typeName: 'double',
-        isNullable: false,
-        isDouble: true,
-        isDuration: false,
-        merge: NoMerge(),
-        lerp: InstanceLerp(optionalResult: false, args: []),
-        isStatic: false,
-      );
-
-      expect(field1, isNot(equals(field2)));
-    });
-  });
-
-  group('Edge cases and boundaries', () {
-    test('StaticLerp with exactly 2 args works', () {
-      const lerp = StaticLerp(
-        optionalResult: true,
-        args: [
-          ParameterInfo(name: 'a', type: 'int', isNullable: true),
-          ParameterInfo(name: 'b', type: 'int', isNullable: true),
-        ],
-      );
-
-      expect(lerp.isNullableSignature, true);
-    });
-
-    test('StaticLerp with 3+ args checks first two', () {
-      const lerp = StaticLerp(
-        optionalResult: true,
-        args: [
-          ParameterInfo(name: 'a', type: 'int', isNullable: true),
-          ParameterInfo(name: 'b', type: 'int', isNullable: true),
-          ParameterInfo(name: 'c', type: 'double', isNullable: false),
-          ParameterInfo(name: 'd', type: 'String', isNullable: true),
-        ],
-      );
-
-      expect(lerp.isNullableSignature, true);
-    });
-
-    test('FieldInfo with isDouble true', () {
-      const field = FieldInfo(
-        name: 'opacity',
-        typeName: 'double',
-        isNullable: false,
-        isDouble: true,
-        isDuration: false,
-        merge: NoMerge(),
-        lerp: NoLerp(),
-        isStatic: false,
-      );
-
-      expect(field.isDouble, true);
-      expect(field.isDuration, false);
-    });
-
-    test('FieldInfo with isDuration true', () {
-      const field = FieldInfo(
-        name: 'timeout',
-        typeName: 'Duration',
-        isNullable: false,
-        isDouble: false,
-        isDuration: true,
-        merge: NoMerge(),
-        lerp: NoLerp(),
-        isStatic: false,
-      );
-
-      expect(field.isDouble, false);
-      expect(field.isDuration, true);
-    });
-
-    test('FieldInfo with isStatic true', () {
-      const field = FieldInfo(
-        name: 'constant',
-        typeName: 'int',
-        isNullable: false,
-        isDouble: false,
-        isDuration: false,
-        merge: NoMerge(),
-        lerp: NoLerp(),
-        isStatic: true,
-      );
-
-      expect(field.isStatic, true);
     });
   });
 }

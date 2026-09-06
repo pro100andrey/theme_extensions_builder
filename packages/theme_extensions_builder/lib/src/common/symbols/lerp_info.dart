@@ -1,42 +1,26 @@
-import 'package:collection/collection.dart';
-
-import 'parameter_info.dart';
-
-const _listEquality = ListEquality<dynamic>();
-
-/// Base sealed class representing information about a lerp (linear
-/// interpolation) method.
+/// How a field type is interpolated.
 ///
-/// This is used during code generation to determine how to generate lerp
-/// logic for different field types.
+/// Decided once per field while the class is analysed, then switched over by
+/// the code builders.
 sealed class LerpInfo {
   const LerpInfo();
 }
 
-/// Represents a static lerp method with specific signature requirements.
-///
-/// Static lerp methods typically have the signature:
-/// `static T? lerp(T? a, T? b, double t)`
+/// A static `lerp` on the field type: `static T? lerp(T? a, T? b, double t)`.
 final class StaticLerp extends LerpInfo {
   /// Creates a [StaticLerp] with the specified properties.
-  const StaticLerp({required this.optionalResult, required this.args});
-
-  /// The parameters of the lerp method.
-  final List<ParameterInfo> args;
+  const StaticLerp({
+    required this.optionalResult,
+    required this.isNullableParameter,
+  });
 
   /// Whether the return type of the lerp method is nullable.
   final bool optionalResult;
 
-  /// Returns `true` if the lerp method signature accepts nullable parameters
-  /// and returns a nullable result.
+  /// Whether the method accepts a null on both sides.
   ///
-  /// This is determined by checking if the result is optional and the first
-  /// two arguments are nullable.
-  bool get isNullableSignature =>
-      optionalResult &&
-      args.length >= 2 &&
-      args[0].isNullable &&
-      args[1].isNullable;
+  /// When it doesn't, the call site has to guard against a null itself.
+  final bool isNullableParameter;
 
   @override
   bool operator ==(Object other) =>
@@ -44,34 +28,37 @@ final class StaticLerp extends LerpInfo {
       other is StaticLerp &&
           runtimeType == other.runtimeType &&
           optionalResult == other.optionalResult &&
-          _listEquality.equals(args, other.args);
+          isNullableParameter == other.isNullableParameter;
 
   @override
-  int get hashCode => Object.hash(runtimeType, optionalResult);
+  int get hashCode =>
+      Object.hash(runtimeType, optionalResult, isNullableParameter);
 
   @override
   String toString() =>
-      'StaticLerp(optionalResult: $optionalResult, args: $args)';
+      'StaticLerp(optionalResult: $optionalResult, '
+      'isNullableParameter: $isNullableParameter)';
 }
 
-/// Represents an instance lerp method on a class.
+/// An instance `lerp` on the field type: `T lerp(T other, double t)`.
 ///
-/// Instance lerp methods typically have the signature:
-/// `T lerp(T other, double t)`
+/// The generated code never passes a null to it: a nullable field is guarded
+/// at the call site whatever the parameter type is, so that `t == 0` keeps
+/// `a` and `t == 1` keeps `b` when the other side is null.
 final class InstanceLerp extends LerpInfo {
   /// Creates an [InstanceLerp] with the specified properties.
-  const InstanceLerp({required this.optionalResult, required this.args});
-
-  /// The parameters of the lerp method.
-  final List<ParameterInfo> args;
+  const InstanceLerp({required this.optionalResult, this.needsCast = false});
 
   /// Whether the return type of the lerp method is nullable.
   final bool optionalResult;
 
-  /// Returns `true` if the lerp method signature accepts a nullable parameter
-  /// and returns a nullable result.
-  bool get isNullableSignature =>
-      optionalResult && args.isNotEmpty && args[0].isNullable;
+  /// Whether the result has to be cast back to the field type.
+  ///
+  /// A method declared on a supertype returns that supertype: the generated
+  /// `lerp` of a theme extension returns `ThemeExtension<T>`, not `T`. A
+  /// method that already returns the field type needs no cast, and adding one
+  /// would trip `unnecessary_cast` in the generated file.
+  final bool needsCast;
 
   @override
   bool operator ==(Object other) =>
@@ -79,52 +66,76 @@ final class InstanceLerp extends LerpInfo {
       other is InstanceLerp &&
           runtimeType == other.runtimeType &&
           optionalResult == other.optionalResult &&
-          _listEquality.equals(args, other.args);
+          needsCast == other.needsCast;
 
   @override
-  int get hashCode => Object.hash(runtimeType, optionalResult, args);
+  int get hashCode => Object.hash(runtimeType, optionalResult, needsCast);
 
   @override
   String toString() =>
-      'InstanceLerp(optionalResult: $optionalResult, args: $args)';
+      'InstanceLerp(optionalResult: $optionalResult, needsCast: $needsCast)';
 }
 
+/// A `WidgetStateProperty` shaped field, interpolated through the four
+/// parameter `WidgetStateProperty.lerp` with a lerp function for the generic.
 final class WidgetStatePropertyLerp extends LerpInfo {
   /// Creates a [WidgetStatePropertyLerp] with the specified properties.
   const WidgetStatePropertyLerp({
     required this.baseTypeName,
     required this.genericType,
-    required this.isNullableGeneric,
+    required this.genericIsDouble,
+    required this.genericIsDuration,
   });
 
   /// The base type name without generics.
   /// For `WidgetStateProperty<Color?>` this is 'WidgetStateProperty'.
   final String baseTypeName;
 
-  /// The generic type with nullability.
+  /// The generic type without its nullability suffix.
   /// For `WidgetStateProperty<Color?>` this is 'Color'.
+  ///
+  /// The generic is always nullable: a non-nullable one is refused before a
+  /// [WidgetStatePropertyLerp] is made, because the lerp function
+  /// `WidgetStateProperty.lerp` takes has to accept a null.
   final String genericType;
 
-  final bool isNullableGeneric;
+  /// Whether the generic is `double` from `dart:core`.
+  final bool genericIsDouble;
 
-  bool get genericIsDouble => genericType == 'double';
+  /// Whether the generic is `Duration` from `dart:core`.
+  final bool genericIsDuration;
 
-  bool get genericIsDuration => genericType == 'Duration';
+  /// The generic without its own type arguments.
+  ///
+  /// The inner lerp is reached through the class, so a generic generic —
+  /// `WidgetStateProperty<Box<int>?>` — has to call `Box.lerp`, not
+  /// `Box<int>.lerp`.
+  String get genericBaseTypeName {
+    final index = genericType.indexOf('<');
 
+    return index == -1 ? genericType : genericType.substring(0, index);
+  }
+
+  // genericIsDouble and genericIsDuration are decided by element, not by
+  // name, so a user type called `Duration` shares genericType with the real
+  // one while being interpolated differently.
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is WidgetStatePropertyLerp &&
           runtimeType == other.runtimeType &&
           baseTypeName == other.baseTypeName &&
-          genericType == other.genericType;
+          genericType == other.genericType &&
+          genericIsDouble == other.genericIsDouble &&
+          genericIsDuration == other.genericIsDuration;
 
   @override
   int get hashCode => Object.hash(
     runtimeType,
-
     baseTypeName,
     genericType,
+    genericIsDouble,
+    genericIsDuration,
   );
 
   @override
@@ -132,13 +143,15 @@ final class WidgetStatePropertyLerp extends LerpInfo {
       'WidgetStatePropertyLerp('
       'baseTypeName: $baseTypeName, '
       'genericType: $genericType, '
-      ')';
+      'genericIsDouble: $genericIsDouble, '
+      'genericIsDuration: $genericIsDuration)';
 }
 
-/// Indicates that no lerp method is available for the field type.
+/// No usable lerp method on the field type.
 ///
-/// When this is used, the generator will fall back to a simple conditional
-/// expression: `t < 0.5 ? a : b`
+/// `double` and `Duration` fields are still interpolated, through
+/// `lerpDouble$` and `lerpDuration$`. Anything else switches over at
+/// `t < 0.5 ? a : b`.
 final class NoLerp extends LerpInfo {
   /// Creates a [NoLerp] instance.
   const NoLerp();

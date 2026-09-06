@@ -5,6 +5,7 @@ import 'extensions/spacing_theme.dart';
 import 'extensions/typography_theme.dart';
 import 'extensions/widgets/button_theme.dart';
 import 'extensions/widgets/card_theme.dart';
+import 'extensions/widgets/input_theme.dart';
 
 ThemeData get darkTheme => ThemeData(
   brightness: .dark,
@@ -18,7 +19,9 @@ ThemeData get darkTheme => ThemeData(
       backgroundColor: Colors.black,
       layoutMode: .expanded,
       borderSide: BorderSide.none,
-      optionalBorderSide: null,
+      // Present in the dark theme only, so the lerp showcase has a field that
+      // appears on one side of the transition and is absent on the other.
+      optionalBorderSide: BorderSide(color: Colors.tealAccent, width: 4),
     ),
     CardThemeExtension(
       borderRadius: const .all(.circular(16)),
@@ -76,6 +79,36 @@ ThemeData get darkTheme => ThemeData(
         color: Colors.cyanAccent,
         backgroundColor: .fromRGBO(33, 33, 33, 1),
       ),
+    ),
+    const InputThemeExtension(
+      borderColor: WidgetStateProperty<Color?>.fromMap({
+        WidgetState.disabled: Colors.white12,
+        WidgetState.error: Colors.redAccent,
+        WidgetState.focused: Colors.tealAccent,
+        WidgetState.any: Colors.white24,
+      }),
+      fillColor: WidgetStateProperty<Color?>.fromMap({
+        WidgetState.disabled: Color(0x0AFFFFFF),
+        WidgetState.focused: Color(0x1400BFA5),
+        WidgetState.any: Color(0xFF121212),
+      }),
+      labelColor: WidgetStateProperty<Color?>.fromMap({
+        WidgetState.disabled: Colors.white38,
+        WidgetState.error: Colors.redAccent,
+        WidgetState.focused: Colors.tealAccent,
+        WidgetState.any: Colors.white70,
+      }),
+      borderRadius: BorderRadius.all(Radius.circular(16)),
+      borderWidth: 1,
+      focusedBorderWidth: 3,
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+      helperStyle: TextStyle(fontSize: 12, color: Colors.white70),
+      errorStyle: TextStyle(fontSize: 12, color: Colors.redAccent),
+      focusDuration: Duration(milliseconds: 250),
+      // hintColor is left at its default null here, so it also shows a
+      // nullable field being interpolated: Color.lerp accepts nulls, so the
+      // hint fades instead of switching.
     ),
     const SpacingThemeExtension(
       xs: 4,

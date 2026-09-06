@@ -6,10 +6,7 @@ import 'src/generator/theme_gen/generator.dart';
 
 /// Function used by the build runner
 Builder themeExtensionsBuilder(BuilderOptions options) => PartBuilder(
-  [
-    ThemeExtensionsGenerator(builderOptions: options),
-    ThemeGenGenerator(builderOptions: options),
-  ],
+  [const ThemeExtensionsGenerator(), const ThemeGenGenerator()],
   '.g.theme.dart',
   header: '''
     // coverage:ignore-file

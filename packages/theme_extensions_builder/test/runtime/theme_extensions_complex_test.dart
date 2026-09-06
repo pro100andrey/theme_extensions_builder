@@ -1,9 +1,9 @@
 import 'package:test/test.dart';
 
-import '../theme_extensions/complex_theme_extension.dart';
-import '../theme_extensions/empty_theme.dart';
-import '../theme_extensions/empty_theme_extension.dart';
-import '../theme_extensions/mock.dart';
+import '../fixtures/complex_theme_extension.dart';
+import '../fixtures/empty_theme.dart';
+import '../fixtures/empty_theme_extension.dart';
+import '../fixtures/flutter_stubs.dart';
 
 void main() {
   group('ComplexThemeExtensionNoContext', () {
@@ -275,9 +275,10 @@ void main() {
         optionalThemeExtension: EmptyThemeExtension(),
       );
 
-      final copied =
-          theme.copyWith(requiredInt: 999, requiredString: 'updated')
-              as ComplexThemeExtension;
+      final copied = theme.copyWith(
+        requiredInt: 999,
+        requiredString: 'updated',
+      ) as ComplexThemeExtension;
 
       expect(copied.requiredInt, equals(999));
       expect(copied.requiredString, equals('updated'));
@@ -306,9 +307,10 @@ void main() {
         optionalThemeExtension: EmptyThemeExtension(),
       );
 
-      final copied =
-          theme.copyWith(optionalInt: 500, optionalString: 'new')
-              as ComplexThemeExtension;
+      final copied = theme.copyWith(
+        optionalInt: 500,
+        optionalString: 'new',
+      ) as ComplexThemeExtension;
 
       expect(copied.optionalInt, equals(500));
       expect(copied.optionalString, equals('new'));

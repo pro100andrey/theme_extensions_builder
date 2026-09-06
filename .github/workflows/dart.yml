@@ -1,43 +1,107 @@
-name: Dart CI
+name: CI
 
 on:
-  # workflow_dispatch:  # Only manual trigger
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
+
+env:
+  BUILDER: packages/theme_extensions_builder
+  ANNOTATION: packages/theme_extensions_builder_annotation
+  EXAMPLE: packages/theme_extensions_builder/example
 
 jobs:
   test:
+    name: Test (${{ matrix.deps }} dependencies)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The builder advertises a range of analyzer versions; the lower
+        # bound is exercised by pinning the analyzer stack to it.
+        deps: [latest, lowest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The example app is a workspace member, so the workspace is resolved
+      # with the Flutter SDK. Everything else runs on the Dart SDK it bundles.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve the workspace
+        run: flutter pub get
+
+      # `dart pub downgrade analyzer ...` changes nothing at the workspace
+      # root, and a plain `dart pub downgrade` also takes the test runner to
+      # a version that no longer runs on the current SDK. The lower bounds
+      # are pinned outright instead; everything else resolves around them.
+      #
+      # The analyzer floor is the lowest version the test tooling compiles
+      # against: every `dart_style` the goldens are formatted with needs
+      # 13.1.0. `build` floats, as the tooling needs 4.x.
+      - name: Pin the lower bounds
+        if: matrix.deps == 'lowest'
+        run: |
+          cat >> pubspec.yaml <<'EOF'
+          dependency_overrides:
+            analyzer: 13.1.0
+            source_gen: 4.2.3
+          EOF
+          flutter pub get
+
+      - name: Check formatting
+        if: matrix.deps == 'latest'
+        run: dart format --set-exit-if-changed $BUILDER $ANNOTATION
+
+      - name: Analyze
+        run: dart analyze --fatal-infos $BUILDER $ANNOTATION
+
+      - name: Test annotation
+        working-directory: ${{ env.ANNOTATION }}
+        run: dart test
+
+      - name: Test builder
+        working-directory: ${{ env.BUILDER }}
+        run: dart test
+
+  generated:
+    name: Generated files are up to date
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          channel: stable
+          cache: true
 
-      - name: Install dependencies (annotation)
-        working-directory: packages/theme_extensions_builder_annotation
-        run: dart pub get --no-example 
+      - name: Resolve the workspace
+        run: flutter pub get
 
-      - name: Run formatter check (annotation)
-        working-directory: packages/theme_extensions_builder_annotation
-        run: dart format --set-exit-if-changed .
+      # The runtime tests import the committed generated files, so a stale
+      # file would test yesterday's generator.
+      - name: Regenerate the builder fixtures
+        working-directory: ${{ env.BUILDER }}
+        run: dart run build_runner build
 
-      - name: Run tests (annotation)
-        working-directory: packages/theme_extensions_builder_annotation
-        run: dart test
+      - name: Regenerate the example
+        working-directory: ${{ env.EXAMPLE }}
+        run: dart run build_runner build
 
-      - name: Install dependencies (builder)
-        working-directory: packages/theme_extensions_builder
-        run: dart pub get --no-example 
+      # The generator tests run against stubs of the Flutter classes; the
+      # example is the one place the generated code meets the real framework.
+      - name: Analyze the example
+        working-directory: ${{ env.EXAMPLE }}
+        run: flutter analyze --fatal-infos
 
-      - name: Run formatter check (builder)
-        working-directory: packages/theme_extensions_builder
-        run: dart format --set-exit-if-changed .
-
-      - name: Run tests (builder)
-        working-directory: packages/theme_extensions_builder
-        run: dart test
+      # A generated file that is new is untracked, which `git diff` cannot
+      # see; adding it to the index without its content makes it show up.
+      - name: Fail on stale generated files
+        run: |
+          git add --intent-to-add -- '*.g.theme.dart'
+          git diff --exit-code -- '*.g.theme.dart'

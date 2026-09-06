@@ -9,7 +9,7 @@ Future<void> main() async {
   const generator = ThemeExtensionsGenerator();
 
   final emptyReader = await initializeLibraryReaderForDirectory(
-    'test/theme_extensions',
+    'test/fixtures',
     'empty_theme_extension.dart',
   );
 
@@ -18,7 +18,7 @@ Future<void> main() async {
   });
 
   final complexReader = await initializeLibraryReaderForDirectory(
-    'test/theme_extensions',
+    'test/fixtures',
     'complex_theme_extension.dart',
   );
   group('Complex', () {
@@ -26,7 +26,7 @@ Future<void> main() async {
   });
 
   final wspReader = await initializeLibraryReaderForDirectory(
-    'test/theme_extensions',
+    'test/fixtures',
     'widget_state_property_theme_extension.dart',
   );
   group('WidgetStateProperty', () {

@@ -1,3 +1,7 @@
+## 7.5.0
+
+- **Updated**: Dart SDK constraint to ">=3.13.0 <4.0.0". No API changes; released alongside `theme_extensions_builder` 7.5.0.
+
 ## 7.4.0
 
 - *Updated*: Dependencies.

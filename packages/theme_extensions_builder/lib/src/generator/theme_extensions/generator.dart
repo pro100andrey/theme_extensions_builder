@@ -3,9 +3,11 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
-import '../../common/fields_visiter.dart';
-import '../../common/fields_visitor_config.dart';
+import '../../common/fields_visitor.dart';
+import '../../common/type_checkers.dart';
+import '../../common/validation.dart';
 import '../../config/config.dart';
+import '../annotation_reader.dart';
 import 'code_builder.dart';
 
 /// Code generator for classes annotated with `@ThemeExtensions`.
@@ -26,11 +28,11 @@ import 'code_builder.dart';
 /// }
 /// ```
 class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
-  /// Creates a [ThemeExtensionsGenerator] with optional [builderOptions].
-  const ThemeExtensionsGenerator({this.builderOptions});
-
-  /// Optional build configuration options.
-  final BuilderOptions? builderOptions;
+  /// Creates a [ThemeExtensionsGenerator].
+  ///
+  /// The annotation is matched by package as well as by name, so a user class
+  /// called `ThemeExtensions` does not trigger the generator.
+  const ThemeExtensionsGenerator() : super(inPackage: annotationPackage);
 
   @override
   Future<String> generateForAnnotatedElement(
@@ -46,50 +48,49 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
       );
     }
 
+    checkNotGeneric(element);
+    checkExtendsThemeExtension(element);
+
     final buildContextExtension = annotation
         .read('buildContextExtension')
         .boolValue;
 
-    final constructor = annotation.read('constructor').literalValue as String?;
-    final constConstructor = element.constructors.any((c) => c.isConst);
-
-    final contextAccessorName =
-        annotation.read('contextAccessorName').literalValue as String?;
-
-    // ThemeExtensions needs lerp but doesn't generate merge methods
-    final fieldsVisiter = FieldsVisitor(
-      config: const FieldsVisitorConfig(includeMergeLookup: false),
+    final contextAccessorName = annotation.optionalString(
+      'contextAccessorName',
     );
-    // Get all supertypes to visit their fields as well
-    final allSupertypes = element.allSupertypes;
 
-    for (final supertype in allSupertypes) {
-      final superElement = supertype.element;
-
-      if (!supertype.isDartCoreObject) {
-        superElement.visitChildren(fieldsVisiter);
-      }
+    if (contextAccessorName != null) {
+      checkIdentifier(
+        contextAccessorName,
+        option: 'contextAccessorName',
+        element: element,
+      );
     }
 
-    element.visitChildren(fieldsVisiter);
+    final constructorName = annotation.optionalString('constructor');
+    final constructor = resolveConstructor(element, constructorName);
 
-    // Use naming convention instead of expensive AST parsing
-    // Assume the mixin follows the standard pattern: _$ClassName
-    final mixinName = '_\$${element.displayName}';
+    // ThemeExtensions needs lerp but doesn't generate merge methods
+    final fields = collectFields(element, includeMergeLookup: false);
 
-    final generatorConfig = ThemeExtensionsConfig(
-      fields: fieldsVisiter.fields,
+    checkConstructorParameters(element, constructor, fields);
+    checkReservedFieldNames(
+      element,
+      fields,
+      reserved: themeExtensionsReservedNames,
+    );
+    checkMixinApplied(element);
+
+    final config = ThemeExtensionsConfig(
+      fields: fields,
       className: element.displayName,
       contextAccessorName: contextAccessorName,
       buildContextExtension: buildContextExtension,
-      constructor: constructor,
-      themeExtensionMixinName: mixinName,
-      constConstructor: constConstructor,
+      constructor: constructorName,
+      themeExtensionMixinName: generatedMixinName(element),
+      constConstructor: constructor.isConst,
     );
 
-    const generator = ThemeExtensionsCodeBuilder();
-    final code = generator.generate(generatorConfig);
-
-    return code;
+    return const ThemeExtensionsCodeBuilder().generate(config);
   }
 }

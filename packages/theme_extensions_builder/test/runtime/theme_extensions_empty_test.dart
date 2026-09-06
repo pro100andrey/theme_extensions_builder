@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import '../theme_extensions/empty_theme_extension.dart';
+import '../fixtures/empty_theme_extension.dart';
 
 void main() {
   group('EmptyThemeExtension', () {

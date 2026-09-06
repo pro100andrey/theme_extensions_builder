@@ -1,11 +1,11 @@
 import 'lerp_info.dart';
 import 'merge_info.dart';
 
-/// Represents comprehensive information about a class field during code
-/// generation.
+/// What the generators need to know about one instance field.
 ///
-/// This class stores all metadata needed to generate `copyWith`, `lerp`,
-/// `merge`, `==`, and `hashCode` methods for theme extensions.
+/// Carries everything needed to emit `copyWith`, `lerp`, `merge`, `==` and
+/// `hashCode` for the field. Static and private fields, and fields marked
+/// `@ignore`, are never turned into a [FieldInfo].
 final class FieldInfo {
   /// Creates a [FieldInfo] with the specified properties.
   const FieldInfo({
@@ -16,14 +16,27 @@ final class FieldInfo {
     required this.isDuration,
     required this.merge,
     required this.lerp,
-    required this.isStatic,
   });
 
   /// The name of the field.
   final String name;
 
   /// The type name of the field without nullability suffix.
+  ///
+  /// Type arguments are part of it, so this is the name to declare a variable
+  /// or write a cast with. Use [baseTypeName] to call a static member.
   final String typeName;
+
+  /// The type name without type arguments.
+  ///
+  /// A static member is reached through the class, not through an
+  /// instantiation of it: `Box.lerp(...)` is valid where `Box<int>.lerp(...)`
+  /// is not.
+  String get baseTypeName {
+    final index = typeName.indexOf('<');
+
+    return index == -1 ? typeName : typeName.substring(0, index);
+  }
 
   /// Whether the field type is nullable.
   final bool isNullable;
@@ -44,11 +57,6 @@ final class FieldInfo {
   /// Information about how to interpolate (lerp) this field type.
   final LerpInfo lerp;
 
-  /// Whether the field is static.
-  ///
-  /// Static fields are typically filtered out during code generation.
-  final bool isStatic;
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -59,7 +67,6 @@ final class FieldInfo {
           isNullable == other.isNullable &&
           isDouble == other.isDouble &&
           isDuration == other.isDuration &&
-          isStatic == other.isStatic &&
           merge == other.merge &&
           lerp == other.lerp;
 
@@ -71,7 +78,6 @@ final class FieldInfo {
     isNullable,
     isDouble,
     isDuration,
-    isStatic,
     merge,
     lerp,
   );
@@ -83,7 +89,6 @@ final class FieldInfo {
       'isNullable: $isNullable, '
       'isDouble: $isDouble, '
       'isDuration: $isDuration, '
-      'isStatic: $isStatic, '
       'merge: $merge, '
       'lerp: $lerp)';
 }

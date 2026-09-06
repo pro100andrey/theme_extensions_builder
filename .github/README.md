@@ -28,11 +28,11 @@ Or add to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  theme_extensions_builder_annotation: ^7.3.0
+  theme_extensions_builder_annotation: ^7.5.0
 
 dev_dependencies:
   build_runner: ^2.13.0
-  theme_extensions_builder: ^7.3.0
+  theme_extensions_builder: ^7.5.0
 ```
 
 ## 🚀 Quick Start
@@ -142,6 +142,18 @@ Check out the [example project](../packages/theme_extensions_builder/example) fo
 - **Theme Switching**: Seamless light/dark mode transitions
 - **Custom Components**: Buttons, cards, and typography showcases
 - **Best Practices**: Real-world organization patterns
+
+## 🛠️ Development
+
+The repository is a [pub workspace](https://dart.dev/tools/pub/workspaces): one `flutter pub get` at the root resolves every package, including the example app.
+
+```bash
+flutter pub get
+scripts/prepare_push.sh     # format, analyze, build and test every package
+scripts/update_goldens.sh   # regenerate the golden files after a generator change
+```
+
+The generator tests run on the Dart SDK alone. The Flutter classes the fixtures use are small stand-ins in `packages/theme_extensions_builder/test/fixtures/flutter_stubs.dart`, with the same `lerp` and `merge` signatures as the real ones. The example app is where the generated code meets the real framework, so CI regenerates and analyzes it on every push.
 
 ## 📄 License
 

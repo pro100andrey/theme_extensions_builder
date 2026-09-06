@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import '../theme_extensions/empty_theme.dart';
+import '../fixtures/empty_theme.dart';
 
 void main() {
   group('EmptyTheme - with const constructor', () {
@@ -121,136 +121,136 @@ void main() {
     });
   });
 
-  group('EmptyThemeWithoutConstConstructor - without const constructor', () {
+  group('EmptyThemeNonConst - without const constructor', () {
     test('can be instantiated', () {
-      final theme = EmptyThemeWithoutConstConstructor();
-      expect(theme, isA<EmptyThemeWithoutConstConstructor>());
+      final theme = EmptyThemeNonConst();
+      expect(theme, isA<EmptyThemeNonConst>());
     });
 
     test('canMerge returns true', () {
-      final theme = EmptyThemeWithoutConstConstructor();
+      final theme = EmptyThemeNonConst();
       expect(theme.canMerge, isTrue);
     });
 
     group('lerp', () {
       test('returns equal instance when lerping', () {
-        final a = EmptyThemeWithoutConstConstructor();
-        final b = EmptyThemeWithoutConstConstructor();
-        final result = EmptyThemeWithoutConstConstructor.lerp(a, b, 0.5);
+        final a = EmptyThemeNonConst();
+        final b = EmptyThemeNonConst();
+        final result = EmptyThemeNonConst.lerp(a, b, 0.5);
         expect(result, equals(a));
         expect(identical(a, b), isFalse);
         expect(identical(result, a), isFalse);
         expect(identical(result, b), isFalse);
-        expect(result, isA<EmptyThemeWithoutConstConstructor>());
+        expect(result, isA<EmptyThemeNonConst>());
       });
 
       test('returns null when both are null', () {
-        final result = EmptyThemeWithoutConstConstructor.lerp(null, null, 0.5);
+        final result = EmptyThemeNonConst.lerp(null, null, 0.5);
         expect(result, isNull);
       });
 
       test('returns null when a is null and t != 1.0', () {
-        final b = EmptyThemeWithoutConstConstructor();
-        final result = EmptyThemeWithoutConstConstructor.lerp(null, b, 0.5);
+        final b = EmptyThemeNonConst();
+        final result = EmptyThemeNonConst.lerp(null, b, 0.5);
         expect(result, isNull);
       });
 
       test('returns b when a is null and t == 1.0', () {
-        final b = EmptyThemeWithoutConstConstructor();
-        final result = EmptyThemeWithoutConstConstructor.lerp(null, b, 1);
+        final b = EmptyThemeNonConst();
+        final result = EmptyThemeNonConst.lerp(null, b, 1);
         expect(result, equals(b));
         expect(identical(result, b), isTrue);
       });
 
       test('returns null when b is null and t != 0.0', () {
-        final a = EmptyThemeWithoutConstConstructor();
-        final result = EmptyThemeWithoutConstConstructor.lerp(a, null, 0.5);
+        final a = EmptyThemeNonConst();
+        final result = EmptyThemeNonConst.lerp(a, null, 0.5);
         expect(result, isNull);
       });
 
       test('returns a when b is null and t == 0.0', () {
-        final a = EmptyThemeWithoutConstConstructor();
-        final result = EmptyThemeWithoutConstConstructor.lerp(a, null, 0);
+        final a = EmptyThemeNonConst();
+        final result = EmptyThemeNonConst.lerp(a, null, 0);
         expect(result, equals(a));
         expect(identical(result, a), isTrue);
       });
 
       test('returns new instance when both are not null', () {
-        final a = EmptyThemeWithoutConstConstructor();
-        final b = EmptyThemeWithoutConstConstructor();
-        final result = EmptyThemeWithoutConstConstructor.lerp(a, b, 0.5);
+        final a = EmptyThemeNonConst();
+        final b = EmptyThemeNonConst();
+        final result = EmptyThemeNonConst.lerp(a, b, 0.5);
         expect(result, isNotNull);
         expect(identical(a, b), isFalse);
         expect(identical(result, a), isFalse);
         expect(identical(result, b), isFalse);
-        expect(result, isA<EmptyThemeWithoutConstConstructor>());
+        expect(result, isA<EmptyThemeNonConst>());
       });
 
       test('lerp with various t values', () {
-        final a = EmptyThemeWithoutConstConstructor();
-        final b = EmptyThemeWithoutConstConstructor();
+        final a = EmptyThemeNonConst();
+        final b = EmptyThemeNonConst();
 
-        expect(EmptyThemeWithoutConstConstructor.lerp(a, b, 0), isNotNull);
-        expect(EmptyThemeWithoutConstConstructor.lerp(a, b, 0.25), isNotNull);
-        expect(EmptyThemeWithoutConstConstructor.lerp(a, b, 0.5), isNotNull);
-        expect(EmptyThemeWithoutConstConstructor.lerp(a, b, 0.75), isNotNull);
-        expect(EmptyThemeWithoutConstConstructor.lerp(a, b, 1), isNotNull);
+        expect(EmptyThemeNonConst.lerp(a, b, 0), isNotNull);
+        expect(EmptyThemeNonConst.lerp(a, b, 0.25), isNotNull);
+        expect(EmptyThemeNonConst.lerp(a, b, 0.5), isNotNull);
+        expect(EmptyThemeNonConst.lerp(a, b, 0.75), isNotNull);
+        expect(EmptyThemeNonConst.lerp(a, b, 1), isNotNull);
       });
     });
 
     group('copyWith', () {
       test('returns new instance', () {
-        final theme = EmptyThemeWithoutConstConstructor();
+        final theme = EmptyThemeNonConst();
         final copied = theme.copyWith();
         expect(copied, equals(theme));
         expect(identical(copied, theme), isFalse);
       });
 
       test('creates independent copy', () {
-        final theme = EmptyThemeWithoutConstConstructor();
+        final theme = EmptyThemeNonConst();
         final copied = theme.copyWith();
-        expect(copied, isA<EmptyThemeWithoutConstConstructor>());
+        expect(copied, isA<EmptyThemeNonConst>());
         expect(copied, isNot(same(theme)));
       });
     });
 
     group('merge', () {
       test('returns this when other is null', () {
-        final theme = EmptyThemeWithoutConstConstructor();
+        final theme = EmptyThemeNonConst();
         final merged = theme.merge(null);
         expect(identical(merged, theme), isTrue);
       });
 
       test('returns this when identical', () {
-        final theme = EmptyThemeWithoutConstConstructor();
+        final theme = EmptyThemeNonConst();
         final merged = theme.merge(theme);
         expect(identical(merged, theme), isTrue);
       });
 
       test('returns merged instance when other can merge', () {
-        final theme = EmptyThemeWithoutConstConstructor();
-        final other = EmptyThemeWithoutConstConstructor();
+        final theme = EmptyThemeNonConst();
+        final other = EmptyThemeNonConst();
         final merged = theme.merge(other);
-        expect(merged, isA<EmptyThemeWithoutConstConstructor>());
+        expect(merged, isA<EmptyThemeNonConst>());
       });
     });
 
     group('equality', () {
       test('two instances are equal', () {
-        final theme1 = EmptyThemeWithoutConstConstructor();
-        final theme2 = EmptyThemeWithoutConstConstructor();
+        final theme1 = EmptyThemeNonConst();
+        final theme2 = EmptyThemeNonConst();
         expect(theme1, equals(theme2));
         expect(theme1.hashCode, equals(theme2.hashCode));
         expect(identical(theme1, theme2), isFalse);
       });
 
       test('not equal to different type', () {
-        final theme = EmptyThemeWithoutConstConstructor();
+        final theme = EmptyThemeNonConst();
         expect(theme == Object(), isFalse);
       });
 
       test('not equal to EmptyTheme', () {
-        final theme = EmptyThemeWithoutConstConstructor();
+        final theme = EmptyThemeNonConst();
         const otherTheme = EmptyTheme();
         // == operator between different types
         // ignore: unrelated_type_equality_checks

@@ -1,0 +1,3 @@
+# Workspace resolution lives at the root; the lock file is not published.
+.dart_tool/
+/pubspec.lock

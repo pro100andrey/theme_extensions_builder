@@ -1,3 +1,18 @@
+## 7.5.0
+
+- **Breaking**: `hashCode` changes for classes that inherit fields, which now come after the class' own.
+- **Changed**: `lerp` keeps the endpoints when one side is null (`t = 0` gives `a`, `t = 1` gives `b`), and `merge` keeps the current value when the incoming one is null.
+- **New**: The annotated class is validated before generation. A missing constructor, a field without a named parameter, a required parameter the generated code cannot pass, a generic class, a missing `with _$X`, a field named `copyWith`, `merge` or `lerp`, a `@ThemeExtensions` class not extending `ThemeExtension<Self>`, or an invalid `contextAccessorName` now stop the build with a message naming the class and the fix.
+- **Fixed**: Generated code that did not compile for an instance `lerp` on a nullable field or with a nullable result, a non-nullable `lerp`/`merge` parameter on a nullable field, a static call on `Box<int>` instead of `Box`, a method declared on a supertype (the result is cast back), a generic field type (methods resolve through the instantiated type), and a field inherited from a generic superclass (`T` is substituted).
+- **Fixed**: An unrelated `lerp` or `merge` no longer fails the build or is mistaken for a supported one; an unusable signature is a build warning naming the field and its fallback.
+- **Fixed**: A `WidgetStateProperty` generic has to offer a static `lerp` that accepts nulls, and is reported once when it does not; a non-nullable generic is an error at the field, a nested one falls back; `double` and `Duration` generics are detected by element.
+- **Fixed**: Field collection follows Dart's resolution: a narrowed field keeps the narrowed type, mixins win over the superclass chain, `implements` contributes nothing, private and static fields are skipped, and `@ignore` on a redeclaration drops the inherited one. `Duration` is detected by element.
+- **Fixed**: A field typed as a `@ThemeGen` class, or a subclass of one, merges the same way on clean and incremental builds; a hand-written `merge` is used as declared.
+- **Fixed**: `const` follows the constructor named in `constructor:`; `constructor: ''` selects the unnamed one.
+- **Fixed**: Annotations are matched by package as well as by name, so a user class called `ThemeGen` is not taken for one.
+- **Fixed**: The example is published without its workspace-only files, so it resolves when copied from pub.dev.
+- **Updated**: Analyzer `>=13.1.0 <15.0.0` (the lower bound CI tests against) and Dart SDK `>=3.13.0 <4.0.0`; `collection` and `meta` are no longer dependencies; the `platforms` key is gone from the pubspec.
+
 ## 7.4.0
 
 - *Updated*: Analyzer dependency to ">=9.0.0 <14.0.0"

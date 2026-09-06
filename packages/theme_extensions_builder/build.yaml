@@ -3,8 +3,11 @@ targets:
     builders:
       theme_extensions_builder:
         generate_for:
-          - test/theme_gen/**.dart
-          - test/theme_extensions/**.dart
+          include:
+            - test/fixtures/*.dart
+          exclude:
+            # These classes are meant to fail generation; see invalid_test.
+            - test/fixtures/invalid_*.dart
 
 builders:
   theme_extensions_builder:

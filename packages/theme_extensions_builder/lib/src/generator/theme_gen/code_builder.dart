@@ -1,5 +1,6 @@
 import 'package:code_builder/code_builder.dart';
 
+import '../../common/symbols/field_info.dart';
 import '../../common/symbols/lerp_info.dart';
 import '../../common/symbols/merge_info.dart';
 import '../../config/config.dart';
@@ -182,15 +183,19 @@ Method merge(ThemeGenConfig config) => Method((m) {
             args[field.name] = staticMerge([thisProp, otherProp]);
 
           // Instance merge method taking a nullable argument, optional field
-          case InstanceMerge(isNullableParameter: true) when field.isNullable:
+          case InstanceMerge(isNullableParameter: true, :final needsCast)
+              when field.isNullable:
             // _this.field?.merge(other.field) ?? other.field
-            args[field.name] = thisProp
-                .nullSafeProperty('merge')([otherProp])
-                .ifNullThen(otherProp);
+            args[field.name] = _castIfNeeded(
+              thisProp.nullSafeProperty('merge')([otherProp]),
+              field,
+              needsCast: needsCast,
+              isNullable: true,
+            ).ifNullThen(otherProp);
 
           // Instance merge method taking a non-nullable argument, optional
           // field
-          case InstanceMerge() when field.isNullable:
+          case InstanceMerge(:final needsCast) when field.isNullable:
             // _this.field == null
             // ? other.field
             // : other.field == null
@@ -204,21 +209,42 @@ Method merge(ThemeGenConfig config) => Method((m) {
                       .equalTo(literalNull)
                       .conditional(
                         thisProp,
-                        thisProp.nullChecked.property('merge')([
-                          otherProp.nullChecked,
-                        ]),
+                        _castIfNeeded(
+                          thisProp.nullChecked.property('merge')([
+                            otherProp.nullChecked,
+                          ]),
+                          field,
+                          needsCast: needsCast,
+                          isNullable: true,
+                        ),
                       ),
                 );
 
           // Instance merge method with non-optional field
-          case InstanceMerge():
-            args[field.name] = instanceMerge([otherProp]);
+          case InstanceMerge(:final needsCast):
+            args[field.name] = _castIfNeeded(
+              instanceMerge([otherProp]),
+              field,
+              needsCast: needsCast,
+              isNullable: false,
+            );
         }
       }
 
       b.addExpression('copyWith'.ref([], args).returned);
     });
 });
+
+/// Casts [expression] back to the type of [field] when the method that
+/// produced it is declared on a supertype.
+Expression _castIfNeeded(
+  Expression expression,
+  FieldInfo field, {
+  required bool needsCast,
+  required bool isNullable,
+}) => needsCast
+    ? expression.asA(field.typeName.typeRef(isNullable: isNullable))
+    : expression;
 
 /// Generates a static `lerp` method for interpolating between two theme
 /// instances.

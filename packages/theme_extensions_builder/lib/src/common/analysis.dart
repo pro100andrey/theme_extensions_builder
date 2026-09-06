@@ -427,11 +427,22 @@ MergeInfo _mergeInfo(DartType type, FieldElement fieldElement) {
       // Check for instance merge method:
       // - should have only one parameter
       // - parameter type should accept the class type
-      // - the result should be usable as the class type
       when !method.isStatic &&
-          _checkSubtype(p1, type, strict: strictSignature) &&
-          _isUsableAs(method.returnType, type, type)) {
-    return InstanceMerge(isNullableParameter: p1.type.hasNullableSuffix);
+          _checkSubtype(p1, type, strict: strictSignature)) {
+    // As for lerp: a method declared on a supertype returns that supertype,
+    // which the generated code casts back to the field type.
+    final needsCast = !_isUsableAs(method.returnType, type, type);
+
+    if (needsCast && !_isUsableAs(type, method.returnType, type)) {
+      _warnUnsupported('merge', type, fieldElement);
+
+      return const NoMerge();
+    }
+
+    return InstanceMerge(
+      isNullableParameter: p1.type.hasNullableSuffix,
+      needsCast: needsCast,
+    );
   }
 
   // The type declares a `merge` we don't know how to call.

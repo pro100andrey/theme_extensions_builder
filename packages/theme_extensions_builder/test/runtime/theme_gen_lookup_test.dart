@@ -17,6 +17,7 @@ void main() {
     special: Special(1),
     fade: Fade(1),
     ratio: Ratio(1),
+    counter: Counter(1),
     narrowed: 1,
   );
 
@@ -34,6 +35,7 @@ void main() {
     special: Special(2),
     fade: Fade(2),
     ratio: Ratio(2),
+    counter: Counter(2),
     narrowed: 2,
   );
 
@@ -60,15 +62,23 @@ void main() {
       expect(LookupTheme.lerp(a, b, 0.4)!.pair, same(a.pair));
       expect(a.merge(b).unrelated, same(b.unrelated));
       expect(a.merge(b).strict, same(b.strict));
+      expect(a.merge(b).counter, same(b.counter));
     });
 
     test('a generic type resolves its methods through the instantiation', () {
-      expect(LookupTheme.lerp(a, b, 0.5)!.box.value, same(b.box.value));
-      expect(a.merge(b).box.value, same(b.box.value));
+      // Box.lerp returns `other`, which the t < 0.5 fallback would not do
+      // at 0.4.
+      expect(LookupTheme.lerp(a, b, 0.4)!.box, same(b.box));
     });
 
     test('an inherited lerp returning a supertype is cast back', () {
-      expect(LookupTheme.lerp(a, b, 0.5)!.special, isA<Special>());
+      // Animatable.lerp also returns `other`, so the fallback would hand back
+      // a.special here. The cast is what keeps the result a Special.
+      final lerped = LookupTheme.lerp(a, b, 0.4)!.special;
+
+      expect(lerped, same(b.special));
+      expect(lerped, isA<Special>());
+      expect(a.merge(b).special, isA<Special>());
     });
 
     test('a lerp returning an unrelated type is ignored', () {
@@ -94,6 +104,7 @@ void main() {
         special: Special(1),
         fade: Fade(1),
         ratio: Ratio(1),
+        counter: Counter(1),
         narrowed: 1,
       );
 

@@ -34,6 +34,7 @@ mixin _$LookupTheme {
           : (a.special!.lerp(b.special!, t) as Special?),
       fade: t < 0.5 ? a.fade : b.fade,
       ratio: t < 0.5 ? a.ratio : b.ratio,
+      counter: t < 0.5 ? a.counter : b.counter,
       narrowed: t < 0.5 ? a.narrowed : b.narrowed,
     );
   }
@@ -52,6 +53,7 @@ mixin _$LookupTheme {
     Special? special,
     Fade? fade,
     Ratio? ratio,
+    Counter? counter,
     int? narrowed,
   }) {
     final _this = (this as LookupTheme);
@@ -70,6 +72,7 @@ mixin _$LookupTheme {
       special: special ?? _this.special,
       fade: fade ?? _this.fade,
       ratio: ratio ?? _this.ratio,
+      counter: counter ?? _this.counter,
       narrowed: narrowed ?? _this.narrowed,
     );
   }
@@ -100,9 +103,14 @@ mixin _$LookupTheme {
       pair: other.pair,
       strict: other.strict,
       box: _this.box.merge(other.box),
-      special: other.special,
+      special: _this.special == null
+          ? other.special
+          : other.special == null
+          ? _this.special
+          : (_this.special!.merge(other.special!) as Special?),
       fade: other.fade,
       ratio: other.ratio,
+      counter: other.counter,
       narrowed: other.narrowed,
     );
   }
@@ -133,6 +141,7 @@ mixin _$LookupTheme {
         _other.special == _this.special &&
         _other.fade == _this.fade &&
         _other.ratio == _this.ratio &&
+        _other.counter == _this.counter &&
         _other.narrowed == _this.narrowed;
   }
 
@@ -155,6 +164,7 @@ mixin _$LookupTheme {
       _this.special,
       _this.fade,
       _this.ratio,
+      _this.counter,
       _this.narrowed,
     );
   }

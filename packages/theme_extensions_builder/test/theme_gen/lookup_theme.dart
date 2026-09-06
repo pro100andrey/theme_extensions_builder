@@ -102,16 +102,19 @@ class Box<T> {
   Box<T> merge(Box<T> other) => other;
 }
 
-/// Declares the `lerp` that [Special] inherits, and returns this supertype.
+/// Declares the `lerp` and `merge` that [Special] inherits, both returning
+/// this supertype.
 class Animatable {
   const Animatable(this.value);
 
   final int value;
 
   Animatable? lerp(Animatable other, double t) => other;
+
+  Animatable merge(Animatable other) => other;
 }
 
-/// Uses the inherited `lerp`, whose result has to be cast back.
+/// Uses the inherited `lerp` and `merge`, whose results have to be cast back.
 class Special extends Animatable {
   const Special(super.value);
 }
@@ -123,6 +126,15 @@ class Fade {
   final double value;
 
   double? lerp(Fade? other, double t) => value;
+}
+
+/// A `merge` whose result cannot stand in for the class.
+class Counter {
+  const Counter(this.value);
+
+  final int value;
+
+  int merge(Counter other) => value + other.value;
 }
 
 /// A static `lerp` whose result cannot stand in for the class.
@@ -192,6 +204,10 @@ const _ratioWarning =
     'The `lerp` method of Ratio has an unsupported signature, so the field '
     '`ratio` $_lerpFallback';
 
+const _counterWarning =
+    'The `merge` method of Counter has an unsupported signature, so the field '
+    '`counter` $_mergeFallback';
+
 /// Theme whose field types are inspected by method lookup rather than by an
 /// annotation: only [Settings] offers a signature the generator can call.
 @ShouldGenerateFile(
@@ -207,6 +223,7 @@ const _ratioWarning =
     _strictWarning,
     _fadeWarning,
     _ratioWarning,
+    _counterWarning,
   ],
 )
 @themeGen
@@ -225,6 +242,7 @@ final class LookupTheme extends Middle with _$LookupTheme {
     required this.special,
     required this.fade,
     required this.ratio,
+    required this.counter,
     required super.narrowed,
   });
 
@@ -245,6 +263,7 @@ final class LookupTheme extends Middle with _$LookupTheme {
   final Special? special;
   final Fade? fade;
   final Ratio ratio;
+  final Counter counter;
 
   @override
   bool get canMerge => true;

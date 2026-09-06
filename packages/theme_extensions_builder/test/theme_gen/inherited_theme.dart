@@ -3,10 +3,11 @@ import 'package:theme_extensions_builder_annotation/theme_extensions_builder_ann
 
 part 'inherited_theme.g.theme.dart';
 
-/// Satisfied by [InheritedTheme] itself, so nothing it declares may be
-/// collected: an `implements` clause carries no state to construct.
+/// Satisfied by [InheritedTheme] itself. It carries a concrete field on
+/// purpose: an `implements` clause brings no state the generated constructor
+/// call could pass, so the field must not be collected.
 abstract class HasVersion {
-  int get version;
+  final version = 0;
 }
 
 /// Declares the fields [InheritedTheme] inherits.

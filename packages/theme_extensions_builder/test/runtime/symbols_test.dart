@@ -279,10 +279,12 @@ void main() {
       final merge1 = InstanceMerge();
       final merge2 = InstanceMerge();
       const merge3 = InstanceMerge(isNullableParameter: false);
+      const merge4 = InstanceMerge(needsCast: true);
 
       expect(merge1, equals(merge2));
       expect(merge1.hashCode, equals(merge2.hashCode));
       expect(merge1, isNot(equals(merge3)));
+      expect(merge1, isNot(equals(merge4)));
     });
 
     test('different merge methods are not equal', () {
@@ -304,7 +306,7 @@ void main() {
       expect(staticMerge.toString(), 'StaticMerge()');
       expect(
         instanceMerge.toString(),
-        'InstanceMerge(isNullableParameter: true)',
+        'InstanceMerge(isNullableParameter: true, needsCast: false)',
       );
     });
   });

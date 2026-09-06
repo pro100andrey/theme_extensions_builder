@@ -46,7 +46,18 @@ final class StaticMerge extends MergeInfo {
 /// `T merge(T other)` or `T merge(T? other)`
 final class InstanceMerge extends MergeInfo {
   /// Creates an [InstanceMerge] instance.
-  const InstanceMerge({this.isNullableParameter = true});
+  const InstanceMerge({
+    this.isNullableParameter = true,
+    this.needsCast = false,
+  });
+
+  /// Whether the result has to be cast back to the field type.
+  ///
+  /// A method declared on a supertype returns that supertype, so the value it
+  /// produces has to be narrowed before it can be passed on. A method that
+  /// already returns the field type needs no cast, and adding one would trip
+  /// `unnecessary_cast` in the generated file.
+  final bool needsCast;
 
   /// Whether the merge method accepts a nullable argument.
   ///
@@ -59,13 +70,14 @@ final class InstanceMerge extends MergeInfo {
       identical(this, other) ||
       other is InstanceMerge &&
           runtimeType == other.runtimeType &&
-          isNullableParameter == other.isNullableParameter;
+          isNullableParameter == other.isNullableParameter &&
+          needsCast == other.needsCast;
 
   @override
-  int get hashCode => Object.hash(runtimeType, isNullableParameter);
+  int get hashCode => Object.hash(runtimeType, isNullableParameter, needsCast);
 
   @override
   String toString() =>
-      'InstanceMerge(isNullableParameter: '
-      '$isNullableParameter)';
+      'InstanceMerge(isNullableParameter: $isNullableParameter, '
+      'needsCast: $needsCast)';
 }

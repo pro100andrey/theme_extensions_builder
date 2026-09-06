@@ -17,12 +17,8 @@ sealed class BaseConfig {
     required this.constConstructor,
   });
 
-  /// The fields to be included in the generated theme extension.
+  /// The fields the generated code is built from.
   final List<FieldInfo> fields;
-
-  /// The fields that are supported for generation (non-static fields).
-  Iterable<FieldInfo> get filteredFields =>
-      fields.where((field) => !field.isStatic);
 
   /// The name of the class to be generated.
   final String className;
@@ -31,7 +27,9 @@ sealed class BaseConfig {
   /// constructor will be used.
   final String? constructor;
 
-  /// Whether to generate a const constructor.
+  /// Whether [constructor] is `const`.
+  ///
+  /// A const constructor is invoked with `const` when it takes no arguments.
   final bool constConstructor;
 }
 

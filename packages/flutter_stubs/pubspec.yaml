@@ -1,0 +1,16 @@
+name: flutter_stubs
+description: >
+  Stand-ins for the Flutter classes the theme_extensions_builder tests need,
+  so the generator is tested on the Dart SDK alone. Not published.
+publish_to: none
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+
+resolution: workspace
+
+dependencies:
+  theme_extensions_builder_annotation: ^7.5.0
+
+dev_dependencies:
+  pro_lints: ^6.2.0

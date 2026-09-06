@@ -1,0 +1,14 @@
+name: theme_extensions_builder_workspace
+description: >
+  Development workspace for theme_extensions_builder. Not published; run
+  `flutter pub get` here once to resolve every package.
+publish_to: none
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+
+workspace:
+  - packages/theme_extensions_builder
+  - packages/theme_extensions_builder_annotation
+  - packages/theme_extensions_builder/example
+  - packages/flutter_stubs

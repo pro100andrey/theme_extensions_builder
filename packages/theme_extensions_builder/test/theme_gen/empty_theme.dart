@@ -24,7 +24,7 @@ final class EmptyTheme with _$EmptyTheme {
 )
 @themeGen
 final class EmptyThemeNonConst with _$EmptyThemeNonConst {
-  const EmptyThemeNonConst();
+  EmptyThemeNonConst();
 
   @override
   bool get canMerge => true;

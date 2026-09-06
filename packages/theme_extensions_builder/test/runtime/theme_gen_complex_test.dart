@@ -1,9 +1,9 @@
+import 'package:flutter_stubs/flutter_stubs.dart';
 import 'package:test/test.dart';
 
 import '../theme_gen/complex_theme.dart';
 import '../theme_gen/empty_theme.dart';
 import '../theme_gen/empty_theme_extension.dart';
-import '../theme_gen/mock.dart';
 
 void main() {
   group('ComplexTheme', () {

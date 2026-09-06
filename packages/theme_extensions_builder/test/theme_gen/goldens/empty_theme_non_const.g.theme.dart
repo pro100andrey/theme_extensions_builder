@@ -20,11 +20,11 @@ mixin _$EmptyThemeNonConst {
       return t == 0.0 ? a : null;
     }
 
-    return const EmptyThemeNonConst();
+    return EmptyThemeNonConst();
   }
 
   EmptyThemeNonConst copyWith() {
-    return const EmptyThemeNonConst();
+    return EmptyThemeNonConst();
   }
 
   EmptyThemeNonConst merge(EmptyThemeNonConst? other) {

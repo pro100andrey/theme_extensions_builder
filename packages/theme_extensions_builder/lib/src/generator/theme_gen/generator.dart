@@ -4,7 +4,9 @@ import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 import '../../common/fields_visitor.dart';
+import '../../common/validation.dart';
 import '../../config/config.dart';
+import '../annotation_reader.dart';
 import 'code_builder.dart';
 
 /// Code generator for classes annotated with `@ThemeGen`.
@@ -43,21 +45,20 @@ class ThemeGenGenerator extends GeneratorForAnnotation<ThemeGen> {
       );
     }
 
-    final constructor = annotation.read('constructor').literalValue as String?;
-    final constConstructor = element.constructors.any((c) => c.isConst);
+    final constructorName = annotation.optionalString('constructor');
+    final constructor = resolveConstructor(element, constructorName);
 
     final fields = collectFields(element);
 
-    final generatorConfig = ThemeGenConfig(
+    checkConstructorParameters(element, constructor, fields);
+
+    final config = ThemeGenConfig(
       fields: fields,
       className: element.displayName,
-      constructor: constructor,
-      constConstructor: constConstructor,
+      constructor: constructorName,
+      constConstructor: constructor.isConst,
     );
 
-    const generator = ThemeGenCodeBuilder();
-    final code = generator.generate(generatorConfig);
-
-    return code;
+    return const ThemeGenCodeBuilder().generate(config);
   }
 }

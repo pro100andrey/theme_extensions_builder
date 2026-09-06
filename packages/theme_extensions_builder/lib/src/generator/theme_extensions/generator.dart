@@ -4,8 +4,9 @@ import 'package:source_gen/source_gen.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 import '../../common/fields_visitor.dart';
-import '../../common/fields_visitor_config.dart';
+import '../../common/validation.dart';
 import '../../config/config.dart';
+import '../annotation_reader.dart';
 import 'code_builder.dart';
 
 /// Code generator for classes annotated with `@ThemeExtensions`.
@@ -43,39 +44,43 @@ class ThemeExtensionsGenerator extends GeneratorForAnnotation<ThemeExtensions> {
       );
     }
 
+    checkExtendsThemeExtension(element);
+
     final buildContextExtension = annotation
         .read('buildContextExtension')
         .boolValue;
 
-    final constructor = annotation.read('constructor').literalValue as String?;
-    final constConstructor = element.constructors.any((c) => c.isConst);
-
-    final contextAccessorName =
-        annotation.read('contextAccessorName').literalValue as String?;
-
-    // ThemeExtensions needs lerp but doesn't generate merge methods
-    final fields = collectFields(
-      element,
-      config: const FieldsVisitorConfig(includeMergeLookup: false),
+    final contextAccessorName = annotation.optionalString(
+      'contextAccessorName',
     );
 
-    // Use naming convention instead of expensive AST parsing
-    // Assume the mixin follows the standard pattern: _$ClassName
-    final mixinName = '_\$${element.displayName}';
+    if (contextAccessorName != null) {
+      checkIdentifier(
+        contextAccessorName,
+        option: 'contextAccessorName',
+        element: element,
+      );
+    }
 
-    final generatorConfig = ThemeExtensionsConfig(
+    final constructorName = annotation.optionalString('constructor');
+    final constructor = resolveConstructor(element, constructorName);
+
+    // ThemeExtensions needs lerp but doesn't generate merge methods
+    final fields = collectFields(element, includeMergeLookup: false);
+
+    checkConstructorParameters(element, constructor, fields);
+
+    final config = ThemeExtensionsConfig(
       fields: fields,
       className: element.displayName,
       contextAccessorName: contextAccessorName,
       buildContextExtension: buildContextExtension,
-      constructor: constructor,
-      themeExtensionMixinName: mixinName,
-      constConstructor: constConstructor,
+      constructor: constructorName,
+      // The mixin is applied by name, so the name is a convention.
+      themeExtensionMixinName: '_\$${element.displayName}',
+      constConstructor: constructor.isConst,
     );
 
-    const generator = ThemeExtensionsCodeBuilder();
-    final code = generator.generate(generatorConfig);
-
-    return code;
+    return const ThemeExtensionsCodeBuilder().generate(config);
   }
 }

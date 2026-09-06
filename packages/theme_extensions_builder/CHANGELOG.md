@@ -10,6 +10,11 @@
 - **Fixed**: `Duration` is detected by element rather than by name, so a user type of the same name is no longer interpolated as a duration.
 - **Updated**: Analyzer dependency to ">=13.0.0 <15.0.0" and Dart SDK constraint to ">=3.13.0 <4.0.0".
 - **Code Quality**: Exhaustive switches over `LerpInfo`/`MergeInfo`, `==`/`hashCode` contract fixed for the `LerpInfo` classes, dead code removed (`getMixinsNames`, `BaseClassVisitor`, unused builder options and lerp-lookup flag).
+- **New**: The annotated class is checked before anything is generated. A missing constructor, a field without a named constructor parameter, a `@ThemeExtensions` class that does not extend `ThemeExtension<Self>`, and a `contextAccessorName` that is not an identifier now stop the build with an `InvalidGenerationSourceError` naming the class and the fix, instead of a compile error in the generated file.
+- **Fixed**: `const` is decided by the constructor named in `constructor:` rather than by any constructor of the class, so an empty class with a const default constructor and a non-const named one no longer generates `const X._internal()`.
+- **Fixed**: `constructor: ''` selects the unnamed constructor instead of emitting `X.()`.
+- **Fixed**: The `@ThemeGen` and `@ignore` annotations are matched by package as well as by name, so a user class called `ThemeGen` is no longer taken for the annotation.
+- **Code Quality**: The `lerp` and `copyWith` generation is shared between the two generators instead of being maintained twice. The symbol model keeps only what the code builders read, the method lookups live in one file each, and the `collection` and `meta` dependencies are gone.
 
 ## 7.4.0
 

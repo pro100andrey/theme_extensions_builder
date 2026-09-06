@@ -1,18 +1,14 @@
-/// Mock implementations of Flutter framework classes for testing.
+/// Minimal stand-ins for the Flutter classes the generator tests need.
 ///
-/// This library provides minimal mock implementations of key Flutter classes
-/// that are needed for testing theme extensions without pulling in the entire
-/// Flutter SDK as a dependency. This keeps tests lightweight and fast.
+/// The generator is tested on the Dart SDK alone, so the Flutter types the
+/// fixtures use — [ThemeExtension], [Color], [BorderSide],
+/// [WidgetStateProperty], [BuildContext] and [Theme] — are declared here with
+/// the same `lerp` and `merge` signatures as the real ones. That is the only
+/// thing the generator looks at.
 ///
-/// The mocks implement the essential API surface that theme_extensions_builder
-/// relies on, including:
-/// - [ThemeExtension]: The base class for custom theme extensions
-/// - [Color]: Color representation and interpolation
-/// - [BorderSide]: Border styling with interpolation support
-/// - [BuildContext] and [Theme]: Context and theme access stubs
-///
-/// These implementations are intentionally simplified and should only be used
-/// for testing the code generation output, not for production use.
+/// Keep the signatures in step with Flutter: the example app in the
+/// `theme_extensions_builder` package is what checks them against the real
+/// framework.
 library;
 
 import 'dart:math' as math;

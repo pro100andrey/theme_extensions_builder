@@ -1,9 +1,9 @@
+import 'package:flutter_stubs/flutter_stubs.dart';
 import 'package:source_gen_test/source_gen_test.dart';
 import 'package:theme_extensions_builder_annotation/theme_extensions_builder_annotation.dart';
 
 import 'empty_theme.dart';
 import 'empty_theme_extension.dart';
-import 'mock.dart';
 
 part 'complex_theme.g.theme.dart';
 

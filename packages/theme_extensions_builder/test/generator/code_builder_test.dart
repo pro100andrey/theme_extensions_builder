@@ -2,14 +2,13 @@ import 'package:test/test.dart';
 import 'package:theme_extensions_builder/src/common/symbols/field_info.dart';
 import 'package:theme_extensions_builder/src/common/symbols/lerp_info.dart';
 import 'package:theme_extensions_builder/src/common/symbols/merge_info.dart';
-import 'package:theme_extensions_builder/src/common/symbols/parameter_info.dart';
 import 'package:theme_extensions_builder/src/config/config.dart';
 import 'package:theme_extensions_builder/src/generator/theme_extensions/code_builder.dart';
 import 'package:theme_extensions_builder/src/generator/theme_gen/code_builder.dart';
 
 /// Code paths that cannot be reached through the golden fixtures, either
 /// because they need more fields than a readable fixture can hold, or because
-/// they need a shape the mock classes don't provide.
+/// they need a shape the stub classes don't provide.
 void main() {
   group('hashCode strategy', () {
     test('no fields use runtimeType.hashCode', () {
@@ -33,6 +32,37 @@ void main() {
     });
   });
 
+  group('constructor', () {
+    test('a const constructor is invoked with const without fields', () {
+      final code = _generate(const []);
+
+      expect(code, contains('return const Theme();'));
+    });
+
+    test('a non-const constructor is invoked without const', () {
+      final code = _generate(const [], constConstructor: false);
+
+      expect(code, contains('return Theme();'));
+      expect(code, isNot(contains('const Theme()')));
+    });
+
+    test('a const constructor is invoked without const with fields', () {
+      final code = _generate([_field('value')]);
+
+      expect(code, isNot(contains('const Theme(')));
+    });
+
+    test('a named constructor is used for every instantiation', () {
+      final code = _generate([_field('value')], constructor: '_internal');
+
+      expect(code, contains('Theme._internal(value: value ?? _this.value)'));
+      expect(
+        code,
+        contains('Theme._internal(value: t < 0.5 ? a.value : b.value)'),
+      );
+    });
+  });
+
   group('lerp', () {
     test('canMerge field takes the value of b', () {
       final code = _generate([
@@ -47,11 +77,7 @@ void main() {
         _field(
           'value',
           typeName: 'Lerpable',
-          lerp: const InstanceLerp(
-            optionalResult: true,
-            args: [_nullableArg],
-            needsCast: true,
-          ),
+          lerp: const InstanceLerp(optionalResult: true, needsCast: true),
         ),
       ]);
 
@@ -64,7 +90,7 @@ void main() {
           'value',
           typeName: 'Lerpable',
           isNullable: true,
-          lerp: const InstanceLerp(optionalResult: true, args: [_nullableArg]),
+          lerp: const InstanceLerp(optionalResult: true),
         ),
       ]);
 
@@ -78,11 +104,7 @@ void main() {
           'value',
           typeName: 'Lerpable',
           isNullable: true,
-          lerp: const InstanceLerp(
-            optionalResult: false,
-            args: [_nullableArg],
-            needsCast: true,
-          ),
+          lerp: const InstanceLerp(optionalResult: false, needsCast: true),
         ),
       ]);
 
@@ -103,7 +125,7 @@ void main() {
           typeName: 'Lerpable',
           lerp: const StaticLerp(
             optionalResult: true,
-            args: [_nonNullableArg, _nonNullableArg],
+            isNullableParameter: false,
           ),
         ),
       ]);
@@ -118,7 +140,7 @@ void main() {
           typeName: 'Lerpable',
           lerp: const StaticLerp(
             optionalResult: false,
-            args: [_nullableArg, _nullableArg],
+            isNullableParameter: true,
           ),
         ),
       ]);
@@ -127,17 +149,36 @@ void main() {
       expect(code, isNot(contains('Lerpable.lerp(a.value, b.value, t)!')));
     });
 
+    test('static lerp taking non-nullable arguments is guarded', () {
+      final code = _generate([
+        _field(
+          'value',
+          typeName: 'Lerpable',
+          isNullable: true,
+          lerp: const StaticLerp(
+            optionalResult: false,
+            isNullableParameter: false,
+          ),
+        ),
+      ]);
+
+      expect(
+        code,
+        contains(
+          'a.value == null || b.value == null ? '
+          't < 0.5 ? a.value : b.value : '
+          'Lerpable.lerp(a.value!, b.value!, t)',
+        ),
+      );
+    });
+
     test('the same guard is emitted for a theme extension', () {
       final code = _generateExtension([
         _field(
           'value',
           typeName: 'Lerpable',
           isNullable: true,
-          lerp: const InstanceLerp(
-            optionalResult: false,
-            args: [_nonNullableArg],
-            needsCast: true,
-          ),
+          lerp: const InstanceLerp(optionalResult: false, needsCast: true),
         ),
       ]);
 
@@ -156,7 +197,7 @@ void main() {
         _field(
           'value',
           typeName: 'Lerpable',
-          lerp: const InstanceLerp(optionalResult: false, args: [_nullableArg]),
+          lerp: const InstanceLerp(optionalResult: false),
         ),
       ]);
 
@@ -171,7 +212,7 @@ void main() {
           typeName: 'Box<int>',
           lerp: const StaticLerp(
             optionalResult: true,
-            args: [_nullableArg, _nullableArg],
+            isNullableParameter: true,
           ),
         ),
       ]);
@@ -179,33 +220,73 @@ void main() {
       expect(code, contains('Box.lerp(a.value, b.value, t)!'));
       expect(code, contains('Box<int>? value'));
     });
+
+    test('a canMerge field of a theme extension is not special', () {
+      final code = _generateExtension([
+        _field('canMerge', typeName: 'bool'),
+      ]);
+
+      expect(
+        code,
+        contains('canMerge: t < 0.5 ? _this.canMerge : other.canMerge'),
+      );
+    });
+  });
+
+  group('merge', () {
+    test('a static merge on a nullable field is guarded', () {
+      final code = _generate([
+        _field(
+          'value',
+          typeName: 'Mergeable',
+          isNullable: true,
+          merge: const StaticMerge(),
+        ),
+      ]);
+
+      expect(
+        code,
+        contains(
+          'value: _this.value == null ? other.value : '
+          'other.value == null ? _this.value : '
+          'Mergeable.merge(_this.value!, other.value!)',
+        ),
+      );
+    });
+
+    test('an instance merge returning a supertype is cast back', () {
+      final code = _generate([
+        _field(
+          'value',
+          typeName: 'Mergeable',
+          merge: const InstanceMerge(needsCast: true),
+        ),
+      ]);
+
+      expect(
+        code,
+        contains('value: (_this.value.merge(other.value) as Mergeable)'),
+      );
+    });
   });
 }
-
-const _nullableArg = ParameterInfo(
-  name: 'other',
-  type: 'Lerpable',
-  isNullable: true,
-);
-
-const _nonNullableArg = ParameterInfo(
-  name: 'other',
-  type: 'Lerpable',
-  isNullable: false,
-);
 
 /// Generates the mixin for [fields] and normalizes the emitter output.
 ///
 /// The code builder emits unformatted code, so whitespace and the trailing
 /// commas code_builder adds before a closing paren are collapsed to keep the
 /// expectations readable.
-String _generate(List<FieldInfo> fields) {
+String _generate(
+  List<FieldInfo> fields, {
+  String? constructor,
+  bool constConstructor = true,
+}) {
   final code = const ThemeGenCodeBuilder().generate(
     ThemeGenConfig(
       fields: fields,
       className: 'Theme',
-      constructor: null,
-      constConstructor: true,
+      constructor: constructor,
+      constConstructor: constConstructor,
     ),
   );
 
@@ -242,13 +323,13 @@ FieldInfo _field(
   String typeName = 'int',
   bool isNullable = false,
   LerpInfo lerp = const NoLerp(),
+  MergeInfo merge = const NoMerge(),
 }) => FieldInfo(
   name: name,
   typeName: typeName,
   isNullable: isNullable,
   isDouble: false,
   isDuration: false,
-  merge: const NoMerge(),
+  merge: merge,
   lerp: lerp,
-  isStatic: false,
 );

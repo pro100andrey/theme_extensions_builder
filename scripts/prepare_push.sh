@@ -49,14 +49,13 @@ function log_warning() {
 	echo -e "${COLOR_YELLOW}[!]${COLOR_RESET} $1"
 }
 
-function pub_update() {
-	local package_path=$1
-	log_begin "Running 'dart pub update' in $package_path"
-	if dart pub update --directory "$package_path"; then
-		log_success "pub update completed for $package_path"
+function pub_get() {
+	log_begin "Running 'flutter pub get' for the workspace"
+	if flutter pub get; then
+		log_success "Workspace resolved"
 		return 0
 	else
-		log_error "pub update failed for $package_path"
+		log_error "pub get failed"
 		return 1
 	fi
 }
@@ -142,7 +141,6 @@ function process_package() {
 	log_info "Processing" "$package_name"
 
 	local steps=(
-		"pub_update"
 		"dart_format"
 		"dart_fix"
 		"dart_analyze"
@@ -166,9 +164,13 @@ function main() {
 
 	cd "$PROJECT_ROOT"
 
+	# One resolution for every package: they form a pub workspace.
+	pub_get || return 1
+
 	local dirs=(
-		"packages/theme_extensions_builder"
 		"packages/theme_extensions_builder_annotation"
+		"packages/flutter_stubs"
+		"packages/theme_extensions_builder"
 		"packages/theme_extensions_builder/example"
 	)
 

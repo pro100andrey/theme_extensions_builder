@@ -1,3 +1,7 @@
+## 7.5.1
+
+- **Changed**: Allow `build` 5.x (`>=3.0.0 <6.0.0`), which unblocks `build_runner` 2.17+.
+
 ## 7.5.0
 
 - **Breaking**: `hashCode` changes for classes that inherit fields, which now come after the class' own.

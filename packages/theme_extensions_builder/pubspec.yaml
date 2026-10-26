@@ -8,7 +8,7 @@ issue_tracker: https://github.com/pro100andrey/theme_extensions_builder/issues
 homepage: https://github.com/pro100andrey/theme_extensions_builder
 documentation: https://github.com/pro100andrey/theme_extensions_builder/blob/main/packages/theme_extensions_builder/README.md
 
-version: 7.5.0
+version: 7.5.1
 
 topics:
  - theme
@@ -23,7 +23,7 @@ resolution: workspace
 
 dependencies:
   analyzer: ">=13.1.0 <15.0.0"
-  build:  ">=3.0.0 <5.0.0"
+  build: ">=3.0.0 <6.0.0"
   code_builder: ^4.11.1
   source_gen: ">=4.2.3 <5.0.0"
   theme_extensions_builder_annotation: ^7.5.0

@@ -42,7 +42,8 @@ jobs:
       #
       # The analyzer floor is the lowest version the test tooling compiles
       # against: every `dart_style` the goldens are formatted with needs
-      # 13.1.0. `build` floats, as the tooling needs 4.x.
+      # 13.1.0. `build` floats, as the tooling needs 4.x. `build_runner` is
+      # pinned too: 2.16.2 no longer compiles against analyzer 13.1.0.
       - name: Pin the lower bounds
         if: matrix.deps == 'lowest'
         run: |
@@ -50,6 +51,7 @@ jobs:
           dependency_overrides:
             analyzer: 13.1.0
             source_gen: 4.2.3
+            build_runner: 2.16.1
           EOF
           flutter pub get
 
